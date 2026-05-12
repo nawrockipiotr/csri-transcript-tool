@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transcript Tool</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface2: #eef0f4;
+    --border: #d8dbe3;
+    --text: #1a1d27;
+    --text-dim: #6b7085;
+    --accent: #4361ee;
+    --accent-dim: #4361ee15;
+    --green: #16a34a;
+    --green-dim: #16a34a15;
+    --yellow: #ca8a04;
+    --yellow-dim: #ca8a0415;
+    --red: #dc2626;
+    --red-dim: #dc262615;
+    --radius: 10px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  .org-badge {
+    display: inline-block;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-logo {
+    max-height: 50px;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .hero-lead {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-author {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    opacity: 0.7;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+  }
+
+  /* API Key Section */
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .api-section label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .provider-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .provider-tab {
+    flex: 1;
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+
+  .provider-tab.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .provider-tab:hover:not(.active) {
+    background: var(--surface2);
+  }
+
+  .api-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .api-row input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-row input:focus { border-color: var(--accent); }
+
+  .save-check {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .save-check input[type="checkbox"] {
+    accent-color: var(--accent);
+  }
+
+  /* Mode Toggle */
+  .mode-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+
+  .mode-btn.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .mode-btn:hover:not(.active) {
+    background: var(--surface2);
+  }
+
+  /* Settings Row */
+  .settings-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .setting {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .setting label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .setting select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .setting select:focus { border-color: var(--accent); }
+
+  /* Drop Zone */
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .dropzone-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .dropzone-text {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .dropzone-text strong {
+    color: var(--accent);
+  }
+
+  .dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  /* File List */
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .file-item .name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text);
+  }
+
+  .file-item .size {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+  }
+
+  .file-item .remove {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0.25rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+
+  .file-item .remove:hover { opacity: 1; }
+
+  /* Action Button */
+  .action-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .action-btn:hover { opacity: 0.9; }
+  .action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .stop-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid var(--red);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    letter-spacing: 0.02em;
+    margin-top: 0.5rem;
+    display: none;
+  }
+
+  .stop-btn:hover { background: var(--red); color: #fff; }
+  .stop-btn.visible { display: block; }
+
+  /* Progress */
+  .progress-area {
+    margin-top: 1.5rem;
+    display: none;
+  }
+
+  .progress-area.visible { display: block; }
+
+  .progress-bar-wrap {
+    background: var(--surface);
+    border-radius: 6px;
+    overflow: hidden;
+    height: 6px;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 6px;
+  }
+
+  .progress-text {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  /* Results */
+  .results-area {
+    margin-top: 2rem;
+    display: none;
+  }
+
+  .results-area.visible { display: block; }
+
+  .result-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .result-header .detected-lang {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  .result-content {
+    padding: 1rem;
+    font-size: 0.84rem;
+    line-height: 1.7;
+    max-height: 500px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  .result-content .flag-yellow {
+    background: var(--yellow-dim);
+    border-left: 3px solid var(--yellow);
+    padding: 0.25rem 0.5rem;
+    display: inline;
+    border-radius: 2px;
+  }
+
+  .result-content .flag-red {
+    background: var(--red-dim);
+    border-left: 3px solid var(--red);
+    padding: 0.25rem 0.5rem;
+    display: inline;
+    border-radius: 2px;
+  }
+
+  .export-row {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .export-btn {
+    padding: 0.4rem 0.75rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .export-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .clean-transcript-check {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  .clean-transcript-check input[type="checkbox"] {
+    accent-color: var(--accent);
+  }
+
+  /* Error */
+  .error-msg {
+    background: var(--red-dim);
+    border: 1px solid var(--red);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    color: var(--red);
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="org-badge">Centre for Socially Responsible Innovations (CSRI)</div>
+    
+    <h1>Transcript Tool</h1>
+    <p class="hero-lead">
+      A translation and quality assessment tool for multilingual transcripts, developed at the 
+      <strong>Centre for Socially Responsible Innovations (CSRI)</strong>, Faculty of Management, University of Warsaw.
+    </p>
+    <div style="background: var(--surface2); border-radius: 8px; padding: 1rem; margin-top: 0.75rem; margin-bottom: 0.5rem;">
+      <div style="font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">How to use this tool</div>
+      <div style="font-size: 0.78rem; color: var(--text-dim); line-height: 1.7;">
+        <strong style="color: var(--text);">1.</strong> Paste your API key from the selected AI provider (Anthropic, OpenAI, or Google). You only need to do this once if you choose to save it.<br>
+        <strong style="color: var(--text);">2.</strong> Choose a mode: <strong style="color: var(--text);">Translation</strong> converts the transcript into your target language, <strong style="color: var(--text);">Quality Assessment</strong> checks the transcript for errors and flags them, or <strong style="color: var(--text);">Both</strong> does both at once.<br>
+        <strong style="color: var(--text);">3.</strong> Drag & drop your transcript files (TXT, DOCX, or SRT) or click to browse.<br>
+        <strong style="color: var(--text);">4.</strong> Click <strong style="color: var(--text);">Process Files</strong> and wait for results. You can stop at any time.<br>
+        <strong style="color: var(--text);">5.</strong> Export results as SRT (for subtitles), TXT (clean transcript), or DOCX.
+      </div>
+    </div>
+    <div style="background: var(--surface2); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; margin-bottom: 0.75rem;">
+      <div style="font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">How to read quality flags</div>
+      <div style="font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 0.6rem;">
+        In Quality Assessment mode, the tool highlights potential transcription errors directly in the text. Flags do not mean the text is wrong — they mark places worth verifying.
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.78rem;">
+        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+          <span style="flex-shrink:0; margin-top:2px; display:inline-block; padding: 1px 8px; background: var(--yellow-dim); border-left: 3px solid var(--yellow); border-radius: 2px; font-size: 0.75rem;">innovashun</span>
+          <span style="color: var(--text-dim);"><strong style="color: var(--text);">Minor</strong> — garbled but understandable from context (e.g. ASR mishearing, informal speech, slight distortion)</span>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+          <span style="flex-shrink:0; margin-top:2px; display:inline-block; padding: 1px 8px; background: var(--red-dim); border-left: 3px solid var(--red); border-radius: 2px; font-size: 0.75rem;">Johsen Mrak</span>
+          <span style="color: var(--text-dim);"><strong style="color: var(--text);">Serious</strong> — incomprehensible, scrambled names, missing speech, or nonsensical fragments that need human verification</span>
+        </div>
+      </div>
+    </div>
+    <div style="background: var(--surface2); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; margin-bottom: 0.75rem;">
+      <div style="font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">About the Summary option</div>
+      <div style="font-size: 0.78rem; color: var(--text-dim); line-height: 1.6;">
+        When enabled, the tool generates a structured overview of the transcript: context, main topics, key findings, and ambiguities. 
+        The summary does not attribute statements to specific speakers (labels can be unreliable) and does not quote the transcript. 
+        It is prepended to TXT and DOCX exports but excluded from SRT files (which are for subtitles only).
+      </div>
+    </div>
+    <div class="hero-author">Tool by Piotr Nawrocki · built for CSRI projects</div>
+  </div>
+
+  <!-- API Key -->
+  <div class="api-section">
+    <label>AI Provider</label>
+    <div class="provider-tabs">
+      <button class="provider-tab active" data-provider="anthropic" onclick="setProvider('anthropic')">Anthropic (Claude)</button>
+      <button class="provider-tab" data-provider="openai" onclick="setProvider('openai')">OpenAI (ChatGPT)</button>
+      <button class="provider-tab" data-provider="google" onclick="setProvider('google')">Google (Gemini)</button>
+    </div>
+    <label id="apiKeyLabel">Anthropic API Key</label>
+    <div class="api-row">
+      <input type="password" id="apiKey" placeholder="sk-ant-..." />
+    </div>
+    <label class="save-check">
+      <input type="checkbox" id="saveKey" /> Save key on this computer
+    </label>
+    <div style="font-size: 0.7rem; color: var(--text-dim); opacity: 0.7; margin-top: 0.4rem; line-height: 1.4;">Your API key is stored only in your browser's local storage and sent exclusively to the selected AI provider for processing. It is never shared with any other party.</div>
+    <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem; font-size: 0.82rem; cursor: pointer;">
+      <input type="checkbox" id="highQuality" style="accent-color: var(--accent);" />
+      <span style="font-weight: 600;">Use higher quality model</span>
+    </label>
+    <div style="font-size: 0.7rem; color: var(--text-dim); opacity: 0.7; margin-top: 0.25rem; line-height: 1.4;" id="modelHint">Default: Claude Haiku (fast, cheap). Higher quality: Claude Sonnet (better translation accuracy, ~10× more expensive).</div>
+  </div>
+
+  <!-- Mode -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="translate" onclick="setMode('translate')">Translation</button>
+    <button class="mode-btn" data-mode="quality" onclick="setMode('quality')">Quality Assessment</button>
+    <button class="mode-btn" data-mode="both" onclick="setMode('both')">Both</button>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-row">
+    <div class="setting" id="targetLangSetting">
+      <label>Target Language</label>
+      <select id="targetLang">
+        <option value="Bulgarian">Bulgarian</option>
+        <option value="Croatian">Croatian</option>
+        <option value="Czech">Czech</option>
+        <option value="Danish">Danish</option>
+        <option value="Dutch">Dutch</option>
+        <option value="English" selected>English</option>
+        <option value="Estonian">Estonian</option>
+        <option value="Finnish">Finnish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <option value="Greek">Greek</option>
+        <option value="Hungarian">Hungarian</option>
+        <option value="Irish">Irish</option>
+        <option value="Italian">Italian</option>
+        <option value="Latvian">Latvian</option>
+        <option value="Lithuanian">Lithuanian</option>
+        <option value="Maltese">Maltese</option>
+        <option value="Polish">Polish</option>
+        <option value="Portuguese">Portuguese</option>
+        <option value="Romanian">Romanian</option>
+        <option value="Slovak">Slovak</option>
+        <option value="Slovenian">Slovenian</option>
+        <option value="Spanish">Spanish</option>
+        <option value="Swedish">Swedish</option>
+      </select>
+    </div>
+    <div class="setting">
+      <label>Export Format</label>
+      <select id="exportFormat">
+        <option value="srt">SRT (with timestamps)</option>
+        <option value="txt">TXT (clean transcript)</option>
+        <option value="docx">DOCX</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Summary option -->
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1.5rem;">
+    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+      <input type="checkbox" id="addSummary" style="accent-color: var(--accent);" />
+      <span style="font-weight: 600;">Add summary</span>
+      <span style="color: var(--text-dim); font-size: 0.78rem;">— prepends an overview at the beginning of the output (not included in SRT export)</span>
+    </label>
+  </div>
+  <div class="dropzone" id="dropzone">
+    <div class="dropzone-icon">📄</div>
+    <div class="dropzone-text">Drag & drop files here or <strong>click to browse</strong></div>
+    <div class="dropzone-text" style="margin-top:0.3rem; font-size:0.75rem;">TXT, DOCX, SRT, PDF</div>
+    <input type="file" id="fileInput" multiple accept=".txt,.docx,.srt,.pdf" />
+  </div>
+
+  <!-- File List -->
+  <div class="file-list" id="fileList"></div>
+
+  <!-- Action -->
+  <button class="action-btn" id="actionBtn" onclick="processFiles()" disabled>Process Files</button>
+  <button class="stop-btn" id="stopBtn" onclick="stopProcessing()">Stop Processing</button>
+
+  <!-- Error -->
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Progress -->
+  <div class="progress-area" id="progressArea">
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text" id="progressText">Processing...</div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-area" id="resultsArea"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
+<script>
+// ─── State ───
+let files = [];
+let currentMode = 'translate';
+let abortController = null;
+let isProcessing = false;
+let currentProvider = 'anthropic';
+
+const providerConfig = {
+  anthropic: {
+    label: 'Anthropic API Key', placeholder: 'sk-ant-...', storageKey: 'transcript_tool_api_key_anthropic',
+    model: 'claude-haiku-4-5-20251001', modelHQ: 'claude-sonnet-4-6',
+    hint: 'Default: Claude Haiku 4.5 (fast, cheap). Higher quality: Claude Sonnet 4.6 (better translation accuracy, ~10× more expensive).'
+  },
+  openai: {
+    label: 'OpenAI API Key', placeholder: 'sk-...', storageKey: 'transcript_tool_api_key_openai',
+    model: 'gpt-4o-mini', modelHQ: 'gpt-4o',
+    hint: 'Default: GPT-4o mini (fast, cheap). Higher quality: GPT-4o (better accuracy, ~15× more expensive).'
+  },
+  google: {
+    label: 'Google AI API Key', placeholder: 'AIza...', storageKey: 'transcript_tool_api_key_google',
+    model: 'gemini-2.0-flash', modelHQ: 'gemini-2.5-pro-preview-05-06',
+    hint: 'Default: Gemini Flash (fast, cheap). Higher quality: Gemini Pro (better accuracy, ~10× more expensive).'
+  }
+};
+
+// ─── Provider Toggle ───
+function setProvider(provider) {
+  currentProvider = provider;
+  document.querySelectorAll('.provider-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.provider === provider);
+  });
+  const cfg = providerConfig[provider];
+  document.getElementById('apiKeyLabel').textContent = cfg.label;
+  apiKeyInput.placeholder = cfg.placeholder;
+  document.getElementById('modelHint').textContent = cfg.hint;
+
+  // Load saved key for this provider
+  const saved = localStorage.getItem(cfg.storageKey);
+  if (saved) {
+    apiKeyInput.value = saved;
+    saveKeyCheck.checked = true;
+  } else {
+    apiKeyInput.value = '';
+    saveKeyCheck.checked = false;
+  }
+}
+
+function getModel() {
+  const hq = document.getElementById('highQuality').checked;
+  return hq ? providerConfig[currentProvider].modelHQ : providerConfig[currentProvider].model;
+}
+
+// ─── API Key persistence ───
+const apiKeyInput = document.getElementById('apiKey');
+const saveKeyCheck = document.getElementById('saveKey');
+
+(function loadSavedKey() {
+  const cfg = providerConfig[currentProvider];
+  const saved = localStorage.getItem(cfg.storageKey);
+  if (saved) {
+    apiKeyInput.value = saved;
+    saveKeyCheck.checked = true;
+  }
+})();
+
+saveKeyCheck.addEventListener('change', () => {
+  const cfg = providerConfig[currentProvider];
+  if (saveKeyCheck.checked) {
+    if (apiKeyInput.value.trim()) {
+      localStorage.setItem(cfg.storageKey, apiKeyInput.value.trim());
+    }
+  } else {
+    localStorage.removeItem(cfg.storageKey);
+  }
+});
+
+apiKeyInput.addEventListener('input', () => {
+  const cfg = providerConfig[currentProvider];
+  if (saveKeyCheck.checked && apiKeyInput.value.trim()) {
+    localStorage.setItem(cfg.storageKey, apiKeyInput.value.trim());
+  }
+});
+
+// ─── Mode Toggle ───
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  document.getElementById('targetLangSetting').style.display =
+    mode === 'quality' ? 'none' : '';
+}
+
+// ─── File Handling ───
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const fileListEl = document.getElementById('fileList');
+const actionBtn = document.getElementById('actionBtn');
+
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  addFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => {
+  addFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+function addFiles(newFiles) {
+  for (const f of newFiles) {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (['txt', 'srt', 'docx', 'pdf'].includes(ext)) {
+      files.push(f);
+    }
+  }
+  renderFileList();
+}
+
+function removeFile(idx) {
+  files.splice(idx, 1);
+  renderFileList();
+}
+
+function renderFileList() {
+  fileListEl.innerHTML = files.map((f, i) => `
+    <div class="file-item">
+      <span class="name">${f.name}</span>
+      <span class="size">${(f.size / 1024).toFixed(1)} KB</span>
+      <button class="remove" onclick="removeFile(${i})">×</button>
+    </div>
+  `).join('');
+  actionBtn.disabled = files.length === 0;
+}
+
+function formatSize(bytes) {
+  return (bytes / 1024).toFixed(1) + ' KB';
+}
+
+// ─── Read file content ───
+async function readFileContent(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === 'txt' || ext === 'srt') {
+    return await file.text();
+  }
+
+  if (ext === 'docx') {
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const xmlContent = await zip.file('word/document.xml').async('string');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlContent, 'application/xml');
+    const paragraphs = doc.getElementsByTagName('w:p');
+    let text = '';
+    for (const p of paragraphs) {
+      const runs = p.getElementsByTagName('w:t');
+      let pText = '';
+      for (const r of runs) {
+        pText += r.textContent;
+      }
+      if (pText) text += pText + '\n';
+    }
+    return text;
+  }
+
+  if (ext === 'pdf') {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(item => item.str).join(' ');
+      if (pageText.trim()) text += pageText + '\n';
+    }
+    return text;
+  }
+
+  return '';
+}
+
+// ─── Chunk text ───
+function chunkText(text, maxChars = 4000) {
+  const lines = text.split('\n');
+  const chunks = [];
+  let current = '';
+
+  for (const line of lines) {
+    if ((current + '\n' + line).length > maxChars && current) {
+      chunks.push(current);
+      current = line;
+    } else {
+      current = current ? current + '\n' + line : line;
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+// ─── API Call (multi-provider) ───
+async function callAI(apiKey, systemPrompt, userContent) {
+  if (currentProvider === 'anthropic') {
+    return callAnthropic(apiKey, systemPrompt, userContent);
+  } else if (currentProvider === 'openai') {
+    return callOpenAI(apiKey, systemPrompt, userContent);
+  } else if (currentProvider === 'google') {
+    return callGoogle(apiKey, systemPrompt, userContent);
+  }
+}
+
+async function callAnthropic(apiKey, systemPrompt, userContent) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    signal: abortController?.signal,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: getModel(),
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userContent }]
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  return data.content.map(c => c.text || '').join('');
+}
+
+async function callOpenAI(apiKey, systemPrompt, userContent) {
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    signal: abortController?.signal,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: getModel(),
+      max_tokens: 4096,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent }
+      ]
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  return data.choices[0]?.message?.content || '';
+}
+
+async function callGoogle(apiKey, systemPrompt, userContent) {
+  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${getModel()}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    signal: abortController?.signal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ parts: [{ text: userContent }] }],
+      generationConfig: { maxOutputTokens: 4096 }
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  return data.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || '';
+}
+
+// ─── Prompts ───
+function getTranslatePrompt(targetLang) {
+  return `You are a professional translator. Translate the provided transcript into ${targetLang}. 
+Preserve all speaker labels (e.g., "Person 1:", "Speaker 1:", etc.) without translating them.
+Preserve SRT timestamps if present.
+Translate naturally, keeping the meaning and tone. Do not add commentary. Return only the translation.`;
+}
+
+function getTranslateWithFlagsPrompt(targetLang) {
+  return `You are a professional translator. Translate the provided transcript into ${targetLang}.
+
+The text contains quality flag markers: [Y]...[/Y] for minor issues and [R]...[/R] for serious issues.
+
+CRITICAL RULES:
+1. Translate the text inside the flags along with everything else.
+2. KEEP the [Y][/Y] and [R][/R] tags in exactly the same positions around the corresponding translated words.
+3. Do NOT remove, add, or move any flags.
+4. Preserve all speaker labels without translating them.
+5. Preserve SRT timestamps if present.
+6. Do not add commentary. Return only the translation with flags preserved.
+
+Example:
+Input: Eu am [Y]șeruirea[/Y] ecranului
+Output: I have [Y]sharing[/Y] the screen`;
+}
+
+function getQualityPrompt() {
+  return `You are a transcript quality assessor for ASR (automatic speech recognition) output. Your task is to evaluate transcription quality and mark problems inline.
+
+RESPONSE FORMAT (strict):
+Line 1: LANG: [detected language]
+Line 2: SCORE: [1-10]
+Line 3: SUMMARY: [2-3 sentences describing overall quality and main issues]
+Line 4 onwards: the original text with inline markers where issues are found.
+
+ISSUE CATEGORIES — mark each with the appropriate tag:
+- [Y]problematic text[/Y] — MINOR: slightly garbled but understandable from context (e.g., "șeruirea" instead of "share-uirea", informal speech artifacts, minor ASR mishearing)
+- [R]problematic text[/R] — SERIOUS: incomprehensible, clearly wrong transcription, garbled names, major gaps, nonsensical fragments, missing speech content
+
+RULES:
+1. Return the COMPLETE original text. Do not summarize or skip sections.
+2. Place markers ONLY around the specific problematic words/phrases, not entire sentences.
+3. Never nest markers. Never mix opening/closing tags from different categories.
+4. Do not add any commentary inside the text itself. All commentary goes in the SUMMARY line only.
+5. Preserve all speaker labels, timestamps, and formatting exactly as they appear.
+6. Pay special attention to proper names — if a name appears garbled or reversed (e.g., surname/firstname swapped, letters scrambled), mark it with [R].
+7. Empty turns or turns with no speech content: mark with [R](no speech)[/R].
+8. Do not invent or correct text. Only mark what appears problematic.`;
+}
+
+function getSummaryPrompt(targetLang) {
+  return `You are a research transcript analyst. Generate a structured summary of the provided transcript entirely in ${targetLang} — including ALL section headers and labels.
+
+RESPONSE FORMAT (translate every header and label into ${targetLang}):
+
+=== SUMMARY ===
+
+[Context header in ${targetLang}]:
+- [Source language label in ${targetLang}]: [the ORIGINAL language of the recording, not the translation language]
+- [Participants label in ${targetLang}]: [approximate number based on speaker turns. Do NOT assign names — speaker labels may be unreliable]
+- [Estimated length label in ${targetLang}]: [estimate based on timestamps if available, or text volume]
+
+[Main topics header in ${targetLang}]:
+[List 3-6 key topics discussed, in the order they appear. Keep each to one sentence.]
+
+[Key points header in ${targetLang}]:
+[Summarize the main conclusions, decisions, or actionable insights. Focus on substance, not logistics.]
+
+[Ambiguities header in ${targetLang}]:
+[Note any disagreements, unresolved questions, or unclear passages — if none, state so]
+
+=== END ===
+
+RULES:
+1. Write EVERYTHING in ${targetLang} — every word, header, label, and content.
+2. Do NOT use English for headers if the target language is not English.
+3. Do NOT attribute statements to specific speakers.
+4. Do NOT quote the transcript directly.
+5. Do NOT interpret or evaluate — summarize factually.
+6. Do NOT inflate estimates — base length on timestamps or text volume.
+7. Keep it concise: 150-250 words total.
+8. If the input is already a translation, identify the ORIGINAL source language of the recording.`;
+}
+
+// ─── Process ───
+function stopProcessing() {
+  if (abortController) {
+    abortController.abort();
+    abortController = null;
+  }
+  isProcessing = false;
+  document.getElementById('stopBtn').classList.remove('visible');
+  document.getElementById('progressText').textContent = 'Stopped.';
+  actionBtn.disabled = false;
+}
+
+async function processFiles() {
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) { showError('Enter your API key.'); return; }
+
+  abortController = new AbortController();
+  isProcessing = true;
+
+  const targetLang = document.getElementById('targetLang').value;
+  const progressArea = document.getElementById('progressArea');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const resultsArea = document.getElementById('resultsArea');
+  const stopBtn = document.getElementById('stopBtn');
+
+  progressArea.classList.add('visible');
+  resultsArea.classList.add('visible');
+  resultsArea.innerHTML = '';
+  hideError();
+  actionBtn.disabled = true;
+  stopBtn.classList.add('visible');
+
+  let totalChunks = 0;
+  let doneChunks = 0;
+
+  // Pre-calculate total chunks
+  const fileContents = [];
+  for (const file of files) {
+    const content = await readFileContent(file);
+    const chunks = chunkText(content);
+    fileContents.push({ file, content, chunks });
+    totalChunks += chunks.length * (currentMode === 'both' ? 2 : 1);
+  }
+
+  const addSummary = document.getElementById('addSummary').checked;
+
+  for (const { file, content, chunks } of fileContents) {
+    try {
+      let translationResult = '';
+      let qualityResult = '';
+      let summaryResult = '';
+      let bodies = [];
+
+      // Summary (two-stage: extract key points from each chunk, then synthesize)
+      if (addSummary) {
+        if (chunks.length === 1) {
+          // Short file — single call
+          progressText.textContent = `Generating summary for ${file.name}...`;
+          summaryResult = await callAI(apiKey, getSummaryPrompt(targetLang), content);
+        } else {
+          // Long file — stage 1: extract key points from each chunk
+          const keyPoints = [];
+          for (let ci = 0; ci < chunks.length; ci++) {
+            progressText.textContent = `Extracting key points from ${file.name}... chunk ${ci + 1}/${chunks.length}`;
+            const extraction = await callAI(apiKey,
+              `You are a research transcript analyst. Extract the key points from this transcript chunk. List the main topics discussed, any conclusions or decisions, and any unresolved questions. Be concise — bullet points, max 150 words. Do NOT attribute statements to specific speakers. Write in English regardless of the source language.`,
+              chunks[ci] + `\n[Chunk ${ci + 1} of ${chunks.length}]`
+            );
+            keyPoints.push(`Chunk ${ci + 1}:\n${extraction}`);
+          }
+          // Stage 2: synthesize into final summary
+          progressText.textContent = `Synthesizing summary for ${file.name}...`;
+          summaryResult = await callAI(apiKey, getSummaryPrompt(targetLang),
+            `Below are key points extracted from all chunks of a transcript. Synthesize them into a single coherent summary following your format.\n\n${keyPoints.join('\n\n')}`
+          );
+        }
+      }
+
+      // Translation
+      if (currentMode === 'translate') {
+        const translatedParts = [];
+        for (const chunk of chunks) {
+          progressText.textContent = `Translating ${file.name}... (${doneChunks + 1}/${totalChunks})`;
+          const result = await callAI(apiKey, getTranslatePrompt(targetLang), chunk);
+          translatedParts.push(result);
+          doneChunks++;
+          progressBar.style.width = ((doneChunks / totalChunks) * 100) + '%';
+        }
+        translationResult = translatedParts.join('\n');
+      }
+
+      // Quality
+      if (currentMode === 'quality' || currentMode === 'both') {
+        const qualityParts = [];
+        let firstLang = '';
+        let scores = [];
+        let summaries = [];
+
+        for (let ci = 0; ci < chunks.length; ci++) {
+          progressText.textContent = `Assessing ${file.name}... chunk ${ci + 1}/${chunks.length} (${doneChunks + 1}/${totalChunks})`;
+          const chunkNote = chunks.length > 1 ? `\n[This is chunk ${ci + 1} of ${chunks.length} from the same file. Assess only this chunk. Do NOT include this instruction in your output.]` : '';
+          const result = await callAI(apiKey, getQualityPrompt(), chunks[ci] + chunkNote);
+
+          // Parse header from each chunk result
+          const lines = result.split('\n');
+          let bodyStart = 0;
+          for (let i = 0; i < Math.min(lines.length, 10); i++) {
+            const l = lines[i].trim();
+            if (l.startsWith('LANG:') && !firstLang) { firstLang = l.replace('LANG:', '').trim(); bodyStart = i + 1; }
+            else if (l.startsWith('SCORE:')) { const s = parseFloat(l.replace('SCORE:', '').trim()); if (!isNaN(s)) scores.push(s); bodyStart = i + 1; }
+            else if (l.startsWith('SUMMARY:')) { summaries.push(l.replace('SUMMARY:', '').trim()); bodyStart = i + 1; }
+            else if (bodyStart > 0) break;
+          }
+          // Clean body: remove leaked chunk instructions and stray SUMMARY lines
+          let bodyText = lines.slice(bodyStart).join('\n');
+          bodyText = bodyText.replace(/\[This is chunk \d+ of \d+ from the same file[^\]]*\]/g, '');
+          bodyText = bodyText.replace(/^SUMMARY:.*$/gm, '');
+          bodyText = bodyText.replace(/^LANG:.*$/gm, '');
+          bodyText = bodyText.replace(/^SCORE:.*$/gm, '');
+          bodyText = bodyText.replace(/\n{3,}/g, '\n\n');
+          bodies.push(bodyText.trim());
+          doneChunks++;
+          progressBar.style.width = ((doneChunks / totalChunks) * 100) + '%';
+        }
+
+        // Aggregate: average score, combine summaries, join bodies
+        const avgScore = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 'N/A';
+        const combinedSummary = summaries.length > 1 ? summaries.join(' ') : (summaries[0] || '');
+        qualityResult = `LANG: ${firstLang}\nSCORE: ${avgScore}\nSUMMARY: ${combinedSummary}\n${bodies.join('\n')}`;
+      }
+
+      // In "Both" mode: translate the flagged text so flags appear in translation too
+      if (currentMode === 'both') {
+        const flaggedChunks = chunkText(bodies.join('\n'));
+        const translatedParts = [];
+        for (let ci = 0; ci < flaggedChunks.length; ci++) {
+          progressText.textContent = `Translating with flags ${file.name}... chunk ${ci + 1}/${flaggedChunks.length}`;
+          const result = await callAI(apiKey, getTranslateWithFlagsPrompt(targetLang), flaggedChunks[ci]);
+          translatedParts.push(result);
+        }
+        translationResult = translatedParts.join('\n');
+      }
+
+      renderResult(file.name, translationResult, qualityResult, summaryResult);
+
+    } catch (err) {
+      if (err.name === 'AbortError') break;
+      showError(`Error processing ${file.name}: ${err.message}`);
+    }
+  }
+
+  isProcessing = false;
+  abortController = null;
+  document.getElementById('stopBtn').classList.remove('visible');
+  progressText.textContent = isProcessing ? 'Stopped.' : 'Done.';
+  actionBtn.disabled = false;
+}
+
+// ─── Render Results ───
+function renderResult(fileName, translation, quality, summary) {
+  const resultsArea = document.getElementById('resultsArea');
+  const block = document.createElement('div');
+  block.className = 'result-block';
+
+  let contentHtml = '';
+
+  if (summary) {
+    contentHtml += `<div class="result-header">
+      <span>📋 Summary — ${fileName}</span>
+    </div>
+    <div class="result-content" id="summ_${sanitizeId(fileName)}" style="white-space: pre-wrap;">${escapeHtml(summary)}</div>`;
+  }
+
+  if (translation) {
+    // If translation contains flags (from "Both" mode), render them with colors
+    let transHtml = escapeHtml(translation);
+    transHtml = transHtml.replace(/\[Y\]([\s\S]*?)\[\/Y\]/g, '<span class="flag-yellow">$1</span>');
+    transHtml = transHtml.replace(/\[R\]([\s\S]*?)\[\/R\]/g, '<span class="flag-red">$1</span>');
+
+    contentHtml += `<div class="result-header">
+      <span>📝 Translation — ${fileName}</span>
+    </div>
+    <div class="result-content" id="trans_${sanitizeId(fileName)}">${transHtml}</div>
+    <div class="export-row">
+      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'srt')">Export SRT</button>
+      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'txt')">Export TXT</button>
+      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'docx')">Export DOCX</button>
+      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'pdf')">Export PDF</button>
+      <label class="clean-transcript-check">
+        <input type="checkbox" id="clean_${sanitizeId(fileName)}" /> Clean transcript (no timestamps)
+      </label>
+    </div>`;
+  }
+
+  if (quality) {
+    const formatted = formatQuality(quality);
+    contentHtml += `<div class="result-header">
+      <span>🔍 Quality Assessment — ${fileName}</span>
+      <span class="detected-lang">${formatted.langLine}</span>
+    </div>
+    <div style="display: flex; gap: 1.25rem; padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-dim); flex-wrap: wrap;">
+      <span style="display:flex; align-items:center; gap:0.35rem;"><span style="display:inline-block;width:12px;height:12px;background:var(--yellow-dim);border-left:3px solid var(--yellow);border-radius:2px;"></span> Minor — garbled but understandable from context</span>
+      <span style="display:flex; align-items:center; gap:0.35rem;"><span style="display:inline-block;width:12px;height:12px;background:var(--red-dim);border-left:3px solid var(--red);border-radius:2px;"></span> Serious — incomprehensible, clearly wrong, major gap</span>
+      <span style="display:flex; align-items:center; gap:0.35rem; margin-left: auto;">Score: 1–3 poor · 4–6 moderate · 7–8 good · 9–10 excellent</span>
+    </div>
+    <div class="result-content" id="qual_${sanitizeId(fileName)}">${formatted.html}</div>
+    <div class="export-row">
+      <button class="export-btn" onclick="exportQuality('${sanitizeId(fileName)}', 'html')">Export HTML (with colors)</button>
+      <button class="export-btn" onclick="exportQuality('${sanitizeId(fileName)}', 'txt')">Export TXT (with annotations)</button>
+    </div>`;
+  }
+
+  block.innerHTML = contentHtml;
+  resultsArea.appendChild(block);
+}
+
+function formatQuality(text) {
+  const lines = text.split('\n');
+  let lang = '';
+  let score = '';
+  let summary = '';
+  let bodyStartIdx = 0;
+
+  // Parse header lines
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('LANG:')) {
+      lang = line.replace('LANG:', '').trim();
+      bodyStartIdx = i + 1;
+    } else if (line.startsWith('SCORE:')) {
+      score = line.replace('SCORE:', '').trim();
+      bodyStartIdx = i + 1;
+    } else if (line.startsWith('SUMMARY:')) {
+      summary = line.replace('SUMMARY:', '').trim();
+      bodyStartIdx = i + 1;
+    } else if (lang && score) {
+      // If we found lang and score but line doesn't match headers, body starts here
+      if (!line.startsWith('SUMMARY:')) {
+        bodyStartIdx = i;
+        break;
+      }
+    }
+  }
+
+  const body = lines.slice(bodyStartIdx).join('\n');
+
+  let html = escapeHtml(body);
+  // New short tags
+  html = html.replace(/\[Y\]([\s\S]*?)\[\/Y\]/g, '<span class="flag-yellow">$1</span>');
+  html = html.replace(/\[R\]([\s\S]*?)\[\/R\]/g, '<span class="flag-red">$1</span>');
+  // Legacy tags (backward compat)
+  html = html.replace(/\[YELLOW_START\]([\s\S]*?)\[YELLOW_END\]/g, '<span class="flag-yellow">$1</span>');
+  html = html.replace(/\[RED_START\]([\s\S]*?)\[RED_END\]/g, '<span class="flag-red">$1</span>');
+
+  const summaryHtml = summary ? `<div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.82rem; color: var(--text-dim); line-height: 1.5;">${escapeHtml(summary)}</div>` : '';
+
+  return { html: summaryHtml + '<div style="padding: 1rem; white-space: pre-wrap; line-height: 1.7; max-height: 500px; overflow-y: auto; font-size: 0.84rem;">' + html + '</div>', langLine: `${lang} · <span title="1 = very poor transcription, many errors &#10;5 = acceptable, some issues &#10;8+ = good quality, minor issues only &#10;10 = near perfect" style="cursor:help; border-bottom: 1px dotted currentColor;">Score: ${score}/10</span>` };
+}
+
+function sanitizeId(name) {
+  return name.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ─── Export ───
+function stripTimestamps(text) {
+  // Remove SRT timestamp lines and sequence numbers
+  return text
+    .replace(/^\d+\s*$/gm, '')
+    .replace(/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}\s*$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function exportFile(fileId, type, format) {
+  const el = document.getElementById(`trans_${fileId}`);
+  if (!el) return;
+
+  let text = el.textContent;
+
+  const cleanCheck = document.getElementById(`clean_${fileId}`);
+  if (cleanCheck && cleanCheck.checked) {
+    text = stripTimestamps(text);
+  }
+
+  // Prepend summary for txt and docx, but NOT srt
+  if (format !== 'srt') {
+    const summEl = document.getElementById(`summ_${fileId}`);
+    if (summEl) {
+      text = summEl.textContent + '\n\n---\n\n' + text;
+    }
+  }
+
+  const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx)$/i, '');
+
+  if (format === 'txt' || format === 'srt') {
+    downloadText(text, `${baseName}_translated.${format}`, 'text/plain');
+  }
+
+  if (format === 'docx') {
+    exportDocx(text, `${baseName}_translated.docx`);
+  }
+
+  if (format === 'pdf') {
+    exportPdf(text, `${baseName}_translated.pdf`);
+  }
+}
+
+function exportQuality(fileId, format) {
+  const el = document.getElementById(`qual_${fileId}`);
+  if (!el) return;
+
+  const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx)$/i, '');
+
+  if (format === 'html') {
+    const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quality: ${baseName}</title>
+    <style>
+      body { font-family: sans-serif; padding: 2rem; line-height: 1.8; max-width: 800px; margin: 0 auto; }
+      .flag-yellow { background: #fef9c3; border-left: 3px solid #facc15; padding: 2px 6px; }
+      .flag-red { background: #fee2e2; border-left: 3px solid #f87171; padding: 2px 6px; }
+    </style></head><body>${el.innerHTML}</body></html>`;
+    downloadText(htmlContent, `${baseName}_quality.html`, 'text/html');
+  }
+
+  if (format === 'txt') {
+    let text = el.innerHTML;
+    text = text.replace(/<span class="flag-yellow">([\s\S]*?)<\/span>/g, '[⚠ MINOR: $1]');
+    text = text.replace(/<span class="flag-red">([\s\S]*?)<\/span>/g, '[❌ SERIOUS: $1]');
+    text = text.replace(/<[^>]+>/g, '');
+    text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    downloadText(text, `${baseName}_quality.txt`, 'text/plain');
+  }
+}
+
+function downloadText(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function exportDocx(text, filename) {
+  const { Document, Packer, Paragraph, TextRun } = docx;
+
+  const paragraphs = text.split('\n').map(line =>
+    new Paragraph({
+      children: [new TextRun({ text: line, size: 24 })]
+    })
+  );
+
+  const doc = new Document({
+    sections: [{ children: paragraphs }]
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportPdf(text, filename) {
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${filename}</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; line-height: 1.8; max-width: 800px; margin: 0 auto; font-size: 12pt; white-space: pre-wrap; }
+    @media print { body { padding: 0; } }
+  </style></head><body>${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</body></html>`);
+  printWindow.document.close();
+  printWindow.onload = () => { printWindow.print(); };
+}
+
+// ─── Error ───
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function hideError() {
+  document.getElementById('errorMsg').classList.remove('visible');
+}
+</script>
+
+</body>
+</html>

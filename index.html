@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="version" content="v2.1">
+<title>CSRI Transcript Analysis Tool</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-top-row">
+      <div class="org-badge">Centre for Socially Responsible Innovations (CSRI)</div>
+      <span class="version-badge">v2.1</span>
+    </div>
+    
+    <h1>CSRI Transcript Analysis Tool</h1>
+    <p class="hero-lead">
+      A translation, quality assessment, and analysis tool for multilingual transcripts, developed at the 
+      <strong>Centre for Socially Responsible Innovations (CSRI)</strong>, Faculty of Management, University of Warsaw.
+    </p>
+    <div class="info-box">
+      <div class="info-title">How to use this tool</div>
+      <div class="info-content">
+        <strong>1.</strong> Paste your API key from the selected AI provider (Anthropic, OpenAI, Google) or connect a local model server.<br>
+        <strong>2.</strong> Choose a mode: <strong>Translation</strong> converts the transcript into your target language, <strong>Quality Assessment</strong> checks the transcript for errors and flags them, <strong>Both</strong> does both at once, <strong>Speaker Check</strong> analyzes speaker label quality, or <strong>Anonymization</strong> identifies personal data.<br>
+        <strong>3.</strong> Drag & drop your transcript files (TXT, DOCX, SRT, or PDF) or click to browse. You can drop multiple files for batch processing.<br>
+        <strong>4.</strong> Click <strong>Process Files</strong> and wait for results. You can stop at any time.<br>
+        <strong>5.</strong> Export results using the format buttons below each result, or use <strong>Export All (ZIP)</strong> for batch download.
+      </div>
+
+    </div>
+    <div class="info-box">
+      <div class="info-title">How to read quality flags</div>
+      <div class="info-content">
+        In Quality Assessment mode, the tool highlights potential transcription errors directly in the text. Flags do not mean the text is wrong — they mark places worth verifying.
+      </div>
+      <div class="flag-examples">
+        <div class="flag-example">
+          <span class="flag-yellow">innovashun</span>
+          <span><strong>Minor</strong> — garbled but understandable from context (e.g. ASR mishearing, informal speech, slight distortion)</span>
+        </div>
+        <div class="flag-example">
+          <span class="flag-red">Johsen Mrak</span>
+          <span><strong>Serious</strong> — incomprehensible, scrambled names, missing speech, or nonsensical fragments that need human verification</span>
+        </div>
+      </div>
+      <div class="info-content" style="margin-top: 0.5rem;">
+        <strong>Quality Score guide:</strong> 1–2 largely unintelligible · 3–4 poor, frequent errors · 5–6 moderate, understandable with errors · 7–8 good, minor issues · 9–10 excellent.<br>
+        <span style="font-size: 0.75rem; opacity: 0.8;">Flag counts and % of text flagged are computed deterministically and shown separately.</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About Translation</div>
+      <div class="info-content">
+        AI-generated translation is a working aid. Verify before using in analysis or publication.
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About the Summary option</div>
+      <div class="info-content">
+        When enabled, the tool generates a structured overview of the transcript: context, main topics, key findings, and ambiguities. 
+        The summary does not attribute statements to specific speakers (labels can be unreliable) and does not quote the transcript. 
+        It is prepended to TXT and DOCX exports but excluded from SRT files (which are for subtitles only).
+      </div>
+
+    </div>
+    <div class="info-box">
+      <div class="info-title">About language detection</div>
+      <div class="info-content">
+        The tool automatically detects the source language before processing. If multiple languages are present (code-switching), both primary and secondary languages are reported.
+        Foreign inserts are preserved during quality assessment and translated with markers in translation mode.
+        If the detected source language matches your target language, you'll see a warning.
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About Speaker Check</div>
+      <div class="info-content">
+        Analyzes the quality of speaker diarization (who said what) in the transcript. Checks for: missing speaker labels, same label used for different speakers, same speaker appearing under different labels, unnecessary turn splits, and missing conversational turns. Reports the number of declared vs. estimated speakers and label coverage percentage. Flags problematic turns with <span class="flag-speaker" style="cursor:default;">blue markers</span>.
+        <br><span style="font-size: 0.75rem; opacity: 0.8;">Best used on transcripts with speaker labels (e.g., "Speaker 1:", "Person 2:"). If your transcript has no labels, the tool will still estimate the number of distinct speakers.</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About Anonymization</div>
+      <div class="info-content">
+        Identifies and marks personally identifiable information (PII) in the transcript. Can be used as a standalone mode or as an add-on to Translation / Quality Assessment (via the checkbox below the mode selector). Detected categories:
+      </div>
+      <div class="flag-examples">
+        <div class="flag-example">
+          <span class="flag-pii flag-name">Jan Kowalski</span>
+          <span><strong>Name</strong> — personal names (first, last, nicknames)</span>
+        </div>
+        <div class="flag-example">
+          <span class="flag-pii flag-org">Acme Corp</span>
+          <span><strong>Organization</strong> — company, institution, department names</span>
+        </div>
+        <div class="flag-example">
+          <span class="flag-pii flag-loc">ul. Dluga 12</span>
+          <span><strong>Location</strong> — specific addresses, buildings, neighborhoods</span>
+        </div>
+        <div class="flag-example">
+          <span class="flag-pii flag-id">123-456-789</span>
+          <span><strong>Identifier</strong> — phone numbers, emails, ID numbers</span>
+        </div>
+        <div class="flag-example">
+          <span class="flag-pii flag-date">15 March 2024</span>
+          <span><strong>Date</strong> — specific dates that could identify events or people</span>
+        </div>
+      </div>
+      <div class="info-content" style="margin-top: 0.5rem;">
+        Export options: <strong>TXT (redacted)</strong> replaces PII with category placeholders, <strong>TXT (marked)</strong> shows original values with category labels.
+        <br><span style="font-size: 0.75rem; opacity: 0.8;">Generic references ("the company", "last year") are not flagged. Speaker labels are not PII. Risk level (LOW/MEDIUM/HIGH) is based on PII density. AI-based PII detection may produce false negatives — always verify manually before sharing or publishing.</span>
+      </div>
+    </div>
+    <div class="hero-author">CSRI Transcript Analysis Tool · by Piotr Nawrocki</div>
+  </div>
+
+  <!-- API Key -->
+  <div class="api-section">
+    <label>AI Provider</label>
+    <div class="provider-tabs">
+      <button class="provider-tab active" data-provider="anthropic" onclick="setProvider('anthropic')">Anthropic (Claude)</button>
+      <button class="provider-tab" data-provider="openai" onclick="setProvider('openai')">OpenAI (ChatGPT)</button>
+      <button class="provider-tab" data-provider="google" onclick="setProvider('google')">Google (Gemini)</button>
+      <button class="provider-tab" data-provider="local" onclick="setProvider('local')">Local</button>
+    </div>
+    <label id="apiKeyLabel">Anthropic API Key</label>
+    <div class="api-row">
+      <input type="password" id="apiKey" placeholder="sk-ant-..." />
+    </div>
+    <div id="localFields" style="display: none;">
+      <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-top: 0.5rem; margin-bottom: 0.35rem;">Server Endpoint</label>
+      <div class="api-row">
+        <input type="text" id="localEndpoint" placeholder="http://localhost:11434/v1" value="http://localhost:11434/v1" />
+      </div>
+      <div class="api-hint">OpenAI-compatible endpoint. Ollama: localhost:11434/v1 · LM Studio: localhost:1234/v1 · vLLM: localhost:8000/v1</div>
+      <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-top: 0.5rem; margin-bottom: 0.35rem;">Model Name</label>
+      <div class="api-row">
+        <input type="text" id="localModel" placeholder="e.g. llama3.1, mistral, gemma2" />
+      </div>
+      <div class="api-hint">The model name as registered on your local server (run <code style="font-size:0.7rem;">ollama list</code> to see available models).</div>
+    </div>
+    <label class="save-check">
+      <input type="checkbox" id="saveKey" /> Save settings on this computer
+    </label>
+    <div class="api-hint">Your API key is stored only in your browser's local storage and sent exclusively to the selected AI provider for processing. It is never shared with any other party. <strong>Note:</strong> when using cloud providers, transcript content is transmitted to their servers — ensure this is compatible with your data protection obligations.</div>
+    <label class="quality-check">
+      <input type="checkbox" id="highQuality" style="accent-color: var(--accent);" />
+      <span style="font-weight: 600;">Use higher quality model</span>
+    </label>
+    <div class="api-hint" id="modelHint">Default: Claude Haiku (fast, cheap). Higher quality: Claude Sonnet (better translation accuracy, ~10× more expensive).</div>
+  </div>
+
+  <!-- Mode -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="translate" onclick="setMode('translate')">Translation</button>
+    <button class="mode-btn" data-mode="quality" onclick="setMode('quality')">Quality Assessment</button>
+    <button class="mode-btn" data-mode="both" onclick="setMode('both')">Both</button>
+    <button class="mode-btn" data-mode="speaker" onclick="setMode('speaker')">Speaker Check</button>
+    <button class="mode-btn" data-mode="anonymize" onclick="setMode('anonymize')">Anonymization</button>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-row">
+    <div class="setting" id="targetLangSetting">
+      <label>Target Language</label>
+      <select id="targetLang">
+        <option value="Bulgarian">Bulgarian</option>
+        <option value="Croatian">Croatian</option>
+        <option value="Czech">Czech</option>
+        <option value="Danish">Danish</option>
+        <option value="Dutch">Dutch</option>
+        <option value="English" selected>English</option>
+        <option value="Estonian">Estonian</option>
+        <option value="Finnish">Finnish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <option value="Greek">Greek</option>
+        <option value="Hungarian">Hungarian</option>
+        <option value="Irish">Irish</option>
+        <option value="Italian">Italian</option>
+        <option value="Latvian">Latvian</option>
+        <option value="Lithuanian">Lithuanian</option>
+        <option value="Maltese">Maltese</option>
+        <option value="Polish">Polish</option>
+        <option value="Portuguese">Portuguese</option>
+        <option value="Romanian">Romanian</option>
+        <option value="Slovak">Slovak</option>
+        <option value="Slovenian">Slovenian</option>
+        <option value="Spanish">Spanish</option>
+        <option value="Swedish">Swedish</option>
+      </select>
+    </div>
+    <div class="setting" id="analysisLangSetting" style="display: none;">
+      <label>Analysis Language</label>
+      <select id="analysisLang">
+        <option value="English" selected>English</option>
+        <option value="Bulgarian">Bulgarian</option>
+        <option value="Croatian">Croatian</option>
+        <option value="Czech">Czech</option>
+        <option value="Danish">Danish</option>
+        <option value="Dutch">Dutch</option>
+        <option value="Estonian">Estonian</option>
+        <option value="Finnish">Finnish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <option value="Greek">Greek</option>
+        <option value="Hungarian">Hungarian</option>
+        <option value="Irish">Irish</option>
+        <option value="Italian">Italian</option>
+        <option value="Latvian">Latvian</option>
+        <option value="Lithuanian">Lithuanian</option>
+        <option value="Maltese">Maltese</option>
+        <option value="Polish">Polish</option>
+        <option value="Portuguese">Portuguese</option>
+        <option value="Romanian">Romanian</option>
+        <option value="Slovak">Slovak</option>
+        <option value="Slovenian">Slovenian</option>
+        <option value="Spanish">Spanish</option>
+        <option value="Swedish">Swedish</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div class="summary-option" id="summaryOption">
+    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+      <input type="checkbox" id="addSummary" style="accent-color: var(--accent);" />
+      <span style="font-weight: 600;">Add summary</span>
+      <span style="color: var(--text-dim); font-size: 0.78rem;">— prepends an overview at the beginning of the output (not included in SRT export)</span>
+    </label>
+  </div>
+
+  <div class="summary-option" id="anonymizeOption">
+    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+      <input type="checkbox" id="addAnonymization" style="accent-color: var(--accent);" />
+      <span style="font-weight: 600;">Anonymize PII</span>
+      <span style="color: var(--text-dim); font-size: 0.78rem;">— identifies and marks personal data alongside the main output</span>
+    </label>
+  </div>
+
+  <!-- Drop zone -->
+  <div class="dropzone" id="dropzone">
+    <div class="dropzone-icon">📄</div>
+    <div class="dropzone-text">Drag & drop files here or <strong>click to browse</strong></div>
+    <div class="dropzone-text" style="margin-top:0.3rem; font-size:0.75rem;">TXT, DOCX, SRT, PDF — multiple files supported for batch processing</div>
+    <input type="file" id="fileInput" multiple accept=".txt,.docx,.srt,.pdf" />
+  </div>
+
+  <!-- File List -->
+  <div class="file-list" id="fileList"></div>
+
+  <!-- Action -->
+  <button class="action-btn" id="actionBtn" onclick="processFiles()" disabled>Process Files</button>
+  <button class="stop-btn" id="stopBtn" onclick="stopProcessing()">Stop Processing</button>
+
+  <!-- Error -->
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Progress -->
+  <div class="progress-area" id="progressArea">
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text" id="progressText">Processing...</div>
+  </div>
+
+  <!-- Batch Export Bar -->
+  <div class="batch-export-bar" id="batchExportBar" style="display: none;">
+    <span class="batch-export-label">Batch export:</span>
+    <button class="export-btn" onclick="exportAllZip()">Export All (ZIP)</button>
+    <button class="export-btn" id="batchQAReportBtn" onclick="exportQAReport()" style="display: none;">QA Report (CSV)</button>
+  </div>
+
+  <!-- Results -->
+  <div class="results-area" id="resultsArea"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="js/prompts.js"></script>
+<script src="js/api.js"></script>
+<script src="js/render.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
