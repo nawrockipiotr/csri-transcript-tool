@@ -23,6 +23,7 @@
       A translation, quality assessment, and analysis tool for multilingual transcripts, developed at the 
       <strong>Centre for Socially Responsible Innovations (CSRI)</strong>, Faculty of Management, University of Warsaw.
     </p>
+    <!-- How to use — always visible -->
     <div class="info-box">
       <div class="info-title">How to use this tool</div>
       <div class="info-content">
@@ -32,124 +33,164 @@
         <strong>4.</strong> Click <strong>Process Files</strong> and wait for results. You can stop at any time.<br>
         <strong>5.</strong> Export results using the format buttons below each result, or use <strong>Export All (ZIP)</strong> for batch download.
       </div>
+      <div class="info-content" style="margin-top: 0.5rem; font-style: italic;">
+        Click a topic below to learn how each feature works.
+      </div>
+    </div>
 
+    <!-- Collapsible feature info buttons -->
+    <div class="info-toggles">
+      <button class="info-toggle-btn" onclick="toggleInfo('infoQualityFlags')">Quality flags</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoTranslation')">Translation</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoSummary')">Summary</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoLangDetect')">Language detection</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoSpeaker')">Speaker Check</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoAnonymization')">Anonymization</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoGlossary')">Auto-Glossary</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoBacktrans')">Back-translation</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoConsistency')">Consistency Check</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoDiff')">Diff view</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoTimestamp')">Timestamp check</button>
     </div>
-    <div class="info-box">
-      <div class="info-title">How to read quality flags</div>
-      <div class="info-content">
-        In Quality Assessment mode, the tool highlights potential transcription errors directly in the text. Flags do not mean the text is wrong — they mark places worth verifying.
-      </div>
-      <div class="flag-examples">
-        <div class="flag-example">
-          <span class="flag-yellow">innovashun</span>
-          <span><strong>Minor</strong> — garbled but understandable from context (e.g. ASR mishearing, informal speech, slight distortion)</span>
-        </div>
-        <div class="flag-example">
-          <span class="flag-red">Johsen Mrak</span>
-          <span><strong>Serious</strong> — incomprehensible, scrambled names, missing speech, or nonsensical fragments that need human verification</span>
-        </div>
-      </div>
-      <div class="info-content" style="margin-top: 0.5rem;">
-        <strong>Quality Score guide:</strong> 1–2 largely unintelligible · 3–4 poor, frequent errors · 5–6 moderate, understandable with errors · 7–8 good, minor issues · 9–10 excellent.<br>
-        <span style="font-size: 0.75rem; opacity: 0.8;">Flag counts and % of text flagged are computed deterministically and shown separately.</span>
-      </div>
-    </div>
-    <div class="info-box">
-      <div class="info-title">About Translation</div>
-      <div class="info-content">
-        AI-generated translation is a working aid. Verify before using in analysis or publication.
-      </div>
-    </div>
-    <div class="info-box">
-      <div class="info-title">About the Summary option</div>
-      <div class="info-content">
-        When enabled, the tool generates a structured overview of the transcript: context, main topics, key findings, and ambiguities. 
-        The summary does not attribute statements to specific speakers (labels can be unreliable) and does not quote the transcript. 
-        It is prepended to TXT and DOCX exports but excluded from SRT files (which are for subtitles only).
-      </div>
 
-    </div>
-    <div class="info-box">
-      <div class="info-title">About language detection</div>
-      <div class="info-content">
-        The tool automatically detects the source language before processing. If multiple languages are present (code-switching), both primary and secondary languages are reported.
-        Foreign inserts are preserved during quality assessment and translated with markers in translation mode.
-        If the detected source language matches your target language, you'll see a warning.
-      </div>
-    </div>
-    <div class="info-box">
-      <div class="info-title">About Speaker Check</div>
-      <div class="info-content">
-        Analyzes the quality of speaker diarization (who said what) in the transcript. Checks for: missing speaker labels, same label used for different speakers, same speaker appearing under different labels, unnecessary turn splits, and missing conversational turns. Reports the number of declared vs. estimated speakers and label coverage percentage. Flags problematic turns with <span class="flag-speaker" style="cursor:default;">blue markers</span>.
-        <br><span style="font-size: 0.75rem; opacity: 0.8;">Best used on transcripts with speaker labels (e.g., "Speaker 1:", "Person 2:"). If your transcript has no labels, the tool will still estimate the number of distinct speakers.</span>
-      </div>
-    </div>
-    <div class="info-box">
-      <div class="info-title">About Anonymization</div>
-      <div class="info-content">
-        Identifies and marks personally identifiable information (PII) in the transcript. Can be used as a standalone mode or as an add-on to Translation / Quality Assessment (via the checkbox below the mode selector). Detected categories:
-      </div>
-      <div class="flag-examples">
-        <div class="flag-example">
-          <span class="flag-pii flag-name">Jan Kowalski</span>
-          <span><strong>Name</strong> — personal names (first, last, nicknames)</span>
+    <!-- Collapsible info panels -->
+    <div class="info-panel" id="infoQualityFlags">
+      <div class="info-box">
+        <div class="info-content">
+          In Quality Assessment mode, the tool highlights potential transcription errors directly in the text. Flags do not mean the text is wrong — they mark places worth verifying.
         </div>
-        <div class="flag-example">
-          <span class="flag-pii flag-org">Acme Corp</span>
-          <span><strong>Organization</strong> — company, institution, department names</span>
+        <div class="flag-examples">
+          <div class="flag-example">
+            <span class="flag-yellow">innovashun</span>
+            <span><strong>Minor</strong> — garbled but understandable from context (e.g. ASR mishearing, informal speech, slight distortion)</span>
+          </div>
+          <div class="flag-example">
+            <span class="flag-red">Johsen Mrak</span>
+            <span><strong>Serious</strong> — incomprehensible, scrambled names, missing speech, or nonsensical fragments that need human verification</span>
+          </div>
         </div>
-        <div class="flag-example">
-          <span class="flag-pii flag-loc">ul. Dluga 12</span>
-          <span><strong>Location</strong> — specific addresses, buildings, neighborhoods</span>
-        </div>
-        <div class="flag-example">
-          <span class="flag-pii flag-id">123-456-789</span>
-          <span><strong>Identifier</strong> — phone numbers, emails, ID numbers</span>
-        </div>
-        <div class="flag-example">
-          <span class="flag-pii flag-date">15 March 2024</span>
-          <span><strong>Date</strong> — specific dates that could identify events or people</span>
+        <div class="info-content" style="margin-top: 0.5rem;">
+          <strong>Quality Score guide:</strong> 1–2 largely unintelligible · 3–4 poor, frequent errors · 5–6 moderate, understandable with errors · 7–8 good, minor issues · 9–10 excellent.<br>
+          <span style="font-size: 0.75rem; opacity: 0.8;">Flag counts and % of text flagged are computed deterministically and shown separately.</span>
         </div>
       </div>
-      <div class="info-content" style="margin-top: 0.5rem;">
-        Export options: <strong>TXT (redacted)</strong> replaces PII with category placeholders, <strong>TXT (marked)</strong> shows original values with category labels.
-        <br><span style="font-size: 0.75rem; opacity: 0.8;">Generic references ("the company", "last year") are not flagged. Speaker labels are not PII. Risk level (LOW/MEDIUM/HIGH) is based on PII density. AI-based PII detection may produce false negatives — always verify manually before sharing or publishing.</span>
+    </div>
+
+    <div class="info-panel" id="infoTranslation">
+      <div class="info-box">
+        <div class="info-content">
+          AI-generated translation is a working aid. Verify before using in analysis or publication.
+        </div>
       </div>
     </div>
-    <div class="info-box">
-      <div class="info-title">About Auto-Glossary <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
-      <div class="info-content">
-        Available in Translation and Both modes. When enabled, the tool first extracts domain-specific terms (jargon, acronyms, recurring concepts) from the transcript and presents them in an editable table. You can review, edit translations, and deselect terms before approving. Approved glossary terms are then enforced during translation for consistent terminology across the entire file.
-        <br><span style="font-size: 0.75rem; opacity: 0.8;">The glossary is extracted from the first ~6000 characters. For multi-file batches, the glossary from the first file is reused for all subsequent files.</span>
+
+    <div class="info-panel" id="infoSummary">
+      <div class="info-box">
+        <div class="info-content">
+          When enabled, the tool generates a structured overview of the transcript: context, main topics, key findings, and ambiguities. 
+          The summary does not attribute statements to specific speakers (labels can be unreliable) and does not quote the transcript. 
+          It is prepended to TXT and DOCX exports but excluded from SRT files (which are for subtitles only).
+        </div>
       </div>
     </div>
-    <div class="info-box">
-      <div class="info-title">About Back-translation validation <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
-      <div class="info-content">
-        Available in Translation and Both modes. When enabled, the translated text is translated back into the source language, then compared with the original. The comparison produces a fidelity score (1–10), a list of meaningful divergences with severity ratings (minor/major), and a summary assessment. This helps detect meaning shifts, omissions, or mistranslations.
-        <br><span style="font-size: 0.75rem; opacity: 0.8;">Adds approximately 2× processing time. Comparison uses the first ~4000 characters of each text.</span>
+
+    <div class="info-panel" id="infoLangDetect">
+      <div class="info-box">
+        <div class="info-content">
+          The tool automatically detects the source language before processing. If multiple languages are present (code-switching), both primary and secondary languages are reported.
+          Foreign inserts are preserved during quality assessment and translated with markers in translation mode.
+          If the detected source language matches your target language, you'll see a warning.
+        </div>
       </div>
     </div>
-    <div class="info-box">
-      <div class="info-title">About Consistency Check <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
-      <div class="info-content">
-        Available after batch translation (2+ files). The button appears in the batch export bar. Checks whether domain-specific terms are translated consistently across all files in the batch. Reports inconsistencies with recommended translations and justifications.
-        <br><span style="font-size: 0.75rem; opacity: 0.8;">Uses the first ~2000 characters of each translation for analysis.</span>
+
+    <div class="info-panel" id="infoSpeaker">
+      <div class="info-box">
+        <div class="info-content">
+          Analyzes the quality of speaker diarization (who said what) in the transcript. Checks for: missing speaker labels, same label used for different speakers, same speaker appearing under different labels, unnecessary turn splits, and missing conversational turns. Reports the number of declared vs. estimated speakers and label coverage percentage. Flags problematic turns with <span class="flag-speaker" style="cursor:default;">blue markers</span>.
+          <br><span style="font-size: 0.75rem; opacity: 0.8;">Best used on transcripts with speaker labels (e.g., "Speaker 1:", "Person 2:"). If your transcript has no labels, the tool will still estimate the number of distinct speakers.</span>
+        </div>
       </div>
     </div>
-    <div class="info-box">
-      <div class="info-title">About Diff view <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
-      <div class="info-content">
-        After translation, a toggle button cycles through three views: <strong>Translation only</strong> (default), <strong>Side by side</strong> (original and translation in parallel columns), and <strong>Inline diff</strong> (line-by-line comparison with deletions and insertions highlighted). Useful for reviewing what changed during translation.
-        <br><span style="font-size: 0.75rem; opacity: 0.8;">Diff is limited to the first 200 lines for performance.</span>
+
+    <div class="info-panel" id="infoAnonymization">
+      <div class="info-box">
+        <div class="info-content">
+          Identifies and marks personally identifiable information (PII) in the transcript. Can be used as a standalone mode or as an add-on to Translation / Quality Assessment (via the checkbox below the mode selector). Detected categories:
+        </div>
+        <div class="flag-examples">
+          <div class="flag-example">
+            <span class="flag-pii flag-name">Jan Kowalski</span>
+            <span><strong>Name</strong> — personal names (first, last, nicknames)</span>
+          </div>
+          <div class="flag-example">
+            <span class="flag-pii flag-org">Acme Corp</span>
+            <span><strong>Organization</strong> — company, institution, department names</span>
+          </div>
+          <div class="flag-example">
+            <span class="flag-pii flag-loc">ul. Dluga 12</span>
+            <span><strong>Location</strong> — specific addresses, buildings, neighborhoods</span>
+          </div>
+          <div class="flag-example">
+            <span class="flag-pii flag-id">123-456-789</span>
+            <span><strong>Identifier</strong> — phone numbers, emails, ID numbers</span>
+          </div>
+          <div class="flag-example">
+            <span class="flag-pii flag-date">15 March 2024</span>
+            <span><strong>Date</strong> — specific dates that could identify events or people</span>
+          </div>
+        </div>
+        <div class="info-content" style="margin-top: 0.5rem;">
+          Export options: <strong>TXT (redacted)</strong> replaces PII with category placeholders, <strong>TXT (marked)</strong> shows original values with category labels.
+          <br><span style="font-size: 0.75rem; opacity: 0.8;">Generic references ("the company", "last year") are not flagged. Speaker labels are not PII. Risk level (LOW/MEDIUM/HIGH) is based on PII density. AI-based PII detection may produce false negatives — always verify manually before sharing or publishing.</span>
+        </div>
       </div>
     </div>
-    <div class="info-box">
-      <div class="info-title">About Timestamp check <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
-      <div class="info-content">
-        Automatically runs on SRT files (no AI call — purely deterministic). Detects: negative or zero durations, unrealistically long subtitles (>60s), very short subtitles (<500ms), overlapping entries, large gaps (>10s), and non-monotonic timestamps. Issues are shown with severity indicators (serious / minor) below the translation result.
+
+    <div class="info-panel" id="infoGlossary">
+      <div class="info-box">
+        <div class="info-content">
+          Available in Translation and Both modes. When enabled, the tool first extracts domain-specific terms (jargon, acronyms, recurring concepts) from the transcript and presents them in an editable table. You can review, edit translations, and deselect terms before approving. Approved glossary terms are then enforced during translation for consistent terminology across the entire file.
+          <br><span style="font-size: 0.75rem; opacity: 0.8;">The glossary is extracted from the first ~6000 characters. For multi-file batches, the glossary from the first file is reused for all subsequent files.</span>
+        </div>
       </div>
     </div>
+
+    <div class="info-panel" id="infoBacktrans">
+      <div class="info-box">
+        <div class="info-content">
+          Available in Translation and Both modes. When enabled, the translated text is translated back into the source language, then compared with the original. The comparison produces a fidelity score (1–10), a list of meaningful divergences with severity ratings (minor/major), and a summary assessment. This helps detect meaning shifts, omissions, or mistranslations.
+          <br><span style="font-size: 0.75rem; opacity: 0.8;">Adds approximately 2x processing time. Comparison uses the first ~4000 characters of each text.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="infoConsistency">
+      <div class="info-box">
+        <div class="info-content">
+          Available after batch translation (2+ files). The button appears in the batch export bar. Checks whether domain-specific terms are translated consistently across all files in the batch. Reports inconsistencies with recommended translations and justifications.
+          <br><span style="font-size: 0.75rem; opacity: 0.8;">Uses the first ~2000 characters of each translation for analysis.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="infoDiff">
+      <div class="info-box">
+        <div class="info-content">
+          After translation, a toggle button cycles through three views: <strong>Translation only</strong> (default), <strong>Side by side</strong> (original and translation in parallel columns), and <strong>Inline diff</strong> (line-by-line comparison with deletions and insertions highlighted). Useful for reviewing what changed during translation.
+          <br><span style="font-size: 0.75rem; opacity: 0.8;">Diff is limited to the first 200 lines for performance.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="infoTimestamp">
+      <div class="info-box">
+        <div class="info-content">
+          Automatically runs on SRT files (no AI call — purely deterministic). Detects: negative or zero durations, unrealistically long subtitles (>60s), very short subtitles (<500ms), overlapping entries, large gaps (>10s), and non-monotonic timestamps. Issues are shown with severity indicators (serious / minor) below the translation result.
+        </div>
+      </div>
+    </div>
+
     <div class="hero-author">CSRI Transcript Analysis Tool · by Piotr Nawrocki</div>
   </div>
 

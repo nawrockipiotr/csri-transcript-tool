@@ -920,3 +920,54 @@ h1 {
 .score-good { color: var(--green); font-weight: 600; }
 .score-moderate { color: var(--yellow); font-weight: 600; }
 .score-poor { color: var(--red); font-weight: 600; }
+
+/* ─── Info toggle buttons ─── */
+.info-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.info-toggle-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.info-toggle-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.info-toggle-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Collapsible info panels */
+.info-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  opacity: 0;
+}
+
+.info-panel.open {
+  max-height: 600px;
+  opacity: 1;
+  margin-top: 0.4rem;
+}
+
+.info-panel .info-box {
+  margin-top: 0;
+}

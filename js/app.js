@@ -878,3 +878,22 @@ function showError(msg) {
 function hideError() {
   document.getElementById('errorMsg').classList.remove('visible');
 }
+
+// ─── Info panel toggle ───
+function toggleInfo(id) {
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  // Close all panels first
+  document.querySelectorAll('.info-panel.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.info-toggle-btn.active').forEach(b => b.classList.remove('active'));
+  // Toggle the clicked one (if it was closed)
+  if (!isOpen) {
+    panel.classList.add('open');
+    // Find the button that triggered this
+    const btns = document.querySelectorAll('.info-toggle-btn');
+    btns.forEach(b => {
+      if (b.getAttribute('onclick')?.includes(id)) b.classList.add('active');
+    });
+  }
+}
