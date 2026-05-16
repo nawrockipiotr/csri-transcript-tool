@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.1 — Render ───
+// ─── CSRI Transcript Analysis Tool v2.2 — Render ───
 
 function sanitizeId(name) {
   return name.replace(/[^a-zA-Z0-9]/g, '_');
@@ -49,7 +49,7 @@ function renderLanguageInfo(langData, fileName) {
 }
 
 // ─── Main result renderer ───
-function renderResult(fileName, translation, quality, summary, langData, speakerCheck, anonymization) {
+function renderResult(fileName, translation, quality, summary, langData, speakerCheck, anonymization, backtransResult, timestampResult) {
   const resultsArea = document.getElementById('resultsArea');
   const block = document.createElement('div');
   block.className = 'result-block';
@@ -76,10 +76,27 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
     transHtml = transHtml.replace(/\[R\]([\s\S]*?)\[\/R\]/g, '<span class="flag-red">$1</span>');
     transHtml = transHtml.replace(/\[CS\]([\s\S]*?)\[\/CS\]/g, '<span class="flag-cs" title="Code-switch: originally in a different language">$1</span>');
 
+    // v2.2: Build diff view if we have original content stored
+    const hasDiff = batchTranslations.some(bt => bt.fileName === fileName);
+    let diffHtml = '';
+    if (hasDiff) {
+      const bt = batchTranslations.find(b => b.fileName === fileName);
+      const diff = buildDiffView(bt.original, bt.translation, sanitizeId(fileName));
+      diffHtml = `
+        <button class="export-btn diff-toggle-btn" id="diffBtn_${sanitizeId(fileName)}" onclick="toggleDiffView('${sanitizeId(fileName)}')">📄 Translation only</button>
+        <div id="diff_${sanitizeId(fileName)}" data-diff-state="translation">
+          <div class="diff-translation">${transHtml}</div>
+          <div class="diff-sidebyside" style="display:none;">${diff.sideHtml}</div>
+          <div class="diff-inline" style="display:none;">${diff.inlineHtml}</div>
+        </div>`;
+    } else {
+      diffHtml = transHtml;
+    }
+
     contentHtml += `<div class="result-header">
       <span>Translation — ${fileName}</span>
     </div>
-    <div class="result-content" id="trans_${sanitizeId(fileName)}">${transHtml}</div>
+    <div class="result-content" id="trans_${sanitizeId(fileName)}">${diffHtml}</div>
     <div class="export-row">
       <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'srt')">SRT</button>
       <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'txt')">TXT</button>
@@ -147,6 +164,32 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       <button class="export-btn" onclick="exportAnonymized('${sanitizeId(fileName)}', 'redacted')">TXT (redacted)</button>
       <button class="export-btn" onclick="exportAnonymized('${sanitizeId(fileName)}', 'marked')">TXT (marked)</button>
       <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'anon', 'html')">HTML</button>
+    </div>`;
+  }
+
+  // v2.2: Back-translation result
+  if (backtransResult) {
+    const bt = formatBackTranslation(backtransResult);
+    contentHtml += `<div class="result-header">
+      <span>Back-Translation Validation — ${fileName}</span>
+      <span class="detected-lang">${bt.scoreLine}</span>
+    </div>
+    <div class="result-content" id="btrans_${sanitizeId(fileName)}" style="white-space: pre-wrap;">${bt.html}</div>`;
+  }
+
+  // v2.2: Timestamp check result
+  if (timestampResult && timestampResult.issues.length > 0) {
+    contentHtml += `<div class="result-header">
+      <span>Timestamp Check — ${fileName}</span>
+      <span class="detected-lang">${timestampResult.totalEntries} entries · ${timestampResult.issues.length} issues</span>
+    </div>
+    <div class="result-content" id="tstamp_${sanitizeId(fileName)}">
+      <div class="qa-body">${formatTimestampIssues(timestampResult.issues)}</div>
+    </div>`;
+  } else if (timestampResult && timestampResult.issues.length === 0) {
+    contentHtml += `<div class="result-header">
+      <span>Timestamp Check — ${fileName}</span>
+      <span class="detected-lang">${timestampResult.totalEntries} entries · ✓ No issues</span>
     </div>`;
   }
 
@@ -239,6 +282,142 @@ function formatSpeakerCheck(text) {
     html: '<div class="qa-body">' + html + '</div>',
     statsLine
   };
+}
+
+// ─── v2.2: Format back-translation result ───
+function formatBackTranslation(text) {
+  const lines = text.split('\n');
+  let score = 'N/A', divergenceCount = '0', summary = '';
+  let bodyStartIdx = 0;
+
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('SCORE:')) { score = line.replace('SCORE:', '').trim(); bodyStartIdx = i + 1; }
+    else if (line.startsWith('DIVERGENCE_COUNT:')) { divergenceCount = line.replace('DIVERGENCE_COUNT:', '').trim(); bodyStartIdx = i + 1; }
+    else if (line.startsWith('SUMMARY:')) { summary = line.replace('SUMMARY:', '').trim(); bodyStartIdx = i + 1; }
+  }
+
+  const body = lines.slice(bodyStartIdx).join('\n');
+  let html = escapeHtml(body);
+  // Highlight severity markers
+  html = html.replace(/SEVERITY:\s*major/g, '<span class="flag-red">SEVERITY: major</span>');
+  html = html.replace(/SEVERITY:\s*minor/g, '<span class="flag-yellow">SEVERITY: minor</span>');
+
+  const scoreNum = parseFloat(score);
+  let scoreClass = 'score-poor';
+  if (scoreNum >= 7) scoreClass = 'score-good';
+  else if (scoreNum >= 5) scoreClass = 'score-moderate';
+
+  const summaryHtml = summary ? `<div class="qa-summary-text">${escapeHtml(summary)}</div>` : '';
+
+  return {
+    html: summaryHtml + '<div class="qa-body">' + html + '</div>',
+    scoreLine: `<span class="${scoreClass}">Fidelity: ${score}/10</span> · ${divergenceCount} divergences`
+  };
+}
+
+// ─── v2.2: Format timestamp issues ───
+function formatTimestampIssues(issues) {
+  return issues.map(issue => {
+    const sevClass = issue.severity === 'serious' ? 'flag-red' : 'flag-yellow';
+    const icon = issue.severity === 'serious' ? '❌' : '⚠';
+    return `<div class="timestamp-issue"><span class="${sevClass}">${icon} #${issue.index} ${issue.type}</span>: ${escapeHtml(issue.detail)}</div>`;
+  }).join('');
+}
+
+// ─── v2.2: Render glossary table (editable) ───
+function renderGlossaryTable(terms, fileName) {
+  const resultsArea = document.getElementById('resultsArea');
+
+  // Remove existing glossary panel if any
+  const existing = document.getElementById('glossaryPanel');
+  if (existing) existing.remove();
+
+  let tableRows = terms.map((t, i) => `
+    <tr>
+      <td>${escapeHtml(t.source)}</td>
+      <td><input type="text" class="glossary-edit" value="${escapeHtml(t.target)}" /></td>
+      <td>${escapeHtml(t.category)}</td>
+      <td><input type="checkbox" checked /></td>
+    </tr>`).join('');
+
+  const panel = document.createElement('div');
+  panel.id = 'glossaryPanel';
+  panel.className = 'result-block glossary-panel';
+  panel.innerHTML = `
+    <div class="result-header">
+      <span>Auto-Glossary — ${fileName}</span>
+      <span class="detected-lang">${terms.length} terms extracted</span>
+    </div>
+    <div class="glossary-info">Review and edit translations below. Uncheck terms you don't want enforced. Click Approve to continue.</div>
+    <table class="glossary-table" id="glossaryTable">
+      <thead><tr><th>Source Term</th><th>Translation</th><th>Category</th><th>Use</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+    <button class="action-btn glossary-approve-btn" id="glossaryApproveBtn" onclick="approveGlossary()">Approve Glossary & Continue</button>
+  `;
+  resultsArea.prepend(panel);
+}
+
+// ─── v2.2: Render consistency report ───
+function renderConsistencyReport(text) {
+  const resultsArea = document.getElementById('resultsArea');
+  const lines = text.split('\n');
+  let consistent = '', inconsistent = '';
+  let bodyStartIdx = 0;
+
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('CONSISTENT_TERMS:')) { consistent = line.replace('CONSISTENT_TERMS:', '').trim(); bodyStartIdx = i + 1; }
+    else if (line.startsWith('INCONSISTENT_TERMS:')) { inconsistent = line.replace('INCONSISTENT_TERMS:', '').trim(); bodyStartIdx = i + 1; }
+  }
+
+  const body = lines.slice(bodyStartIdx).join('\n');
+  let html = escapeHtml(body);
+  html = html.replace(/RECOMMENDED:\s*"([^"]+)"/g, 'RECOMMENDED: <strong>"$1"</strong>');
+
+  const block = document.createElement('div');
+  block.className = 'result-block';
+  block.innerHTML = `
+    <div class="result-header">
+      <span>Consistency Check (batch)</span>
+      <span class="detected-lang">Consistent: ${consistent} · Inconsistent: ${inconsistent}</span>
+    </div>
+    <div class="result-content" style="white-space: pre-wrap;"><div class="qa-body">${html}</div></div>
+  `;
+  resultsArea.appendChild(block);
+}
+
+// ─── v2.2: Build diff view HTML (for translation results with original) ───
+function buildDiffView(original, translation, fileId) {
+  // Simple line-by-line side-by-side and inline diff
+  const origLines = original.split('\n').slice(0, 200); // limit for performance
+  const transLines = translation.split('\n').slice(0, 200);
+
+  // Side by side
+  let sideHtml = '<div class="diff-sidebyside-grid">';
+  const maxLines = Math.max(origLines.length, transLines.length);
+  for (let i = 0; i < maxLines; i++) {
+    const oLine = origLines[i] || '';
+    const tLine = transLines[i] || '';
+    sideHtml += `<div class="diff-orig-line">${escapeHtml(oLine)}</div><div class="diff-trans-line">${escapeHtml(tLine)}</div>`;
+  }
+  sideHtml += '</div>';
+
+  // Inline: interleave with visual markers
+  let inlineHtml = '';
+  for (let i = 0; i < maxLines; i++) {
+    const oLine = origLines[i] || '';
+    const tLine = transLines[i] || '';
+    if (oLine || tLine) {
+      inlineHtml += `<div class="diff-inline-pair">`;
+      if (oLine) inlineHtml += `<span class="diff-del">${escapeHtml(oLine)}</span>`;
+      if (tLine) inlineHtml += `<span class="diff-ins">${escapeHtml(tLine)}</span>`;
+      inlineHtml += `</div>`;
+    }
+  }
+
+  return { sideHtml, inlineHtml };
 }
 
 // ─── Format anonymization ───

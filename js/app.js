@@ -1,6 +1,6 @@
-// ─── CSRI Transcript Analysis Tool v2.1 — App Logic ───
+// ─── CSRI Transcript Analysis Tool v2.2 — App Logic ───
 
-const TOOL_VERSION = 'v2';
+const TOOL_VERSION = 'v2.2';
 
 // ─── State ───
 let files = [];
@@ -8,6 +8,11 @@ let currentMode = 'translate';
 let abortController = null;
 let isProcessing = false;
 let currentProvider = 'anthropic';
+
+// v2.2 state
+let glossaryData = {};        // { fileName: [{source, target, category}] }
+let glossaryApproved = false; // true after user clicks Approve
+let batchTranslations = [];   // [{fileName, original, translation}] for consistency check
 
 const providerConfig = {
   anthropic: {
@@ -146,6 +151,16 @@ function setMode(mode) {
   if (anonymizeOpt) {
     anonymizeOpt.style.display = ['translate', 'quality', 'both'].includes(mode) ? '' : 'none';
   }
+
+  // v2.2 options
+  const glossaryOpt = document.getElementById('glossaryOption');
+  if (glossaryOpt) {
+    glossaryOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
+  }
+  const backtransOpt = document.getElementById('backtransOption');
+  if (backtransOpt) {
+    backtransOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
+  }
 }
 
 // ─── File Handling ───
@@ -268,6 +283,112 @@ function stopProcessing() {
   actionBtn.disabled = false;
 }
 
+// ─── v2.2: Timestamp Sanity Check (deterministic, no AI) ───
+function checkTimestamps(text, fileName) {
+  const srtPattern = /(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/g;
+  const timestamps = [];
+  let match;
+
+  while ((match = srtPattern.exec(text)) !== null) {
+    const startMs = (+match[1]*3600 + +match[2]*60 + +match[3])*1000 + +match[4];
+    const endMs = (+match[5]*3600 + +match[6]*60 + +match[7])*1000 + +match[8];
+    timestamps.push({ start: startMs, end: endMs, line: match.index, raw: match[0] });
+  }
+
+  if (timestamps.length === 0) return null; // not an SRT file
+
+  const issues = [];
+  for (let i = 0; i < timestamps.length; i++) {
+    const t = timestamps[i];
+    const duration = t.end - t.start;
+
+    // Negative or zero duration
+    if (duration <= 0) {
+      issues.push({ type: 'NEGATIVE_DURATION', index: i + 1, detail: `End ≤ Start (${t.raw})`, severity: 'serious' });
+    }
+    // Unrealistically long (>60s for a single subtitle)
+    else if (duration > 60000) {
+      issues.push({ type: 'LONG_DURATION', index: i + 1, detail: `${(duration/1000).toFixed(1)}s (${t.raw})`, severity: 'minor' });
+    }
+    // Very short (<500ms)
+    else if (duration < 500) {
+      issues.push({ type: 'SHORT_DURATION', index: i + 1, detail: `${duration}ms (${t.raw})`, severity: 'minor' });
+    }
+
+    // Overlap with next
+    if (i < timestamps.length - 1) {
+      const next = timestamps[i + 1];
+      if (t.end > next.start) {
+        const overlap = t.end - next.start;
+        issues.push({ type: 'OVERLAP', index: i + 1, detail: `Overlaps next by ${overlap}ms`, severity: 'serious' });
+      }
+      // Large gap (>10s between consecutive subtitles)
+      else if (next.start - t.end > 10000) {
+        issues.push({ type: 'GAP', index: i + 1, detail: `${((next.start - t.end)/1000).toFixed(1)}s gap before next`, severity: 'minor' });
+      }
+    }
+
+    // Non-monotonic (start goes backward)
+    if (i > 0 && t.start < timestamps[i-1].start) {
+      issues.push({ type: 'NON_MONOTONIC', index: i + 1, detail: `Start time earlier than previous entry`, severity: 'serious' });
+    }
+  }
+
+  return { totalEntries: timestamps.length, issues, fileName };
+}
+
+// ─── v2.2: Glossary helpers ───
+function parseGlossaryResponse(text) {
+  const lines = text.split('\n');
+  const terms = [];
+  let inside = false;
+  for (const line of lines) {
+    if (line.trim() === 'GLOSSARY_START') { inside = true; continue; }
+    if (line.trim() === 'GLOSSARY_END') break;
+    if (inside && line.includes('|')) {
+      const parts = line.split('|').map(s => s.trim());
+      if (parts.length >= 3) {
+        terms.push({ source: parts[0], target: parts[1], category: parts[2] });
+      }
+    }
+  }
+  return terms;
+}
+
+function glossaryToPromptText(terms) {
+  return terms.map(t => `"${t.source}" → "${t.target}"`).join('\n');
+}
+
+function approveGlossary() {
+  // Read edited values from the glossary table
+  const table = document.getElementById('glossaryTable');
+  if (!table) return;
+  const rows = table.querySelectorAll('tbody tr');
+  const approved = [];
+  for (const row of rows) {
+    const cells = row.querySelectorAll('td');
+    const checkbox = row.querySelector('input[type="checkbox"]');
+    if (checkbox && checkbox.checked) {
+      approved.push({
+        source: cells[0]?.textContent?.trim() || '',
+        target: cells[1]?.querySelector('input')?.value?.trim() || cells[1]?.textContent?.trim() || '',
+        category: cells[2]?.textContent?.trim() || ''
+      });
+    }
+  }
+  glossaryData._approved = approved;
+  glossaryApproved = true;
+
+  // Hide the glossary panel and enable process button
+  const panel = document.getElementById('glossaryPanel');
+  if (panel) panel.classList.add('approved');
+  const approveBtn = document.getElementById('glossaryApproveBtn');
+  if (approveBtn) approveBtn.textContent = `✓ Glossary approved (${approved.length} terms)`;
+
+  // Resume processing
+  if (typeof resumeAfterGlossary === 'function') resumeAfterGlossary();
+}
+
 // ─── Batch QA report data (populated during processing) ───
 let batchReportData = [];
 
@@ -319,6 +440,13 @@ async function processFiles() {
 
   const addSummary = document.getElementById('addSummary')?.checked && ['translate', 'quality', 'both'].includes(currentMode);
   const addAnonymization = document.getElementById('addAnonymization')?.checked && ['translate', 'quality', 'both'].includes(currentMode);
+  const useGlossary = document.getElementById('useGlossary')?.checked && ['translate', 'both'].includes(currentMode);
+  const useBacktrans = document.getElementById('useBacktrans')?.checked && ['translate', 'both'].includes(currentMode);
+
+  // Reset v2.2 state
+  glossaryApproved = false;
+  glossaryData = {};
+  batchTranslations = [];
 
   let totalWork = 0;
   for (const { chunks } of fileContents) {
@@ -328,6 +456,8 @@ async function processFiles() {
     else if (currentMode === 'speaker') totalWork += chunks.length + 1;
     else if (currentMode === 'anonymize') totalWork += chunks.length + 1;
     if (addAnonymization) totalWork += chunks.length;
+    if (useGlossary) totalWork += 1; // glossary extraction pass
+    if (useBacktrans) totalWork += chunks.length + 1; // back-translate + compare
   }
 
   let doneWork = 0;
@@ -375,12 +505,37 @@ async function processFiles() {
         }
       }
 
+      // ─── v2.2: Glossary extraction (before translation) ───
+      let activeGlossaryText = '';
+      if (useGlossary && ['translate', 'both'].includes(currentMode)) {
+        progressText.textContent = `Extracting glossary from ${file.name}...`;
+        const sample = content.substring(0, 6000); // use first 6000 chars for extraction
+        const glossaryRaw = await callAIWithRetry(apiKey, getGlossaryExtractionPrompt(targetLang), sample);
+        const terms = parseGlossaryResponse(glossaryRaw);
+        glossaryData[file.name] = terms;
+        doneWork++;
+        progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+
+        // If first file and glossary not yet approved, show table and wait
+        if (!glossaryApproved && terms.length > 0) {
+          renderGlossaryTable(terms, file.name);
+          // Wait for user approval
+          await new Promise(resolve => { window.resumeAfterGlossary = resolve; });
+        }
+        // Build glossary text for prompt
+        const approvedTerms = glossaryData._approved || terms;
+        activeGlossaryText = glossaryToPromptText(approvedTerms);
+      }
+
       // ─── Translation mode ───
       if (currentMode === 'translate') {
         const translatedParts = [];
+        const translatePrompt = activeGlossaryText
+          ? getTranslateWithGlossaryPrompt(targetLang, activeGlossaryText)
+          : getTranslatePrompt(targetLang);
         for (let ci = 0; ci < chunks.length; ci++) {
           progressText.textContent = `Translating ${file.name}... chunk ${ci + 1}/${chunks.length}`;
-          const result = await callAIWithRetry(apiKey, getTranslatePrompt(targetLang), chunks[ci]);
+          const result = await callAIWithRetry(apiKey, translatePrompt, chunks[ci]);
           translatedParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -444,9 +599,12 @@ async function processFiles() {
       if (currentMode === 'both') {
         const origChunks = chunkText(content);
         const translatedParts = [];
+        const translatePrompt = activeGlossaryText
+          ? getTranslateWithGlossaryPrompt(targetLang, activeGlossaryText)
+          : getTranslatePrompt(targetLang);
         for (let ci = 0; ci < origChunks.length; ci++) {
           progressText.textContent = `Translating ${file.name}... chunk ${ci + 1}/${origChunks.length}`;
-          const result = await callAIWithRetry(apiKey, getTranslatePrompt(targetLang), origChunks[ci]);
+          const result = await callAIWithRetry(apiKey, translatePrompt, origChunks[ci]);
           translatedParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -495,7 +653,43 @@ async function processFiles() {
         anonymResult = anonParts.join('\n');
       }
 
-      renderResult(file.name, translationResult, qualityResult, summaryResult, langData, speakerResult, anonymResult);
+      // ─── v2.2: Back-translation ───
+      let backtransResult = null;
+      if (useBacktrans && translationResult && langData) {
+        const transChunks = chunkText(translationResult);
+        const backParts = [];
+        const sourceLang = langData.primary;
+        for (let ci = 0; ci < transChunks.length; ci++) {
+          progressText.textContent = `Back-translating ${file.name}... chunk ${ci + 1}/${transChunks.length}`;
+          const result = await callAIWithRetry(apiKey, getBackTranslatePrompt(sourceLang), transChunks[ci]);
+          backParts.push(result);
+          doneWork++;
+          progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+        }
+        const backTranslation = backParts.join('\n');
+
+        // Compare original vs back-translation
+        progressText.textContent = `Comparing translations for ${file.name}...`;
+        const compareInput = `ORIGINAL:\n${content.substring(0, 4000)}\n\nBACK-TRANSLATION:\n${backTranslation.substring(0, 4000)}`;
+        const compareResult = await callAIWithRetry(apiKey, getBackTranslationComparePrompt(), compareInput);
+        doneWork++;
+        progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+        backtransResult = compareResult;
+      }
+
+      // ─── v2.2: Timestamp sanity check (for SRT files) ───
+      let timestampResult = null;
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (ext === 'srt') {
+        timestampResult = checkTimestamps(content, file.name);
+      }
+
+      // ─── v2.2: Store for consistency check ───
+      if (translationResult && ['translate', 'both'].includes(currentMode)) {
+        batchTranslations.push({ fileName: file.name, original: content, translation: translationResult });
+      }
+
+      renderResult(file.name, translationResult, qualityResult, summaryResult, langData, speakerResult, anonymResult, backtransResult, timestampResult);
 
     } catch (err) {
       if (err.name === 'AbortError') break;
@@ -516,6 +710,11 @@ async function processFiles() {
     const qaReportBtn = document.getElementById('batchQAReportBtn');
     if (qaReportBtn) {
       qaReportBtn.style.display = batchReportData.length > 0 ? '' : 'none';
+    }
+    // Show consistency check button if translations collected
+    const consistBtn = document.getElementById('batchConsistencyBtn');
+    if (consistBtn) {
+      consistBtn.style.display = batchTranslations.length > 1 ? '' : 'none';
     }
   }
 }
@@ -618,6 +817,55 @@ function exportQAReport() {
   if (batchReportData.length === 0) return;
   const csv = generateQAReportCSV();
   downloadText(csv, `QA_report_${new Date().toISOString().substring(0, 10)}.csv`, 'text/csv');
+}
+
+// ─── v2.2: Consistency Check (post-batch) ───
+async function runConsistencyCheck() {
+  if (batchTranslations.length < 2) return;
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey && currentProvider !== 'local') { showError('Enter API key for consistency check.'); return; }
+
+  const targetLang = document.getElementById('targetLang').value;
+  const progressText = document.getElementById('progressText');
+  const progressArea = document.getElementById('progressArea');
+  progressArea.classList.add('visible');
+  progressText.textContent = 'Running consistency check across files...';
+
+  // Build segments: first 2000 chars of each translation with file label
+  const segments = batchTranslations.map(bt =>
+    `--- FILE: ${bt.fileName} ---\n${bt.translation.substring(0, 2000)}`
+  ).join('\n\n');
+
+  try {
+    const result = await callAIWithRetry(apiKey, getConsistencyCheckPrompt(targetLang), segments);
+    renderConsistencyReport(result);
+    progressText.textContent = 'Consistency check complete.';
+  } catch (err) {
+    showError('Consistency check failed: ' + err.message);
+  }
+}
+
+// ─── v2.2: Diff view toggle ───
+function toggleDiffView(fileId) {
+  const container = document.getElementById(`diff_${fileId}`);
+  if (!container) return;
+  const current = container.dataset.diffState || 'translation';
+  const states = ['translation', 'sidebyside', 'inline'];
+  const nextIdx = (states.indexOf(current) + 1) % states.length;
+  const next = states[nextIdx];
+  container.dataset.diffState = next;
+
+  const transEl = container.querySelector('.diff-translation');
+  const sideEl = container.querySelector('.diff-sidebyside');
+  const inlineEl = container.querySelector('.diff-inline');
+  const btn = document.getElementById(`diffBtn_${fileId}`);
+
+  if (transEl) transEl.style.display = next === 'translation' ? '' : 'none';
+  if (sideEl) sideEl.style.display = next === 'sidebyside' ? '' : 'none';
+  if (inlineEl) inlineEl.style.display = next === 'inline' ? '' : 'none';
+
+  const labels = { translation: '📄 Translation only', sidebyside: '↔ Side by side', inline: '🔍 Inline diff' };
+  if (btn) btn.textContent = labels[next];
 }
 
 // ─── Error ───

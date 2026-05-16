@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.1 — Prompts ───
+// ─── CSRI Transcript Analysis Tool v2.2 — Prompts ───
 
 function getLanguageDetectionPrompt() {
   return `Detect the primary language of this transcript. Also note any secondary languages present (code-switching, foreign inserts, quotes in other languages).
@@ -194,4 +194,113 @@ RULES:
 4. Do NOT flag fictional or hypothetical names created as part of an exercise (e.g., persona creation in workshops) — but DO note them in the summary.
 5. Country names used in general context are NOT PII. City names in combination with other details ARE.
 6. Preserve all formatting, timestamps, and speaker labels exactly.${langNote}`;
+}
+
+// ─── v2.2: Auto-Glossary ───
+
+function getGlossaryExtractionPrompt(targetLang) {
+  return `You are a terminology extraction specialist for research transcripts. Analyze this transcript and extract domain-specific terms that require consistent translation.
+
+RESPONSE FORMAT (strict, one term per line after the header):
+GLOSSARY_START
+[source term]|[suggested ${targetLang} translation]|[category]
+GLOSSARY_END
+
+CATEGORIES:
+- DOMAIN: field-specific jargon, technical terms, methodology terms
+- ACRONYM: abbreviations, initialisms (provide expanded form in translation)
+- NAME: recurring proper nouns that need consistent rendering (organizations, projects, tools)
+- CONCEPT: abstract concepts discussed repeatedly that benefit from fixed translation
+
+RULES:
+1. Extract 5-30 terms depending on transcript length and domain density.
+2. Only include terms where consistent translation matters — skip generic vocabulary.
+3. For acronyms, provide the expansion in ${targetLang} if a standard one exists, otherwise transliterate.
+4. Proper nouns (person names): do NOT include — those should stay as-is.
+5. If a term appears in multiple forms (singular/plural, verb/noun), pick the base form.
+6. Sort by category, then alphabetically within category.
+7. If the transcript has very few domain terms, return at minimum the most important ones.
+8. Do NOT include common words that any translator would handle identically.`;
+}
+
+function getTranslateWithGlossaryPrompt(targetLang, glossaryText) {
+  return `You are a professional translator. Translate the provided transcript into ${targetLang}.
+
+MANDATORY GLOSSARY — use these translations consistently throughout:
+${glossaryText}
+
+RULES:
+1. Preserve all speaker labels (e.g., "Person 1:", "Speaker 1:") without translating them.
+2. Preserve SRT timestamps if present.
+3. Translate naturally, keeping the meaning and tone.
+4. CRITICAL: For every term in the glossary above, use EXACTLY the specified translation. Do not deviate.
+5. Foreign inserts (code-switching): translate into ${targetLang} and mark with [CS]...[/CS].
+6. Proper nouns, brand names, or technical terms not in the glossary: keep as-is.
+7. Do not add commentary. Return only the translation.`;
+}
+
+// ─── v2.2: Back-translation ───
+
+function getBackTranslatePrompt(sourceLang) {
+  return `You are a professional translator. Translate the following text back into ${sourceLang}.
+
+RULES:
+1. This is a BACK-TRANSLATION for quality verification. Translate as literally and faithfully as possible.
+2. Preserve speaker labels without translating them.
+3. Preserve timestamps if present.
+4. Do NOT smooth out awkward phrasing — translate exactly what is written.
+5. Do not add commentary. Return only the translation.`;
+}
+
+function getBackTranslationComparePrompt() {
+  return `You are a translation quality evaluator. Compare the ORIGINAL transcript with its BACK-TRANSLATION (original → target language → back to original language).
+
+Divergences between original and back-translation indicate potential translation inaccuracies.
+
+RESPONSE FORMAT (strict):
+SCORE: [1-10 overall fidelity score]
+DIVERGENCE_COUNT: [number of meaningful divergences found]
+
+DIVERGENCES:
+[List each divergence, one per line:]
+- LINE [position/timestamp]: ORIGINAL: "[original phrase]" → BACK: "[back-translated phrase]" | SEVERITY: [minor/major] | NOTE: [brief explanation]
+
+SUMMARY: [2-3 sentences: overall translation fidelity assessment]
+
+SCORING GUIDE:
+9-10: Near-perfect fidelity, trivial wording differences only
+7-8: Good fidelity, minor meaning shifts but no significant loss
+5-6: Moderate, some content altered or lost in translation
+3-4: Poor, significant meaning changes
+1-2: Very poor, large portions of meaning lost or altered
+
+RULES:
+1. Ignore differences in: word order (if meaning preserved), synonyms with identical meaning, punctuation.
+2. Flag: meaning shifts, omissions, additions, wrong terminology, tone changes.
+3. Be conservative — only flag genuine meaning divergences, not stylistic variation.
+4. Focus on content that matters for research (facts, quotes, data) over filler words.
+5. Maximum 20 divergences — prioritize the most significant ones.`;
+}
+
+// ─── v2.2: Consistency Check ───
+
+function getConsistencyCheckPrompt(targetLang) {
+  return `You are a terminology consistency auditor. Analyze the following translated segments from multiple files in the same research project. Check whether domain-specific terms are translated consistently across all segments.
+
+RESPONSE FORMAT (strict):
+CONSISTENT_TERMS: [count of terms translated consistently]
+INCONSISTENT_TERMS: [count of terms with varying translations]
+
+INCONSISTENCIES:
+[List each inconsistency:]
+- TERM: "[source term]" → TRANSLATIONS: "[translation1]" (files: X), "[translation2]" (files: Y) | RECOMMENDED: "[best translation]" | REASON: [brief justification]
+
+SUMMARY: [2-3 sentences: overall consistency assessment and main recommendations]
+
+RULES:
+1. Focus on domain/technical terms, acronyms, and recurring concepts.
+2. Ignore generic vocabulary variations (synonyms that don't affect meaning).
+3. For each inconsistency, recommend the best translation based on context and convention.
+4. If all terms are consistent, state so clearly.
+5. Target language for analysis: ${targetLang}.`;
 }

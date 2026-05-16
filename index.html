@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="v2.1">
+<meta name="version" content="v2.2">
 <title>CSRI Transcript Analysis Tool</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -15,7 +15,7 @@
   <div class="hero">
     <div class="hero-top-row">
       <div class="org-badge">Centre for Socially Responsible Innovations (CSRI)</div>
-      <span class="version-badge">v2.1</span>
+      <span class="version-badge">v2.2</span>
     </div>
     
     <h1>CSRI Transcript Analysis Tool</h1>
@@ -243,6 +243,22 @@
     </label>
   </div>
 
+  <div class="summary-option" id="glossaryOption">
+    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+      <input type="checkbox" id="useGlossary" style="accent-color: var(--accent);" />
+      <span style="font-weight: 600;">Auto-Glossary</span>
+      <span style="color: var(--text-dim); font-size: 0.78rem;">— extracts domain terms, lets you review, then enforces consistent translation</span>
+    </label>
+  </div>
+
+  <div class="summary-option" id="backtransOption">
+    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+      <input type="checkbox" id="useBacktrans" style="accent-color: var(--accent);" />
+      <span style="font-weight: 600;">Back-translation validation</span>
+      <span style="color: var(--text-dim); font-size: 0.78rem;">— translates back to source language and scores fidelity (adds ~2× processing time)</span>
+    </label>
+  </div>
+
   <!-- Drop zone -->
   <div class="dropzone" id="dropzone">
     <div class="dropzone-icon">📄</div>
@@ -272,6 +288,7 @@
     <span class="batch-export-label">Batch export:</span>
     <button class="export-btn" onclick="exportAllZip()">Export All (ZIP)</button>
     <button class="export-btn" id="batchQAReportBtn" onclick="exportQAReport()" style="display: none;">QA Report (CSV)</button>
+    <button class="export-btn" id="batchConsistencyBtn" onclick="runConsistencyCheck()" style="display: none;">Consistency Check</button>
   </div>
 
   <!-- Results -->
