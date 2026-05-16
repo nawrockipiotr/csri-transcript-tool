@@ -875,6 +875,11 @@ h1 {
   overflow: hidden;
   border: 1px solid var(--border);
   margin-bottom: 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  padding: 0.4rem 0;
 }
 .diff-seg-btn {
   padding: 0.35rem 0.75rem;
