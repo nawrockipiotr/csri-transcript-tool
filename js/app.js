@@ -139,8 +139,6 @@ function setMode(mode) {
   const showTargetLang = ['translate', 'both'].includes(mode);
   document.getElementById('targetLangSetting').style.display = showTargetLang ? '' : 'none';
 
-  updateAnalysisLangVisibility();
-
   // All checkbox options visible for all modes except glossary/backtrans (translate/both only)
   ['summaryOption', 'anonymizeOption', 'speakerOption'].forEach(id => {
     const el = document.getElementById(id);
@@ -154,12 +152,7 @@ function setMode(mode) {
   if (backtransOpt) backtransOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
 }
 
-function updateAnalysisLangVisibility() {
-  const speakerChecked = document.getElementById('addSpeakerCheck')?.checked;
-  const anonChecked = document.getElementById('addAnonymization')?.checked;
-  const el = document.getElementById('analysisLangSetting');
-  if (el) el.style.display = (speakerChecked || anonChecked) ? '' : 'none';
-}
+
 
 // ─── File Handling ───
 const dropzone = document.getElementById('dropzone');
@@ -408,7 +401,8 @@ async function processFiles() {
   batchReportData = [];
 
   const targetLang = document.getElementById('targetLang').value;
-  const analysisLang = document.getElementById('analysisLang').value;
+  // Analysis language: use target language if available, otherwise English
+  const analysisLang = document.getElementById('targetLang')?.value || 'English';
   const progressArea = document.getElementById('progressArea');
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
@@ -628,7 +622,7 @@ async function processFiles() {
       // ─── Speaker Check (add-on) ───
       if (addSpeakerCheck) {
         const speakerParts = [];
-        const spkLang = document.getElementById('analysisLang')?.value || 'English';
+        const spkLang = document.getElementById('targetLang')?.value || 'English';
         for (let ci = 0; ci < chunks.length; ci++) {
           progressText.textContent = `Checking speakers in ${file.name}... chunk ${ci + 1}/${chunks.length}`;
           const chunkNote = chunks.length > 1 ? `\n[This is chunk ${ci + 1} of ${chunks.length}.]` : '';
@@ -645,7 +639,7 @@ async function processFiles() {
         const anonParts = [];
         for (let ci = 0; ci < chunks.length; ci++) {
           progressText.textContent = `Anonymizing ${file.name}... chunk ${ci + 1}/${chunks.length}`;
-          const anonLang = document.getElementById('analysisLang')?.value || targetLang || 'English';
+          const anonLang = targetLang || 'English';
           const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(anonLang), chunks[ci]);
           anonParts.push(result);
           doneWork++;
