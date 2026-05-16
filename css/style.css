@@ -30,7 +30,7 @@ html, body { background: transparent !important; background-color: transparent !
   --teal-dim: #10b98115;
   --amber: #f59e0b;
   --amber-dim: #f59e0b15;
-  --radius: 10px;
+  --radius: 14px;
 }
 
 body {
@@ -68,7 +68,7 @@ h1 {
 
 .hero-bar {
   height: 4px;
-  background: linear-gradient(90deg, #8b7355 0%, #a69374 30%, #6b705c 70%, #8b9474 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-teal) 50%, var(--accent) 100%);
   border-radius: 0 0 var(--radius) var(--radius);
   margin-bottom: 2rem;
 }
@@ -116,10 +116,10 @@ h1 {
 
 .hero-details {
   background: var(--surface2);
-  border-radius: 0 8px 8px 0;
+  border-radius: 14px;
   margin-top: 0.5rem;
   overflow: hidden;
-  border-left: 3px solid #8b7355;
+  border-left: 3px solid var(--accent);
 }
 
 .hero-details summary {
@@ -197,7 +197,7 @@ h1 {
   gap: 0;
   margin-bottom: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -227,7 +227,7 @@ h1 {
   flex: 1;
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 0.6rem 0.75rem;
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
@@ -317,7 +317,7 @@ h1 {
 .setting select {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 0.5rem 0.75rem;
   color: var(--text);
   font-family: 'Titillium Web', Arial, sans-serif;
@@ -395,7 +395,7 @@ h1 {
   justify-content: space-between;
   background: var(--surface);
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 0.5rem 0.75rem;
   font-size: 0.88rem;
   box-shadow: 0 1px 2px rgba(0,0,0,0.06);
@@ -470,7 +470,7 @@ h1 {
 
 .progress-bar-wrap {
   background: var(--surface2);
-  border-radius: 6px;
+  border-radius: 10px;
   overflow: hidden;
   height: 6px;
   margin-bottom: 0.5rem;
@@ -481,7 +481,7 @@ h1 {
   background: var(--accent);
   width: 0%;
   transition: width 0.3s;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .progress-text { font-size: 0.9rem; color: var(--text-dim); }
@@ -553,7 +553,7 @@ h1 {
 .lang-warning {
   background: var(--yellow-dim);
   border: 1px solid var(--yellow);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 0.6rem 1rem;
   font-size: 0.9rem;
   color: var(--text);
@@ -686,7 +686,7 @@ h1 {
   padding: 0.4rem 0.75rem;
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   color: var(--text);
   font-family: 'Titillium Web', Arial, sans-serif;
   font-size: 0.9rem;
@@ -713,7 +713,7 @@ h1 {
 .error-msg {
   background: var(--red-dim);
   border: 1px solid var(--red);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 0.75rem 1rem;
   font-size: 0.88rem;
   color: var(--red);
@@ -739,10 +739,10 @@ h1 {
 /* Info boxes in hero (v2) */
 .info-box {
   background: var(--surface2);
-  border-radius: 0 8px 8px 0;
+  border-radius: 14px;
   padding: 1rem 1rem 1rem 1.15rem;
   margin-top: 0.5rem;
-  border-left: 3px solid #8b7355;
+  border-left: 3px solid var(--accent);
 }
 
 .info-box + .info-box {
@@ -825,7 +825,7 @@ h1 {
   flex: 1;
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 0.6rem 0.75rem;
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
@@ -846,7 +846,7 @@ h1 {
   color: var(--text-dim);
   padding: 0.5rem 1rem;
   background: var(--accent-dim);
-  border-radius: 6px;
+  border-radius: 10px;
   margin: 0.5rem 0;
 }
 .glossary-table {
@@ -891,7 +891,7 @@ h1 {
 .diff-seg-control {
   display: flex;
   gap: 4px;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   margin-bottom: 0.75rem;
   position: sticky;
@@ -911,7 +911,7 @@ h1 {
   color: var(--text-dim);
   cursor: pointer;
   transition: all 0.2s;
-  border-radius: 6px;
+  border-radius: 10px;
   flex: 1;
   text-align: center;
 }
@@ -924,7 +924,7 @@ h1 {
 .diff-seg-btn.active {
   background: var(--accent);
   color: white;
-  border-radius: 6px;
+  border-radius: 10px;
   border-color: var(--accent);
 }
 
@@ -933,7 +933,7 @@ h1 {
   grid-template-columns: 1fr 1fr;
   gap: 1px;
   background: var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   overflow: hidden;
   font-size: 0.9rem;
   line-height: 1.5;
