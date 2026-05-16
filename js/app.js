@@ -1,6 +1,6 @@
-// ─── CSRI Transcript Analysis Tool v2.2 — App Logic ───
+// ─── CSRI Transcript Analysis Tool v2.3 — App Logic ───
 
-const TOOL_VERSION = 'v2.2';
+const TOOL_VERSION = 'v2.3';
 
 // ─── State ───
 let files = [];
@@ -8,6 +8,16 @@ let currentMode = 'translate';
 let abortController = null;
 let isProcessing = false;
 let currentProvider = 'anthropic';
+
+// ─── Progress helpers ───
+function showProgress(msg) {
+  const el = document.getElementById('progressText');
+  if (el) el.innerHTML = '<span class="api-spinner"></span>' + msg;
+}
+function showProgressDone(msg) {
+  const el = document.getElementById('progressText');
+  if (el) el.textContent = msg;
+}
 
 // v2.2 state
 let glossaryData = {};        // { fileName: [{source, target, category}] }
@@ -175,11 +185,19 @@ fileInput.addEventListener('change', () => {
 });
 
 function addFiles(newFiles) {
+  let duplicates = [];
   for (const f of newFiles) {
     const ext = f.name.split('.').pop().toLowerCase();
     if (['txt', 'srt', 'docx', 'pdf'].includes(ext)) {
-      files.push(f);
+      if (files.some(existing => existing.name === f.name)) {
+        duplicates.push(f.name);
+      } else {
+        files.push(f);
+      }
     }
+  }
+  if (duplicates.length > 0) {
+    showError(`Skipped duplicate file(s): ${duplicates.join(', ')}`);
   }
   renderFileList();
 }
@@ -269,6 +287,11 @@ function stopProcessing() {
     abortController = null;
   }
   isProcessing = false;
+  // Release glossary wait if suspended
+  if (window.resumeAfterGlossary) {
+    window.resumeAfterGlossary();
+    window.resumeAfterGlossary = null;
+  }
   document.getElementById('stopBtn').classList.remove('visible');
   document.getElementById('progressText').textContent = 'Stopped.';
   actionBtn.disabled = false;
@@ -401,8 +424,6 @@ async function processFiles() {
   batchReportData = [];
 
   const targetLang = document.getElementById('targetLang').value;
-  // Analysis language: use target language if available, otherwise English
-  const analysisLang = document.getElementById('targetLang')?.value || 'English';
   const progressArea = document.getElementById('progressArea');
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
@@ -424,10 +445,18 @@ async function processFiles() {
   // Read all files
   const fileContents = [];
   for (const file of files) {
-    progressText.textContent = `Reading ${file.name}...`;
+    showProgress(`Reading ${file.name}...`);
     const content = await readFileContent(file);
     const chunks = chunkText(content);
     fileContents.push({ file, content, chunks });
+  }
+
+  // Warn about large files
+  const largeFiles = fileContents.filter(fc => fc.content.length > 100000);
+  if (largeFiles.length > 0) {
+    const names = largeFiles.map(fc => fc.file.name).join(', ');
+    const approxCalls = largeFiles.reduce((sum, fc) => sum + fc.chunks.length, 0);
+    console.warn(`Large file(s) detected: ${names} (~${approxCalls} API calls per mode)`);
   }
 
   const addSummary = document.getElementById('addSummary')?.checked && ['translate', 'quality', 'both'].includes(currentMode);
@@ -446,6 +475,7 @@ async function processFiles() {
     if (currentMode === 'translate') totalWork += chunks.length + 1;
     else if (currentMode === 'quality') totalWork += chunks.length + 1;
     else if (currentMode === 'both') totalWork += chunks.length * 2 + 1;
+    if (addSummary) totalWork += chunks.length > 1 ? chunks.length + 1 : 1;
     if (addAnonymization) totalWork += chunks.length;
     if (addSpeakerCheck) totalWork += chunks.length;
     if (useGlossary) totalWork += 1; // glossary extraction pass
@@ -465,7 +495,7 @@ async function processFiles() {
       let bodies = [];
 
       // ─── Step 1: Detect language ───
-      progressText.textContent = `Detecting language of ${file.name}...`;
+      showProgress(`Detecting language of ${file.name}...`);
       const sampleText = content.substring(0, 2000);
       langData = await detectLanguage(apiKey, sampleText);
       doneWork++;
@@ -481,26 +511,38 @@ async function processFiles() {
       // ─── Summary ───
       if (addSummary) {
         if (chunks.length === 1) {
-          progressText.textContent = `Generating summary for ${file.name}...`;
+          showProgress(`Generating summary for ${file.name}...`);
           summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang), content);
+          doneWork++;
+          progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
         } else {
           const keyPoints = [];
           for (let ci = 0; ci < chunks.length; ci++) {
-            progressText.textContent = `Extracting key points from ${file.name}... chunk ${ci + 1}/${chunks.length}`;
+            showProgress(`Extracting key points from ${file.name}... chunk ${ci + 1}/${chunks.length}`);
             const extraction = await callAIWithRetry(apiKey, getSummaryExtractionPrompt(),
               chunks[ci] + `\n[Chunk ${ci + 1} of ${chunks.length}]`);
             keyPoints.push(`Chunk ${ci + 1}:\n${extraction}`);
+            doneWork++;
+            progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
           }
-          progressText.textContent = `Synthesizing summary for ${file.name}...`;
+          showProgress(`Synthesizing summary for ${file.name}...`);
           summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang),
             `Below are key points extracted from all chunks of a transcript. Synthesize them into a single coherent summary following your format.\n\n${keyPoints.join('\n\n')}`);
+          doneWork++;
+          progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
         }
       }
 
       // ─── v2.2: Glossary extraction (before translation) ───
       let activeGlossaryText = '';
       if (useGlossary && ['translate', 'both'].includes(currentMode)) {
-        progressText.textContent = `Extracting glossary from ${file.name}...`;
+        // Reuse first file's approved glossary for subsequent files
+        if (glossaryApproved && glossaryData._approved) {
+          activeGlossaryText = glossaryToPromptText(glossaryData._approved);
+          doneWork++;
+          progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+        } else {
+        showProgress(`Extracting glossary from ${file.name}...`);
         // Sample from beginning + middle + end for better term coverage
         const len = content.length;
         let sample;
@@ -528,10 +570,12 @@ async function processFiles() {
           if (glossaryEl) glossaryEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           // Wait for user approval
           await new Promise(resolve => { window.resumeAfterGlossary = resolve; });
+          if (!isProcessing) throw { name: 'AbortError' };
         }
         // Build glossary text for prompt
         const approvedTerms = glossaryData._approved || terms;
         activeGlossaryText = glossaryToPromptText(approvedTerms);
+        } // end else (first file extraction)
       }
 
       // ─── Translation mode ───
@@ -541,7 +585,7 @@ async function processFiles() {
           ? getTranslateWithGlossaryPrompt(targetLang, activeGlossaryText)
           : getTranslatePrompt(targetLang);
         for (let ci = 0; ci < chunks.length; ci++) {
-          progressText.textContent = `Translating ${file.name}... chunk ${ci + 1}/${chunks.length}`;
+          showProgress(`Translating ${file.name}... chunk ${ci + 1}/${chunks.length}`);
           const result = await callAIWithRetry(apiKey, translatePrompt, chunks[ci]);
           translatedParts.push(result);
           doneWork++;
@@ -558,7 +602,7 @@ async function processFiles() {
         let summaries = [];
 
         for (let ci = 0; ci < chunks.length; ci++) {
-          progressText.textContent = `Assessing quality of ${file.name}... chunk ${ci + 1}/${chunks.length}`;
+          showProgress(`Assessing quality of ${file.name}... chunk ${ci + 1}/${chunks.length}`);
           const chunkNote = chunks.length > 1
             ? `\n[This is chunk ${ci + 1} of ${chunks.length} from the same file. Assess only this chunk.]`
             : '';
@@ -610,7 +654,7 @@ async function processFiles() {
           ? getTranslateWithGlossaryPrompt(targetLang, activeGlossaryText)
           : getTranslatePrompt(targetLang);
         for (let ci = 0; ci < origChunks.length; ci++) {
-          progressText.textContent = `Translating ${file.name}... chunk ${ci + 1}/${origChunks.length}`;
+          showProgress(`Translating ${file.name}... chunk ${ci + 1}/${origChunks.length}`);
           const result = await callAIWithRetry(apiKey, translatePrompt, origChunks[ci]);
           translatedParts.push(result);
           doneWork++;
@@ -624,7 +668,7 @@ async function processFiles() {
         const speakerParts = [];
         const spkLang = document.getElementById('targetLang')?.value || 'English';
         for (let ci = 0; ci < chunks.length; ci++) {
-          progressText.textContent = `Checking speakers in ${file.name}... chunk ${ci + 1}/${chunks.length}`;
+          showProgress(`Checking speakers in ${file.name}... chunk ${ci + 1}/${chunks.length}`);
           const chunkNote = chunks.length > 1 ? `\n[This is chunk ${ci + 1} of ${chunks.length}.]` : '';
           const result = await callAIWithRetry(apiKey, getSpeakerCheckPrompt(spkLang), chunks[ci] + chunkNote);
           speakerParts.push(result);
@@ -638,7 +682,7 @@ async function processFiles() {
       if (addAnonymization) {
         const anonParts = [];
         for (let ci = 0; ci < chunks.length; ci++) {
-          progressText.textContent = `Anonymizing ${file.name}... chunk ${ci + 1}/${chunks.length}`;
+          showProgress(`Anonymizing ${file.name}... chunk ${ci + 1}/${chunks.length}`);
           const anonLang = targetLang || 'English';
           const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(anonLang), chunks[ci]);
           anonParts.push(result);
@@ -655,7 +699,7 @@ async function processFiles() {
         const backParts = [];
         const sourceLang = langData.primary;
         for (let ci = 0; ci < transChunks.length; ci++) {
-          progressText.textContent = `Back-translating ${file.name}... chunk ${ci + 1}/${transChunks.length}`;
+          showProgress(`Back-translating ${file.name}... chunk ${ci + 1}/${transChunks.length}`);
           const result = await callAIWithRetry(apiKey, getBackTranslatePrompt(sourceLang), transChunks[ci]);
           backParts.push(result);
           doneWork++;
@@ -664,7 +708,7 @@ async function processFiles() {
         const backTranslation = backParts.join('\n');
 
         // Compare original vs back-translation
-        progressText.textContent = `Comparing translations for ${file.name}...`;
+        showProgress(`Comparing translations for ${file.name}...`);
         const compareInput = `ORIGINAL:\n${content.substring(0, 4000)}\n\nBACK-TRANSLATION:\n${backTranslation.substring(0, 4000)}`;
         const compareResult = await callAIWithRetry(apiKey, getBackTranslationComparePrompt(), compareInput);
         doneWork++;
@@ -793,7 +837,7 @@ async function exportAllZip() {
   a.href = URL.createObjectURL(blob);
   a.download = `transcript_tool_results_${new Date().toISOString().substring(0, 10)}.zip`;
   a.click();
-  URL.revokeObjectURL(a.href);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 // ─── Batch QA Report CSV ───
@@ -824,7 +868,7 @@ async function runConsistencyCheck() {
   const progressText = document.getElementById('progressText');
   const progressArea = document.getElementById('progressArea');
   progressArea.classList.add('visible');
-  progressText.textContent = 'Running consistency check across files...';
+  showProgress('Running consistency check across files...');
 
   // Build segments: first 2000 chars of each translation with file label
   const segments = batchTranslations.map(bt =>
@@ -834,7 +878,7 @@ async function runConsistencyCheck() {
   try {
     const result = await callAIWithRetry(apiKey, getConsistencyCheckPrompt(targetLang), segments);
     renderConsistencyReport(result);
-    progressText.textContent = 'Consistency check complete.';
+    showProgress('Consistency check complete.');
   } catch (err) {
     showError('Consistency check failed: ' + err.message);
   }

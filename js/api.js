@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.1 — API Layer ───
+// ─── CSRI Transcript Analysis Tool v2.3 — API Layer ───
 
 const CHUNK_SIZES = {
   anthropic: 4000,

@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.1 — Export ───
+// ─── CSRI Transcript Analysis Tool v2.3 — Export ───
 
 function stripTimestamps(text) {
   return text
@@ -81,8 +81,11 @@ function getQAMetricsHeader(fileId) {
 
 // ─── Translation export ───
 function exportFile(fileId, type, format) {
-  const el = document.getElementById(`trans_${fileId}`);
-  if (!el) return;
+  const container = document.getElementById(`trans_${fileId}`);
+  if (!container) return;
+
+  // If diff view exists, read only the translation pane (not side-by-side/inline)
+  const el = container.querySelector('.diff-translation') || container;
 
   // Get text — for TXT/DOCX/PDF, convert flag spans to text markers
   let text;
@@ -92,8 +95,8 @@ function exportFile(fileId, type, format) {
   } else {
     // Convert HTML flag spans to readable text markers
     let html = el.innerHTML;
-    html = html.replace(/<span class="flag-yellow"[^>]*>([\s\S]*?)<\/span>/g, '«$1»');
-    html = html.replace(/<span class="flag-red"[^>]*>([\s\S]*?)<\/span>/g, '«​$1​»');
+    html = html.replace(/<span class="flag-yellow"[^>]*>([\s\S]*?)<\/span>/g, '\u00ab$1\u00bb');
+    html = html.replace(/<span class="flag-red"[^>]*>([\s\S]*?)<\/span>/g, '\u00ab\u200b$1\u200b\u00bb');
     html = html.replace(/<span class="flag-cs"[^>]*>([\s\S]*?)<\/span>/g, '[CS: $1]');
     html = html.replace(/<[^>]+>/g, '');
     html = html.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
@@ -258,7 +261,7 @@ function downloadText(content, filename, mimeType) {
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(a.href);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 async function exportDocx(text, filename) {
@@ -279,7 +282,7 @@ async function exportDocx(text, filename) {
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(a.href);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 async function exportQualityDocx(el, filename, legendText) {
@@ -336,7 +339,7 @@ async function exportQualityDocx(el, filename, legendText) {
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(a.href);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 // ─── PDF export (generates and downloads directly) ───

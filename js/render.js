@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.2 — Render ───
+// ─── CSRI Transcript Analysis Tool v2.3 — Render ───
 
 function sanitizeId(name) {
   return name.replace(/[^a-zA-Z0-9]/g, '_');

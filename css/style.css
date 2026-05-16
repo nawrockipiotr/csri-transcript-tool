@@ -720,14 +720,14 @@ h1 {
 
 /* Info boxes in hero (v2) */
 .info-box {
-  background: #edf0f5;
+  background: var(--surface2);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 0.5rem;
 }
 
 .info-box + .info-box {
-  background: #edf0f5;
+  background: var(--surface2);
   margin-top: 0.5rem;
 }
 
@@ -1007,7 +1007,7 @@ h1 {
 }
 
 .info-panel .info-box {
-  background: #edf0f5;
+  background: var(--surface2);
   margin-top: 0;
 }
 
@@ -1021,4 +1021,20 @@ h1 {
   background: var(--accent-teal);
   color: white;
   border-color: var(--accent-teal);
+}
+
+/* ─── API loading spinner ─── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.api-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent-teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.4rem;
 }

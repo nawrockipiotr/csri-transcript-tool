@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.2 — Prompts ───
+// ─── CSRI Transcript Analysis Tool v2.3 — Prompts ───
 
 function getLanguageDetectionPrompt() {
   return `Detect the primary language of this transcript. Also note any secondary languages present (code-switching, foreign inserts, quotes in other languages).
@@ -27,24 +27,6 @@ RULES:
 6. Do not add commentary. Return only the translation.`;
 }
 
-function getTranslateWithFlagsPrompt(targetLang) {
-  return `You are a professional translator. Translate the provided transcript into ${targetLang}.
-
-The text contains quality flag markers: [Y]...[/Y] for minor issues and [R]...[/R] for serious issues.
-
-CRITICAL RULES:
-1. Translate the text inside the flags along with everything else.
-2. KEEP the [Y][/Y] and [R][/R] tags in exactly the same positions around the corresponding translated words.
-3. Do NOT remove, add, or move any flags.
-4. Preserve all speaker labels without translating them.
-5. Preserve SRT timestamps if present.
-6. Foreign inserts (code-switching): translate and mark with [CS]...[/CS].
-7. Do not add commentary. Return only the translation with flags preserved.
-
-Example:
-Input: Eu am [Y]șeruirea[/Y] ecranului
-Output: I have [Y]sharing[/Y] the screen`;
-}
 
 function getQualityPrompt() {
   return `You are a transcript quality assessor for ASR (automatic speech recognition) output. Your task is to evaluate transcription quality and mark problems inline.
