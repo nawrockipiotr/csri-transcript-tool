@@ -116,9 +116,10 @@ h1 {
 
 .hero-details {
   background: var(--surface2);
-  border-radius: 8px;
+  border-radius: 0 8px 8px 0;
   margin-top: 0.5rem;
   overflow: hidden;
+  border-left: 3px solid #8b7355;
 }
 
 .hero-details summary {
@@ -738,9 +739,10 @@ h1 {
 /* Info boxes in hero (v2) */
 .info-box {
   background: var(--surface2);
-  border-radius: 8px;
-  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+  padding: 1rem 1rem 1rem 1.15rem;
   margin-top: 0.5rem;
+  border-left: 3px solid #8b7355;
 }
 
 .info-box + .info-box {
@@ -1029,9 +1031,7 @@ h1 {
   margin-top: 0;
 }
 
-/* Glossary approval pulse */
-  50% { box-shadow: 0 0 0 8px rgba(59, 80, 136, 0); }
-}
+
 
 /* ─── API loading spinner ─── */
 @keyframes spin {
