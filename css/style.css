@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+html { background: transparent; }
 
 :root {
   --bg: transparent;
@@ -54,8 +55,8 @@ h1 {
 
 /* Hero */
 .hero {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius);
   padding: 1.5rem;
   margin-bottom: 2rem;
