@@ -56,8 +56,8 @@ h1 {
 
 /* Hero */
 .hero {
-  background: transparent;
-  border: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
   margin-bottom: 2rem;
