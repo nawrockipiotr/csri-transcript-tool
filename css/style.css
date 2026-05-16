@@ -887,15 +887,14 @@ h1 {
   font-weight: 500;
   font-family: 'Titillium Web', Arial, sans-serif;
   border: none;
-  border-left: 1px solid var(--border);
-  background: var(--surface);
+  background: transparent;
   color: var(--text-dim);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  border-radius: 4px;
+  margin: 0 2px;
 }
-.diff-seg-btn:first-child {
-  border-left: none;
-}
+
 .diff-seg-btn:hover {
   background: var(--accent-teal-dim);
   color: var(--accent-teal);
@@ -903,11 +902,9 @@ h1 {
 .diff-seg-btn.active {
   background: var(--accent-teal);
   color: white;
+  border-radius: 4px;
 }
-.diff-seg-btn i {
-  font-style: normal;
-  margin-right: 0.25rem;
-}
+
 .diff-sidebyside-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1012,15 +1009,7 @@ h1 {
 }
 
 /* Glossary approval pulse */
-@keyframes glossary-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 80, 136, 0.4); }
   50% { box-shadow: 0 0 0 8px rgba(59, 80, 136, 0); }
-}
-.glossary-approve-btn.waiting {
-  animation: glossary-pulse 1.5s infinite;
-  background: var(--accent-teal);
-  color: white;
-  border-color: var(--accent-teal);
 }
 
 /* ─── API loading spinner ─── */

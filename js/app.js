@@ -397,7 +397,14 @@ function approveGlossary() {
   const panel = document.getElementById('glossaryPanel');
   if (panel) panel.classList.add('approved');
   const approveBtn = document.getElementById('glossaryApproveBtn');
-  if (approveBtn) approveBtn.textContent = `✓ Glossary approved (${approved.length} terms)`;
+  if (approveBtn) {
+    approveBtn.textContent = '\u2713 Glossary approved (' + approved.length + ' terms)';
+    approveBtn.classList.remove('waiting');
+    approveBtn.disabled = true;
+  }
+  // Hide the waiting message
+  const waitMsg = document.getElementById('glossaryWaitMsg');
+  if (waitMsg) waitMsg.style.display = 'none';
 
   // Resume processing
   if (typeof resumeAfterGlossary === 'function') resumeAfterGlossary();

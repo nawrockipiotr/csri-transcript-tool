@@ -84,9 +84,9 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       const diff = buildDiffView(bt.original, bt.translation, sanitizeId(fileName));
       diffHtml = `
         <div class="diff-seg-control" id="diffSeg_${sanitizeId(fileName)}">
-          <button class="diff-seg-btn active" data-view="translation" onclick="setDiffView('${sanitizeId(fileName)}', 'translation')"><i class="icon-doc"></i> Translation</button>
-          <button class="diff-seg-btn" data-view="sidebyside" onclick="setDiffView('${sanitizeId(fileName)}', 'sidebyside')"><i class="icon-cols"></i> Side by side</button>
-          <button class="diff-seg-btn" data-view="inline" onclick="setDiffView('${sanitizeId(fileName)}', 'inline')"><i class="icon-diff"></i> Inline diff</button>
+          <button class="diff-seg-btn active" data-view="translation" onclick="setDiffView('${sanitizeId(fileName)}', 'translation')">📄 Translation</button>
+          <button class="diff-seg-btn" data-view="sidebyside" onclick="setDiffView('${sanitizeId(fileName)}', 'sidebyside')">⇔ Side by side</button>
+          <button class="diff-seg-btn" data-view="inline" onclick="setDiffView('${sanitizeId(fileName)}', 'inline')">±  Inline diff</button>
         </div>
         <div id="diff_${sanitizeId(fileName)}" data-diff-state="translation">
           <div class="diff-translation">${transHtml}</div>
@@ -354,12 +354,12 @@ function renderGlossaryTable(terms, fileName) {
       <span class="detected-lang">${terms.length} terms extracted</span>
     </div>
     <div class="glossary-info">Review and edit translations below. Uncheck terms you don't want enforced.</div>
-    <div class="glossary-info" style="color: var(--accent-teal); font-weight: 600;">⏳ Waiting for your approval before translating...</div>
+    <div class="glossary-info" id="glossaryWaitMsg" style="color: var(--accent-teal); font-weight: 600;">⏳ Waiting for your approval before translating...</div>
     <table class="glossary-table" id="glossaryTable">
       <thead><tr><th>Source Term</th><th>Translation</th><th>Category</th><th>Use</th></tr></thead>
       <tbody>${tableRows}</tbody>
     </table>
-    <button class="action-btn glossary-approve-btn waiting" id="glossaryApproveBtn" onclick="approveGlossary()">Approve Glossary & Continue</button>
+    <button class="action-btn glossary-approve-btn" id="glossaryApproveBtn" onclick="approveGlossary()">Approve Glossary & Continue</button>
   `;
   resultsArea.prepend(panel);
 }
