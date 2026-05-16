@@ -139,28 +139,26 @@ function setMode(mode) {
   const showTargetLang = ['translate', 'both'].includes(mode);
   document.getElementById('targetLangSetting').style.display = showTargetLang ? '' : 'none';
 
-  const showAnalysisLang = ['speaker', 'anonymize'].includes(mode);
-  document.getElementById('analysisLangSetting').style.display = showAnalysisLang ? '' : 'none';
+  updateAnalysisLangVisibility();
 
-  const summaryOpt = document.getElementById('summaryOption');
-  if (summaryOpt) {
-    summaryOpt.style.display = ['translate', 'quality', 'both'].includes(mode) ? '' : 'none';
-  }
+  // All checkbox options visible for all modes except glossary/backtrans (translate/both only)
+  ['summaryOption', 'anonymizeOption', 'speakerOption'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
 
-  const anonymizeOpt = document.getElementById('anonymizeOption');
-  if (anonymizeOpt) {
-    anonymizeOpt.style.display = ['translate', 'quality', 'both'].includes(mode) ? '' : 'none';
-  }
-
-  // v2.2 options
   const glossaryOpt = document.getElementById('glossaryOption');
-  if (glossaryOpt) {
-    glossaryOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
-  }
+  if (glossaryOpt) glossaryOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
+
   const backtransOpt = document.getElementById('backtransOption');
-  if (backtransOpt) {
-    backtransOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
-  }
+  if (backtransOpt) backtransOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
+}
+
+function updateAnalysisLangVisibility() {
+  const speakerChecked = document.getElementById('addSpeakerCheck')?.checked;
+  const anonChecked = document.getElementById('addAnonymization')?.checked;
+  const el = document.getElementById('analysisLangSetting');
+  if (el) el.style.display = (speakerChecked || anonChecked) ? '' : 'none';
 }
 
 // ─── File Handling ───
@@ -439,7 +437,8 @@ async function processFiles() {
   }
 
   const addSummary = document.getElementById('addSummary')?.checked && ['translate', 'quality', 'both'].includes(currentMode);
-  const addAnonymization = document.getElementById('addAnonymization')?.checked && ['translate', 'quality', 'both'].includes(currentMode);
+  const addAnonymization = document.getElementById('addAnonymization')?.checked;
+  const addSpeakerCheck = document.getElementById('addSpeakerCheck')?.checked;
   const useGlossary = document.getElementById('useGlossary')?.checked && ['translate', 'both'].includes(currentMode);
   const useBacktrans = document.getElementById('useBacktrans')?.checked && ['translate', 'both'].includes(currentMode);
 
@@ -453,9 +452,8 @@ async function processFiles() {
     if (currentMode === 'translate') totalWork += chunks.length + 1;
     else if (currentMode === 'quality') totalWork += chunks.length + 1;
     else if (currentMode === 'both') totalWork += chunks.length * 2 + 1;
-    else if (currentMode === 'speaker') totalWork += chunks.length + 1;
-    else if (currentMode === 'anonymize') totalWork += chunks.length + 1;
     if (addAnonymization) totalWork += chunks.length;
+    if (addSpeakerCheck) totalWork += chunks.length;
     if (useGlossary) totalWork += 1; // glossary extraction pass
     if (useBacktrans) totalWork += chunks.length + 1; // back-translate + compare
   }
@@ -612,13 +610,14 @@ async function processFiles() {
         translationResult = translatedParts.join('\n');
       }
 
-      // ─── Speaker Check (standalone) ───
-      if (currentMode === 'speaker') {
+      // ─── Speaker Check (add-on) ───
+      if (addSpeakerCheck) {
         const speakerParts = [];
+        const spkLang = document.getElementById('analysisLang')?.value || 'English';
         for (let ci = 0; ci < chunks.length; ci++) {
           progressText.textContent = `Checking speakers in ${file.name}... chunk ${ci + 1}/${chunks.length}`;
           const chunkNote = chunks.length > 1 ? `\n[This is chunk ${ci + 1} of ${chunks.length}.]` : '';
-          const result = await callAIWithRetry(apiKey, getSpeakerCheckPrompt(analysisLang), chunks[ci] + chunkNote);
+          const result = await callAIWithRetry(apiKey, getSpeakerCheckPrompt(spkLang), chunks[ci] + chunkNote);
           speakerParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -626,25 +625,12 @@ async function processFiles() {
         speakerResult = speakerParts.join('\n\n---\n\n');
       }
 
-      // ─── Anonymization (standalone) ───
-      if (currentMode === 'anonymize') {
-        const anonParts = [];
-        for (let ci = 0; ci < chunks.length; ci++) {
-          progressText.textContent = `Anonymizing ${file.name}... chunk ${ci + 1}/${chunks.length}`;
-          const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(analysisLang), chunks[ci]);
-          anonParts.push(result);
-          doneWork++;
-          progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
-        }
-        anonymResult = anonParts.join('\n');
-      }
-
       // ─── Add-on anonymization ───
       if (addAnonymization) {
         const anonParts = [];
         for (let ci = 0; ci < chunks.length; ci++) {
           progressText.textContent = `Anonymizing ${file.name}... chunk ${ci + 1}/${chunks.length}`;
-          const anonLang = ['translate', 'both'].includes(currentMode) ? targetLang : 'English';
+          const anonLang = document.getElementById('analysisLang')?.value || targetLang || 'English';
           const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(anonLang), chunks[ci]);
           anonParts.push(result);
           doneWork++;

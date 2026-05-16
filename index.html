@@ -28,7 +28,7 @@
       <div class="info-title">How to use this tool</div>
       <div class="info-content">
         <strong>1.</strong> Paste your API key from the selected AI provider (Anthropic, OpenAI, Google) or connect a local model server.<br>
-        <strong>2.</strong> Choose a mode: <strong>Translation</strong> converts the transcript into your target language, <strong>Quality Assessment</strong> checks the transcript for errors and flags them, <strong>Both</strong> does both at once, <strong>Speaker Check</strong> analyzes speaker label quality, or <strong>Anonymization</strong> identifies personal data.<br>
+        <strong>2.</strong> Choose a mode: <strong>Translation</strong> converts the transcript into your target language, <strong>Quality Assessment</strong> checks the transcript for errors and flags them, <strong>Both</strong> does both at once. Additional options below let you add speaker check, anonymization, glossary extraction, and back-translation.<br>
         <strong>3.</strong> Drag & drop your transcript files (TXT, DOCX, SRT, or PDF) or click to browse. You can drop multiple files for batch processing.<br>
         <strong>4.</strong> Click <strong>Process Files</strong> and wait for results. You can stop at any time.<br>
         <strong>5.</strong> Export results using the format buttons below each result, or use <strong>Export All (ZIP)</strong> for batch download.
@@ -235,8 +235,7 @@
     <button class="mode-btn active" data-mode="translate" onclick="setMode('translate')">Translation</button>
     <button class="mode-btn" data-mode="quality" onclick="setMode('quality')">Quality Assessment</button>
     <button class="mode-btn" data-mode="both" onclick="setMode('both')">Both</button>
-    <button class="mode-btn" data-mode="speaker" onclick="setMode('speaker')">Speaker Check</button>
-    <button class="mode-btn" data-mode="anonymize" onclick="setMode('anonymize')">Anonymization</button>
+
   </div>
 
   <!-- Settings -->
@@ -315,6 +314,15 @@
       <input type="checkbox" id="addAnonymization" style="accent-color: var(--accent);" />
       <span style="font-weight: 600;">Anonymize PII</span>
       <span style="color: var(--text-dim); font-size: 0.78rem;">— identifies and marks personal data alongside the main output</span>
+    </label>
+  </div>
+
+
+  <div class="summary-option" id="speakerOption">
+    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+      <input type="checkbox" id="addSpeakerCheck" style="accent-color: var(--accent-teal);" onchange="updateAnalysisLangVisibility()" />
+      <span style="font-weight: 600;">Speaker Check</span>
+      <span style="color: var(--text-dim); font-size: 0.78rem;">— analyzes speaker label quality, detects mislabeled or missing turns</span>
     </label>
   </div>
 
