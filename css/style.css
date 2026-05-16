@@ -76,7 +76,7 @@ h1 {
   border: 1px solid var(--accent-teal);
   border-radius: 4px;
   padding: 0.2rem 0.5rem;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--accent-teal);
   text-transform: uppercase;
@@ -88,7 +88,7 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.15rem 0.5rem;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-dim);
   font-family: 'JetBrains Mono', monospace;
@@ -98,7 +98,7 @@ h1 {
 
 .hero-lead {
   color: var(--text-dim);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   line-height: 1.6;
   margin-bottom: 0.75rem;
 }
@@ -112,7 +112,7 @@ h1 {
 
 .hero-details summary {
   padding: 0.6rem 1rem;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
@@ -123,7 +123,7 @@ h1 {
 
 .hero-details-content {
   padding: 0.5rem 1rem 0.75rem;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   line-height: 1.7;
 }
@@ -139,12 +139,12 @@ h1 {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
 }
 
 .scoring-guide {
   margin-top: 0.6rem;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   padding: 0.5rem;
   background: var(--surface);
@@ -152,7 +152,7 @@ h1 {
 }
 
 .hero-author {
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   opacity: 0.7;
   border-top: 1px solid var(--border);
@@ -170,7 +170,7 @@ h1 {
 }
 
 .api-section label {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -192,7 +192,7 @@ h1 {
   flex: 1;
   padding: 0.5rem;
   text-align: center;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   background: transparent;
@@ -218,7 +218,7 @@ h1 {
   padding: 0.6rem 0.75rem;
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s;
 }
@@ -230,7 +230,7 @@ h1 {
   align-items: center;
   gap: 0.4rem;
   margin-top: 0.5rem;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   cursor: pointer;
 }
@@ -243,7 +243,7 @@ h1 {
 .quality-label { font-weight: 600; }
 
 .api-hint {
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   opacity: 0.7;
   margin-top: 0.25rem;
@@ -265,7 +265,7 @@ h1 {
   flex: 1;
   padding: 0.65rem 0.5rem;
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   background: transparent;
@@ -293,7 +293,7 @@ h1 {
 }
 
 .setting label {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -307,7 +307,7 @@ h1 {
   padding: 0.5rem 0.75rem;
   color: var(--text);
   font-family: 'Titillium Web', Arial, sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   outline: none;
   cursor: pointer;
 }
@@ -327,13 +327,13 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
 .summary-hint {
   color: var(--text-dim);
-  font-size: 0.78rem;
+  font-size: 0.9rem;
 }
 
 .summary-label input[type="checkbox"] { accent-color: var(--accent-teal); }
@@ -356,7 +356,7 @@ h1 {
 }
 
 .dropzone-icon { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-dim); }
-.dropzone-text { color: var(--text-dim); font-size: 0.85rem; }
+.dropzone-text { color: var(--text-dim); font-size: 0.9rem; }
 .dropzone-text strong { color: var(--accent-teal); }
 
 .dropzone input[type="file"] {
@@ -382,12 +382,12 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
 }
 
 .file-item .name {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -395,7 +395,7 @@ h1 {
   max-width: 60%;
 }
 
-.file-item .size { color: var(--text-dim); font-size: 0.75rem; }
+.file-item .size { color: var(--text-dim); font-size: 0.9rem; }
 
 .file-item .remove {
   background: none;
@@ -468,7 +468,7 @@ h1 {
   border-radius: 6px;
 }
 
-.progress-text { font-size: 0.78rem; color: var(--text-dim); }
+.progress-text { font-size: 0.9rem; color: var(--text-dim); }
 
 /* Results */
 .results-area { margin-top: 2rem; display: none; }
@@ -488,14 +488,14 @@ h1 {
   align-items: center;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .result-header .detected-lang {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   font-weight: 400;
 }
@@ -513,7 +513,7 @@ h1 {
 .lang-info {
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--border);
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -524,20 +524,20 @@ h1 {
   background: var(--surface2);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
 }
 
 .lang-tag.secondary { color: var(--text-dim); }
-.confidence-high { color: var(--green); font-size: 0.72rem; }
-.confidence-medium { color: var(--yellow); font-size: 0.72rem; }
-.confidence-low { color: var(--red); font-size: 0.72rem; }
+.confidence-high { color: var(--green); font-size: 0.9rem; }
+.confidence-medium { color: var(--yellow); font-size: 0.9rem; }
+.confidence-low { color: var(--red); font-size: 0.9rem; }
 
 .lang-warning {
   background: var(--yellow-dim);
   border: 1px solid var(--yellow);
   border-radius: 6px;
   padding: 0.6rem 1rem;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--text);
   margin-bottom: 0.75rem;
 }
@@ -548,7 +548,7 @@ h1 {
   gap: 1.25rem;
   padding: 0.6rem 1rem;
   border-bottom: 1px solid var(--border);
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   flex-wrap: wrap;
   background: var(--surface2);
@@ -564,7 +564,7 @@ h1 {
   gap: 1.25rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--border);
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   flex-wrap: wrap;
 }
@@ -584,7 +584,7 @@ h1 {
 .qa-summary-text {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--text-dim);
   line-height: 1.5;
 }
@@ -671,7 +671,7 @@ h1 {
   border-radius: 6px;
   color: var(--text);
   font-family: 'Titillium Web', Arial, sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -683,7 +683,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   margin-left: auto;
   cursor: pointer;
@@ -697,7 +697,7 @@ h1 {
   border: 1px solid var(--red);
   border-radius: 6px;
   padding: 0.75rem 1rem;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--red);
   margin-top: 1rem;
   display: none;
@@ -732,14 +732,14 @@ h1 {
 }
 
 .info-title {
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 0.5rem;
 }
 
 .info-content {
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   line-height: 1.7;
 }
@@ -753,7 +753,7 @@ h1 {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   margin-bottom: 0.4rem;
 }
 
@@ -762,7 +762,7 @@ h1 {
   flex-shrink: 0;
   margin-top: 2px;
   padding: 1px 8px;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
 }
 
 /* Disclaimers / methodological notes in info boxes */
@@ -772,7 +772,7 @@ h1 {
   background: var(--yellow-dim);
   border-left: 3px solid var(--yellow);
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   line-height: 1.6;
 }
 
@@ -789,7 +789,7 @@ h1 {
 }
 
 .batch-export-label {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text);
 }
@@ -810,7 +810,7 @@ h1 {
   padding: 0.6rem 0.75rem;
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s;
 }
@@ -823,7 +823,7 @@ h1 {
 .glossary-panel { border: 2px solid var(--accent-teal); }
 .glossary-panel.approved { border-color: var(--green); opacity: 0.7; }
 .glossary-info {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   padding: 0.5rem 1rem;
   background: var(--accent-dim);
@@ -833,7 +833,7 @@ h1 {
 .glossary-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   margin: 0.5rem 0;
 }
 .glossary-table th {
@@ -842,7 +842,7 @@ h1 {
   background: var(--surface2);
   border-bottom: 1px solid var(--border);
   font-weight: 600;
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-dim);
@@ -857,7 +857,7 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.25rem 0.4rem;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-family: inherit;
   background: var(--surface);
 }
@@ -878,7 +878,7 @@ h1 {
 }
 .diff-seg-btn {
   padding: 0.35rem 0.75rem;
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   font-weight: 500;
   font-family: 'Titillium Web', Arial, sans-serif;
   border: none;
@@ -910,7 +910,7 @@ h1 {
   background: var(--border);
   border-radius: 6px;
   overflow: hidden;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 .diff-orig-line, .diff-trans-line {
@@ -923,7 +923,7 @@ h1 {
 .diff-trans-line { background: #f0fdf4; }
 .diff-inline-pair {
   margin-bottom: 0.15rem;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 .diff-del {
@@ -944,7 +944,7 @@ h1 {
 /* ─── v2.2: Timestamp Issues ─── */
 .timestamp-issue {
   padding: 0.25rem 0;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   border-bottom: 1px solid var(--border);
 }
 .timestamp-issue:last-child { border-bottom: none; }
@@ -965,7 +965,7 @@ h1 {
 
 .info-toggle-btn {
   font-family: 'Titillium Web', Arial, sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   font-weight: 500;
   padding: 0.3rem 0.7rem;
   border-radius: 20px;
@@ -1004,4 +1004,16 @@ h1 {
 .info-panel .info-box {
   background: #edf0f5;
   margin-top: 0;
+}
+
+/* Glossary approval pulse */
+@keyframes glossary-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 80, 136, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(59, 80, 136, 0); }
+}
+.glossary-approve-btn.waiting {
+  animation: glossary-pulse 1.5s infinite;
+  background: var(--accent-teal);
+  color: white;
+  border-color: var(--accent-teal);
 }

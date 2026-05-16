@@ -353,12 +353,13 @@ function renderGlossaryTable(terms, fileName) {
       <span>Auto-Glossary — ${fileName}</span>
       <span class="detected-lang">${terms.length} terms extracted</span>
     </div>
-    <div class="glossary-info">Review and edit translations below. Uncheck terms you don't want enforced. Click Approve to continue.</div>
+    <div class="glossary-info">Review and edit translations below. Uncheck terms you don't want enforced.</div>
+    <div class="glossary-info" style="color: var(--accent-teal); font-weight: 600;">⏳ Waiting for your approval before translating...</div>
     <table class="glossary-table" id="glossaryTable">
       <thead><tr><th>Source Term</th><th>Translation</th><th>Category</th><th>Use</th></tr></thead>
       <tbody>${tableRows}</tbody>
     </table>
-    <button class="action-btn glossary-approve-btn" id="glossaryApproveBtn" onclick="approveGlossary()">Approve Glossary & Continue</button>
+    <button class="action-btn glossary-approve-btn waiting" id="glossaryApproveBtn" onclick="approveGlossary()">Approve Glossary & Continue</button>
   `;
   resultsArea.prepend(panel);
 }
