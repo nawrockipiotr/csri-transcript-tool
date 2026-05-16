@@ -223,6 +223,11 @@ function exportGeneric(fileId, prefix, format) {
     const text = metadata + '\n\n' + el.textContent;
     downloadText(text, `${baseName}_${label}.txt`, 'text/plain');
   }
+
+  if (format === 'docx') {
+    const text = metadata + '\n\n' + el.textContent;
+    exportDocx(text, `${baseName}_${label}.docx`);
+  }
 }
 
 // ─── Anonymized export ───
@@ -342,21 +347,13 @@ async function exportQualityDocx(el, filename, legendText) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-// ─── PDF export (generates and downloads directly) ───
+// ─── PDF export (downloads styled HTML for Save As PDF) ───
 function exportPdf(text, filename) {
-  const win = window.open('', '_blank');
-  if (!win) {
-    alert('Popup blocked — please allow popups for this page to export PDF.');
-    return;
-  }
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(filename)}</title>
+  const htmlFilename = filename.replace(/\.pdf$/i, '.html');
+  const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(filename)}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2cm; line-height: 1.8; max-width: 700px; margin: 0 auto; font-size: 11pt; white-space: pre-wrap; color: #1a1d27; }
     @media print { body { padding: 0; } @page { margin: 2cm; } }
-  </style></head><body>${escapeHtml(text)}</body></html>`);
-  win.document.close();
-  // Wait for fonts to load then trigger print
-  setTimeout(() => {
-    try { win.print(); } catch(e) { /* user will print manually */ }
-  }, 500);
+  </style></head><body>${escapeHtml(text)}</body></html>`;
+  downloadText(htmlContent, htmlFilename, 'text/html');
 }

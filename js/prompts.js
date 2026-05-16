@@ -86,24 +86,28 @@ RESPONSE FORMAT (translate every header and label into ${targetLang}):
 === END ===
 
 RULES:
-1. Write EVERYTHING in ${targetLang} — every word, header, label, and content.
+1. Write EVERYTHING in ${targetLang} — every word, header, label, and content. This is non-negotiable.
 2. Do NOT use English for headers if the target language is not English.
 3. Do NOT attribute statements to specific speakers.
 4. Do NOT quote the transcript directly.
 5. Do NOT interpret or evaluate — summarize factually.
 6. Do NOT inflate estimates — base length on timestamps or text volume.
 7. Keep it concise: 150-300 words total.
-8. CRITICAL: Detect the source language from the CONTENT of the transcript (what language are the speakers actually using?), not from file names, metadata, or the translation target language. If the transcript has already been translated, try to identify the original language from contextual clues.`;
+8. CRITICAL: Detect the source language from the CONTENT of the transcript (what language are the speakers actually using?), not from file names, metadata, or the translation target language. If the transcript has already been translated, try to identify the original language from contextual clues.
+9. REMINDER: Your ENTIRE output MUST be in ${targetLang}. Even if the source text is in another language, write your summary in ${targetLang}.`;
 }
 
-function getSummaryExtractionPrompt() {
+function getSummaryExtractionPrompt(targetLang) {
+  const langInstr = targetLang
+    ? `Write your extraction in ${targetLang}, regardless of the transcript language.`
+    : `Write in the same language as the transcript content.`;
   return `You are a research transcript analyst. Extract the key points from this transcript chunk.
 
 RULES:
 1. List the main topics discussed, any conclusions or decisions, and any unresolved questions.
 2. Be concise — bullet points, max 150 words.
 3. Do NOT attribute statements to specific speakers (speaker labels may be unreliable).
-4. Write in the SAME LANGUAGE as the transcript content. Do not translate.
+4. ${langInstr}
 5. Note if there is code-switching (multiple languages used).
 6. Note the approximate number of distinct voices/speakers you can identify from context (not just from labels).`;
 }

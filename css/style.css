@@ -870,16 +870,17 @@ h1 {
 
 /* ─── v2.2: Diff Views ─── */
 .diff-seg-control {
-  display: inline-flex;
+  display: flex;
+  gap: 4px;
   border-radius: 6px;
-  overflow: hidden;
   border: 1px solid var(--border);
   margin-bottom: 0.5rem;
   position: sticky;
   top: 0;
   z-index: 10;
   background: var(--surface);
-  padding: 0.4rem 0;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
 }
 .diff-seg-btn {
   padding: 0.35rem 0.75rem;

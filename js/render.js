@@ -105,7 +105,7 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'srt')">SRT</button>
       <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'txt')">TXT</button>
       <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'docx')">DOCX</button>
-      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'pdf')">PDF</button>
+      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'pdf')">HTML</button>
       <label class="clean-transcript-check">
         <input type="checkbox" id="clean_${sanitizeId(fileName)}" /> No timestamps
       </label>
@@ -152,6 +152,7 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
     <div class="result-content" id="spkr_${sanitizeId(fileName)}">${formatted.html}</div>
     <div class="export-row">
       <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'spkr', 'txt')">TXT</button>
+      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'spkr', 'docx')">DOCX</button>
       <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'spkr', 'html')">HTML</button>
     </div>`;
   }
@@ -167,6 +168,7 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
     <div class="export-row">
       <button class="export-btn" onclick="exportAnonymized('${sanitizeId(fileName)}', 'redacted')">TXT (redacted)</button>
       <button class="export-btn" onclick="exportAnonymized('${sanitizeId(fileName)}', 'marked')">TXT (marked)</button>
+      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'anon', 'docx')">DOCX</button>
       <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'anon', 'html')">HTML</button>
     </div>`;
   }
@@ -178,7 +180,12 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       <span>Back-Translation Validation — ${fileName}</span>
       <span class="detected-lang">${bt.scoreLine}</span>
     </div>
-    <div class="result-content" id="btrans_${sanitizeId(fileName)}" style="white-space: pre-wrap;">${bt.html}</div>`;
+    <div class="result-content" id="btrans_${sanitizeId(fileName)}" style="white-space: pre-wrap;">${bt.html}</div>
+    <div class="export-row">
+      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'btrans', 'txt')">TXT</button>
+      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'btrans', 'docx')">DOCX</button>
+      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'btrans', 'html')">HTML</button>
+    </div>`;
   }
 
   // v2.2: Timestamp check result

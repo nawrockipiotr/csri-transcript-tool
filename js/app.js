@@ -526,7 +526,7 @@ async function processFiles() {
           const keyPoints = [];
           for (let ci = 0; ci < chunks.length; ci++) {
             showProgress(`Extracting key points from ${file.name}... chunk ${ci + 1}/${chunks.length}`);
-            const extraction = await callAIWithRetry(apiKey, getSummaryExtractionPrompt(),
+            const extraction = await callAIWithRetry(apiKey, getSummaryExtractionPrompt(targetLang),
               chunks[ci] + `\n[Chunk ${ci + 1} of ${chunks.length}]`);
             keyPoints.push(`Chunk ${ci + 1}:\n${extraction}`);
             doneWork++;
