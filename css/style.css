@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { background: transparent; }
+html, body { background: transparent !important; background-color: transparent !important; }
 
 :root {
   --bg: transparent;
@@ -35,15 +35,16 @@ html { background: transparent; }
 
 body {
   font-family: 'Titillium Web', Arial, sans-serif;
-  background: var(--bg);
+  background: transparent !important;
+  background-color: transparent !important;
   color: var(--text);
-  min-height: 100vh;
-  padding: 2rem;
+  padding: 0;
 }
 
 .container {
   max-width: 900px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
 h1 {
@@ -711,7 +712,7 @@ h1 {
 
 /* Responsive */
 @media (max-width: 600px) {
-  body { padding: 1rem; }
+  body { padding: 0; }
   .mode-toggle { flex-direction: column; }
   .mode-btn { min-width: unset; }
   .qa-metrics-bar { flex-direction: column; gap: 0.5rem; }
