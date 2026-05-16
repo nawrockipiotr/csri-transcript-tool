@@ -116,6 +116,40 @@
         <br><span style="font-size: 0.75rem; opacity: 0.8;">Generic references ("the company", "last year") are not flagged. Speaker labels are not PII. Risk level (LOW/MEDIUM/HIGH) is based on PII density. AI-based PII detection may produce false negatives — always verify manually before sharing or publishing.</span>
       </div>
     </div>
+    <div class="info-box">
+      <div class="info-title">About Auto-Glossary <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
+      <div class="info-content">
+        Available in Translation and Both modes. When enabled, the tool first extracts domain-specific terms (jargon, acronyms, recurring concepts) from the transcript and presents them in an editable table. You can review, edit translations, and deselect terms before approving. Approved glossary terms are then enforced during translation for consistent terminology across the entire file.
+        <br><span style="font-size: 0.75rem; opacity: 0.8;">The glossary is extracted from the first ~6000 characters. For multi-file batches, the glossary from the first file is reused for all subsequent files.</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About Back-translation validation <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
+      <div class="info-content">
+        Available in Translation and Both modes. When enabled, the translated text is translated back into the source language, then compared with the original. The comparison produces a fidelity score (1–10), a list of meaningful divergences with severity ratings (minor/major), and a summary assessment. This helps detect meaning shifts, omissions, or mistranslations.
+        <br><span style="font-size: 0.75rem; opacity: 0.8;">Adds approximately 2× processing time. Comparison uses the first ~4000 characters of each text.</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About Consistency Check <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
+      <div class="info-content">
+        Available after batch translation (2+ files). The button appears in the batch export bar. Checks whether domain-specific terms are translated consistently across all files in the batch. Reports inconsistencies with recommended translations and justifications.
+        <br><span style="font-size: 0.75rem; opacity: 0.8;">Uses the first ~2000 characters of each translation for analysis.</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About Diff view <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
+      <div class="info-content">
+        After translation, a toggle button cycles through three views: <strong>Translation only</strong> (default), <strong>Side by side</strong> (original and translation in parallel columns), and <strong>Inline diff</strong> (line-by-line comparison with deletions and insertions highlighted). Useful for reviewing what changed during translation.
+        <br><span style="font-size: 0.75rem; opacity: 0.8;">Diff is limited to the first 200 lines for performance.</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-title">About Timestamp check <span class="version-badge" style="font-size:0.6rem;vertical-align:middle;">v2.2</span></div>
+      <div class="info-content">
+        Automatically runs on SRT files (no AI call — purely deterministic). Detects: negative or zero durations, unrealistically long subtitles (>60s), very short subtitles (<500ms), overlapping entries, large gaps (>10s), and non-monotonic timestamps. Issues are shown with severity indicators (serious / minor) below the translation result.
+      </div>
+    </div>
     <div class="hero-author">CSRI Transcript Analysis Tool · by Piotr Nawrocki</div>
   </div>
 
