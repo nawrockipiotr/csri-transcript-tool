@@ -83,7 +83,11 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       const bt = batchTranslations.find(b => b.fileName === fileName);
       const diff = buildDiffView(bt.original, bt.translation, sanitizeId(fileName));
       diffHtml = `
-        <button class="export-btn diff-toggle-btn" id="diffBtn_${sanitizeId(fileName)}" onclick="toggleDiffView('${sanitizeId(fileName)}')">📄 Translation only</button>
+        <div class="diff-seg-control" id="diffSeg_${sanitizeId(fileName)}">
+          <button class="diff-seg-btn active" data-view="translation" onclick="setDiffView('${sanitizeId(fileName)}', 'translation')"><i class="icon-doc"></i> Translation</button>
+          <button class="diff-seg-btn" data-view="sidebyside" onclick="setDiffView('${sanitizeId(fileName)}', 'sidebyside')"><i class="icon-cols"></i> Side by side</button>
+          <button class="diff-seg-btn" data-view="inline" onclick="setDiffView('${sanitizeId(fileName)}', 'inline')"><i class="icon-diff"></i> Inline diff</button>
+        </div>
         <div id="diff_${sanitizeId(fileName)}" data-diff-state="translation">
           <div class="diff-translation">${transHtml}</div>
           <div class="diff-sidebyside" style="display:none;">${diff.sideHtml}</div>

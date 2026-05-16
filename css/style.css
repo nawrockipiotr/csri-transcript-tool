@@ -864,11 +864,39 @@ h1 {
 .glossary-approve-btn:hover { background: #15803d !important; }
 
 /* ─── v2.2: Diff Views ─── */
-.diff-toggle-btn {
+.diff-seg-control {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
   margin-bottom: 0.5rem;
-  background: var(--accent-dim) !important;
-  color: var(--accent) !important;
-  font-weight: 600;
+}
+.diff-seg-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.diff-seg-btn:first-child {
+  border-left: none;
+}
+.diff-seg-btn:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.diff-seg-btn.active {
+  background: var(--accent);
+  color: white;
+}
+.diff-seg-btn i {
+  font-style: normal;
+  margin-right: 0.25rem;
 }
 .diff-sidebyside-grid {
   display: grid;

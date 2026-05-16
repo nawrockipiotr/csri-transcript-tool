@@ -846,26 +846,26 @@ async function runConsistencyCheck() {
 }
 
 // ─── v2.2: Diff view toggle ───
-function toggleDiffView(fileId) {
+function setDiffView(fileId, view) {
   const container = document.getElementById(`diff_${fileId}`);
   if (!container) return;
-  const current = container.dataset.diffState || 'translation';
-  const states = ['translation', 'sidebyside', 'inline'];
-  const nextIdx = (states.indexOf(current) + 1) % states.length;
-  const next = states[nextIdx];
-  container.dataset.diffState = next;
+  container.dataset.diffState = view;
 
   const transEl = container.querySelector('.diff-translation');
   const sideEl = container.querySelector('.diff-sidebyside');
   const inlineEl = container.querySelector('.diff-inline');
-  const btn = document.getElementById(`diffBtn_${fileId}`);
 
-  if (transEl) transEl.style.display = next === 'translation' ? '' : 'none';
-  if (sideEl) sideEl.style.display = next === 'sidebyside' ? '' : 'none';
-  if (inlineEl) inlineEl.style.display = next === 'inline' ? '' : 'none';
+  if (transEl) transEl.style.display = view === 'translation' ? '' : 'none';
+  if (sideEl) sideEl.style.display = view === 'sidebyside' ? '' : 'none';
+  if (inlineEl) inlineEl.style.display = view === 'inline' ? '' : 'none';
 
-  const labels = { translation: '📄 Translation only', sidebyside: '↔ Side by side', inline: '🔍 Inline diff' };
-  if (btn) btn.textContent = labels[next];
+  // Update segmented control active state
+  const seg = document.getElementById(`diffSeg_${fileId}`);
+  if (seg) {
+    seg.querySelectorAll('.diff-seg-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.view === view);
+    });
+  }
 }
 
 // ─── Error ───
