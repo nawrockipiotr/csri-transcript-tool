@@ -44,7 +44,7 @@ body {
 .container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
 }
 
 h1 {
@@ -60,6 +60,16 @@ h1 {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
+  margin-bottom: 0;
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.hero-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #8b7355 0%, #a69374 30%, #6b705c 70%, #8b9474 100%);
+  border-radius: 0 0 var(--radius) var(--radius);
   margin-bottom: 2rem;
 }
 
@@ -94,13 +104,14 @@ h1 {
   font-family: 'JetBrains Mono', monospace;
 }
 
-.hero h1 { font-size: 1.6rem; margin-bottom: 0.4rem; }
+.hero h1 { font-size: 1.6rem; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.01em; }
 
 .hero-lead {
   color: var(--text-dim);
   font-size: 0.88rem;
-  line-height: 1.6;
+  line-height: 1.7;
   margin-bottom: 0.75rem;
+  font-weight: 300;
 }
 
 .hero-details {
@@ -163,18 +174,19 @@ h1 {
 /* API Key Section */
 .api-section {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
 }
 
 .api-section label {
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   display: block;
   margin-bottom: 0.5rem;
 }
@@ -254,11 +266,12 @@ h1 {
 .mode-toggle {
   display: flex;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .mode-btn {
@@ -293,11 +306,11 @@ h1 {
 }
 
 .setting label {
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .setting select {
@@ -317,8 +330,9 @@ h1 {
 /* Summary option */
 .summary-option {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03);
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
 }
@@ -379,10 +393,11 @@ h1 {
   align-items: center;
   justify-content: space-between;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   font-size: 0.88rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
 
 .file-item .name {
@@ -476,22 +491,24 @@ h1 {
 
 .result-block {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius);
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
 }
 
 .result-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.15rem;
   border-bottom: 1px solid var(--border);
   font-size: 0.88rem;
   font-weight: 600;
   flex-wrap: wrap;
   gap: 0.5rem;
+  letter-spacing: 0.01em;
 }
 
 .result-header .detected-lang {
@@ -872,38 +889,41 @@ h1 {
 .diff-seg-control {
   display: flex;
   gap: 4px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   position: sticky;
   top: 0;
   z-index: 10;
   background: var(--surface);
   padding: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 .diff-seg-btn {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.9rem;
-  font-weight: 500;
+  padding: 0.45rem 1rem;
+  font-size: 0.84rem;
+  font-weight: 600;
   font-family: 'Titillium Web', Arial, sans-serif;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-dim);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  border-radius: 4px;
-  margin: 0 2px;
+  transition: all 0.2s;
+  border-radius: 6px;
+  flex: 1;
+  text-align: center;
 }
 
-.diff-seg-btn:hover {
-  background: var(--accent-teal-dim);
-  color: var(--accent-teal);
+.diff-seg-btn:hover:not(.active) {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: var(--border);
 }
 .diff-seg-btn.active {
-  background: var(--accent-teal);
+  background: var(--accent);
   color: white;
-  border-radius: 4px;
+  border-radius: 6px;
+  border-color: var(--accent);
 }
 
 .diff-sidebyside-grid {
