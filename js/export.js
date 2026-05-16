@@ -84,7 +84,29 @@ function exportFile(fileId, type, format) {
   const container = document.getElementById(`trans_${fileId}`);
   if (!container) return;
 
-  // If diff view exists, read only the translation pane (not side-by-side/inline)
+  // Detect active diff view
+  const diffContainer = document.getElementById(`diff_${fileId}`);
+  const activeView = diffContainer ? (diffContainer.dataset.diffState || 'translation') : 'translation';
+
+  // For HTML/DOCX: if side-by-side or inline is active, export that view with styling
+  if (activeView !== 'translation' && (format === 'pdf' || format === 'docx')) {
+    const viewEl = activeView === 'sidebyside'
+      ? diffContainer.querySelector('.diff-sidebyside')
+      : diffContainer.querySelector('.diff-inline');
+    if (viewEl) {
+      const viewLabel = activeView === 'sidebyside' ? 'side_by_side' : 'inline_diff';
+      const langCode = getTargetLangCode();
+      const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx|pdf)$/i, '');
+      if (format === 'pdf') {
+        exportDiffHtml(viewEl, activeView, `${baseName}_${viewLabel}_${langCode}.html`);
+      } else {
+        exportDiffHtml(viewEl, activeView, `${baseName}_${viewLabel}_${langCode}.html`);
+      }
+      return;
+    }
+  }
+
+  // Default: export translation text
   const el = container.querySelector('.diff-translation') || container;
 
   // Get text — for TXT/DOCX/PDF, convert flag spans to text markers
@@ -356,4 +378,34 @@ function exportPdf(text, filename) {
     @media print { body { padding: 0; } @page { margin: 2cm; } }
   </style></head><body>${escapeHtml(text)}</body></html>`;
   downloadText(htmlContent, htmlFilename, 'text/html');
+}
+
+// ─── Export diff view as styled HTML ───
+function exportDiffHtml(viewEl, viewType, filename) {
+  const metadata = getProcessingMetadata();
+  const metaHtml = '<div style="background:#f3f4f6;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.8rem;color:#6b7085;white-space:pre-line;">' + escapeHtml(metadata) + '</div>';
+
+  let styles = '';
+  if (viewType === 'sidebyside') {
+    styles = `
+      .diff-sidebyside-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #ddd; }
+      .diff-orig-line, .diff-trans-line { padding: 4px 8px; border-bottom: 1px solid #eee; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; }
+      .diff-orig-line { background: #fff5f5; border-right: 1px solid #ddd; }
+      .diff-trans-line { background: #f0fdf4; }
+    `;
+  } else {
+    styles = `
+      .diff-inline-pair { margin-bottom: 2px; line-height: 1.6; }
+      .diff-del { background: #fecaca; text-decoration: line-through; padding: 2px 4px; border-radius: 2px; color: #991b1b; }
+      .diff-ins { background: #bbf7d0; padding: 2px 4px; border-radius: 2px; color: #166534; }
+    `;
+  }
+
+  const htmlContent = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escapeHtml(filename) + '</title>'
+    + '<style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 2rem; max-width: 900px; margin: 0 auto; color: #1a1d27; }'
+    + styles + '</style></head><body>'
+    + metaHtml
+    + viewEl.innerHTML
+    + '</body></html>';
+  downloadText(htmlContent, filename, 'text/html');
 }
