@@ -52,6 +52,8 @@
       <button class="info-toggle-btn" onclick="toggleInfo('infoConsistency')">Consistency Check</button>
       <button class="info-toggle-btn" onclick="toggleInfo('infoDiff')">Diff view</button>
       <button class="info-toggle-btn" onclick="toggleInfo('infoTimestamp')">Timestamp check</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoStats')">Stats</button>
+      <button class="info-toggle-btn" onclick="toggleInfo('infoInlineEdit')">Inline edit</button>
     </div>
 
     <!-- Collapsible info panels -->
@@ -72,7 +74,8 @@
         </div>
         <div class="info-content info-margin-top">
           <strong>Quality Score guide:</strong> 1–2 largely unintelligible · 3–4 poor, frequent errors · 5–6 moderate, understandable with errors · 7–8 good, minor issues · 9–10 excellent.<br>
-          <span class="info-dim">Flag counts and % of text flagged are computed deterministically and shown separately.</span>
+          <span class="info-dim">Flag counts and % of text flagged are computed deterministically and shown separately.</span><br>
+          <strong>Inline edit:</strong> Click any flagged fragment to correct it in place. Press Enter to save or Escape to cancel. Corrected text appears in <span class="flag-corrected" style="cursor:default;">green with ✓</span> and is preserved in exports.
         </div>
       </div>
     </div>
@@ -143,6 +146,7 @@
         </div>
         <div class="info-content info-margin-top">
           Export options: <strong>TXT (redacted)</strong> replaces PII with category placeholders, <strong>TXT (marked)</strong> shows original values with category labels.
+          <br><strong>Custom categories:</strong> When the Anonymize checkbox is enabled, a category row appears below it. The 5 default categories are shown as tags. Type a custom category name (e.g., PHONE, PROJECT, ROLE) and press Enter to add it — the AI will then also detect and tag that type of PII.
           <br><span class="info-dim">Generic references ("the company", "last year") are not flagged. Speaker labels are not PII. Risk level (LOW/MEDIUM/HIGH) is based on PII density. AI-based PII detection may produce false negatives — always verify manually before sharing or publishing.</span>
         </div>
       </div>
@@ -151,8 +155,8 @@
     <div class="info-panel" id="infoGlossary">
       <div class="info-box">
         <div class="info-content">
-          Available in Translation and Both modes. When enabled, the tool first extracts domain-specific terms (jargon, acronyms, recurring concepts) from the transcript and presents them in an editable table. You can review, edit translations, and deselect terms before approving. Approved glossary terms are then enforced during translation for consistent terminology across the entire file.
-          <br><span class="info-dim">The glossary is extracted from the first ~6000 characters. For multi-file batches, the glossary from the first file is reused for all subsequent files.</span>
+          Available in Translation and Both modes. When enabled, the tool first extracts domain-specific terms (jargon, acronyms, recurring concepts) from the transcript and presents them in an editable table. You can review, edit translations, and deselect terms before approving. Approved glossary terms are then enforced during translation for consistent terminology across the entire file. After approval, a <strong>CSV</strong> button lets you download the approved glossary for reuse or reference.
+          <br><span class="info-dim">The glossary is extracted from the first ~6000 characters. For multi-file batches, the glossary from the first file is reused for all subsequent files. You can also upload a previously saved glossary CSV instead of extracting one.</span>
         </div>
       </div>
     </div>
@@ -188,6 +192,23 @@
       <div class="info-box">
         <div class="info-content">
           Automatically runs on SRT files (no AI call — purely deterministic). Detects: negative or zero durations, unrealistically long subtitles (>60s), very short subtitles (<500ms), overlapping entries, large gaps (>10s), and non-monotonic timestamps. Issues are shown with severity indicators (serious / minor) below the translation result.
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="infoStats">
+      <div class="info-box">
+        <div class="info-content">
+          Every processed file gets a <strong>Stats</strong> tab with deterministic metrics (no AI call): word count, character count, speaker turns, number of speakers, average words per turn. For SRT files, total audio duration is also shown. If speakers are detected, a breakdown with percentage bars shows how much each speaker contributed.
+          <br><span class="info-dim">Speaker detection uses label patterns like "Speaker 1:", "Person 2:", "Interviewer:" etc. Transcripts without speaker labels will show word and character counts only.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="infoInlineEdit">
+      <div class="info-box">
+        <div class="info-content">
+          In the Translation and Quality tabs, flagged fragments (<span class="flag-yellow" style="cursor:default;">minor</span> and <span class="flag-red" style="cursor:default;">serious</span>) are clickable. Clicking opens an inline text field where you can type a correction. Press <strong>Enter</strong> to save or <strong>Escape</strong> to cancel. Corrected text replaces the flag and is shown in <span class="flag-corrected" style="cursor:default;">green</span>. Corrections are preserved when exporting to TXT, DOCX, and HTML.
         </div>
       </div>
     </div>
