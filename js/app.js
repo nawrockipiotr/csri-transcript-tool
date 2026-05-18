@@ -1,6 +1,6 @@
-// ─── Transcript Analysis Tool v2.6 — App Logic ───
+// ─── Transcript Analysis Tool v2.7 — App Logic ───
 
-const TOOL_VERSION = 'v2.6';
+const TOOL_VERSION = 'v2.7';
 
 
 // ─── v2.5: Dark mode ───
@@ -322,6 +322,53 @@ document.getElementById('glossaryFileInput')?.addEventListener('change', functio
 ['addSummary', 'addAnonymization', 'addSpeakerCheck', 'useGlossary', 'useBacktrans', 'highQuality', 'processingDetail'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', updateCostEstimate);
+});
+
+
+// ─── v2.7: Configurable anonymization categories ───
+const DEFAULT_ANON_CATEGORIES = ['NAME', 'ORG', 'LOC', 'ID', 'DATE'];
+let anonCategories = [...DEFAULT_ANON_CATEGORIES];
+
+function renderAnonCatTags() {
+  const container = document.getElementById('anonCatTags');
+  if (!container) return;
+  container.innerHTML = '';
+  anonCategories.forEach((cat, i) => {
+    const tag = document.createElement('span');
+    const isDefault = DEFAULT_ANON_CATEGORIES.includes(cat);
+    tag.className = 'anon-cat-tag' + (isDefault ? ' default' : '');
+    tag.innerHTML = cat + (isDefault ? '' : ' <span class="anon-cat-remove" data-idx="' + i + '">&times;</span>');
+    container.appendChild(tag);
+  });
+  container.querySelectorAll('.anon-cat-remove').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.idx);
+      anonCategories.splice(idx, 1);
+      renderAnonCatTags();
+    });
+  });
+}
+
+// Show/hide categories row when checkbox toggles
+document.getElementById('addAnonymization')?.addEventListener('change', function() {
+  const row = document.getElementById('anonCategoriesRow');
+  if (row) {
+    row.style.display = this.checked ? 'flex' : 'none';
+    if (this.checked) renderAnonCatTags();
+  }
+});
+
+// Add custom category on Enter
+document.getElementById('anonCatInput')?.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = this.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
+    if (val && !anonCategories.includes(val)) {
+      anonCategories.push(val);
+      renderAnonCatTags();
+    }
+    this.value = '';
+  }
 });
 
 // ─── File Handling ───
@@ -652,7 +699,7 @@ function approveGlossary() {
     const bar = document.createElement('div');
     bar.className = 'glossary-collapsed-bar';
     bar.onclick = function() { panel.classList.toggle('glossary-expanded'); };
-    bar.innerHTML = '<span><i data-lucide="book-open" class="icon-sm"></i> Glossary approved — ' + approved.length + ' terms</span><span class="glossary-expand-hint"><i data-lucide="chevron-down" class="icon-xs"></i></span>';
+    bar.innerHTML = '<span><i data-lucide="book-open" class="icon-sm"></i> Glossary approved — ' + approved.length + ' terms</span><span style="display:flex;align-items:center;gap:0.5rem;"><button class="export-btn" onclick="event.stopPropagation();exportGlossaryCSV()" title="Download glossary as CSV">CSV <i data-lucide="download" class="icon-xs"></i></button><span class="glossary-expand-hint"><i data-lucide="chevron-down" class="icon-xs"></i></span></span>';
     // Wrap existing table in collapsed content div
     const tableWrapper = document.createElement('div');
     tableWrapper.className = 'glossary-collapsed-content';
@@ -665,6 +712,84 @@ function approveGlossary() {
 
   // Resume processing
   if (typeof resumeAfterGlossary === 'function') resumeAfterGlossary();
+}
+
+function exportGlossaryCSV() {
+  const terms = glossaryData._approved;
+  if (!terms || terms.length === 0) return;
+  let csv = 'source|target|category\n';
+  for (const t of terms) {
+    const src = t.source.replace(/"/g, '""');
+    const tgt = t.target.replace(/"/g, '""');
+    const cat = (t.category || '').replace(/"/g, '""');
+    csv += `${src}|${tgt}|${cat}\n`;
+  }
+  downloadText(csv, 'glossary_' + new Date().toISOString().substring(0, 10) + '.csv', 'text/csv');
+}
+
+// ─── Transcript stats (deterministic, no API) ───
+function computeTranscriptStats(text, fileName) {
+  const lines = text.split('\n');
+  const ext = fileName.split('.').pop().toLowerCase();
+  
+  // Word count
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  const wordCount = words.length;
+  const charCount = text.length;
+  
+  // Speaker turns
+  const speakerPattern = /^(Speaker\s*\d+|Person\s*\d+|Interviewer|Respondent|[A-Z][a-zA-Z]*\s*\d*)\s*[:：]/;
+  let turns = 0;
+  const speakerCounts = {};
+  let currentSpeaker = null;
+  let currentTurnWords = 0;
+  const turnLengths = [];
+  
+  for (const line of lines) {
+    const match = line.match(speakerPattern);
+    if (match) {
+      // Save previous turn
+      if (currentSpeaker && currentTurnWords > 0) {
+        turnLengths.push(currentTurnWords);
+        speakerCounts[currentSpeaker] = (speakerCounts[currentSpeaker] || 0) + currentTurnWords;
+      }
+      currentSpeaker = match[1].trim();
+      turns++;
+      currentTurnWords = line.replace(speakerPattern, '').trim().split(/\s+/).filter(w => w.length > 0).length;
+    } else if (currentSpeaker && line.trim()) {
+      currentTurnWords += line.trim().split(/\s+/).filter(w => w.length > 0).length;
+    }
+  }
+  // Save last turn
+  if (currentSpeaker && currentTurnWords > 0) {
+    turnLengths.push(currentTurnWords);
+    speakerCounts[currentSpeaker] = (speakerCounts[currentSpeaker] || 0) + currentTurnWords;
+  }
+  
+  const avgTurnLength = turnLengths.length > 0 ? Math.round(turnLengths.reduce((a, b) => a + b, 0) / turnLengths.length) : 0;
+  const speakerCount = Object.keys(speakerCounts).length;
+  
+  // SRT duration
+  let duration = null;
+  if (ext === 'srt') {
+    const timePattern = /\d{2}:\d{2}:\d{2}[.,]\d{3}/g;
+    const times = text.match(timePattern) || [];
+    if (times.length >= 2) {
+      const parseTime = t => {
+        const [h, m, rest] = t.split(':');
+        const [s, ms] = rest.replace(',', '.').split('.');
+        return parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s) + parseInt(ms) / 1000;
+      };
+      const first = parseTime(times[0]);
+      const last = parseTime(times[times.length - 1]);
+      const dur = last - first;
+      const mins = Math.floor(dur / 60);
+      const secs = Math.round(dur % 60);
+      duration = mins + ':' + String(secs).padStart(2, '0');
+    }
+  }
+  
+  return { wordCount, charCount, turns, speakerCount, speakerCounts, avgTurnLength, duration };
 }
 
 // ─── Batch QA report data (populated during processing) ───
@@ -997,7 +1122,7 @@ async function processFiles(appendMode) {
         for (let ci = 0; ci < chunks.length; ci++) {
           showProgress(`Anonymizing ${file.name}... chunk ${ci + 1}/${chunks.length}`);
           const anonLang = targetLang || 'English';
-          const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(anonLang), chunks[ci]);
+          const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(anonLang, anonCategories), chunks[ci]);
           anonParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -1047,7 +1172,8 @@ async function processFiles(appendMode) {
         batchTranslations.push({ fileName: file.name, original: content, translation: translationResult });
       }
 
-      renderResult(file.name, translationResult, qualityResult, summaryResult, langData, speakerResult, anonymResult, backtransResult, timestampResult);
+      const transcriptStats = computeTranscriptStats(content, file.name);
+      renderResult(file.name, translationResult, qualityResult, summaryResult, langData, speakerResult, anonymResult, backtransResult, timestampResult, { provider: currentProvider, model: getModel() }, transcriptStats);
       setFileStatus(fi, 'done');
 
     } catch (err) {

@@ -1540,6 +1540,15 @@ input[type="checkbox"]:focus-visible {
 }
 
 /* Glossary collapsed bar (after approval) */
+.model-tag {
+  font-size: 0.7rem;
+  background: var(--bg-dim);
+  color: var(--text-dim);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  margin-left: 0.5rem;
+}
 .glossary-panel.approved {
   border-color: var(--green);
   opacity: 1;
@@ -1618,4 +1627,187 @@ input[type="checkbox"]:focus-visible {
   font-size: 0.85rem;
   color: var(--text-dim);
   min-width: 3rem;
+}
+
+/* ─── v2.7: Transcript Stats tab ─── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 0.75rem 0.5rem;
+}
+.stat-num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent-teal);
+  line-height: 1.2;
+}
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.2rem;
+}
+.stats-speakers {
+  padding: 0.75rem 1rem 1rem;
+  font-size: 0.85rem;
+}
+.stats-speakers strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.speaker-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.speaker-name {
+  min-width: 100px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.speaker-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.speaker-bar {
+  height: 100%;
+  background: var(--accent-teal);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.speaker-pct {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  min-width: 110px;
+  text-align: right;
+}
+
+/* ─── v2.7: Inline edit on QA flags ─── */
+.flag-yellow, .flag-red {
+  cursor: pointer;
+}
+.flag-yellow:hover, .flag-red:hover {
+  outline: 2px dashed var(--accent-teal);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+.flag-editing {
+  display: inline-block;
+  min-width: 60px;
+  padding: 0.15rem 0.4rem;
+  border: 2px solid var(--accent-teal);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  outline: none;
+}
+.flag-corrected {
+  background: var(--green-dim);
+  color: var(--green);
+  padding: 0.05rem 0.2rem;
+  border-radius: 2px;
+  text-decoration: none;
+  cursor: default;
+  position: relative;
+}
+.flag-corrected::after {
+  content: '✓';
+  font-size: 0.7em;
+  margin-left: 0.2rem;
+  opacity: 0.7;
+}
+
+/* ─── v2.7: Configurable anonymization categories ─── */
+.anon-categories-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.4rem 0 0.2rem 1.6rem;
+  font-size: 0.8rem;
+}
+.anon-cat-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.anon-cat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--accent-dim);
+  color: var(--text);
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.anon-cat-tag.default {
+  opacity: 0.7;
+}
+.anon-cat-tag .anon-cat-remove {
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--text-dim);
+  margin-left: 0.1rem;
+}
+.anon-cat-tag .anon-cat-remove:hover {
+  color: var(--red);
+}
+.anon-cat-input {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+  background: transparent;
+  color: var(--text);
+  width: 110px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.anon-cat-input:focus {
+  border-color: var(--accent-teal);
+  border-style: solid;
+}
+.anon-cat-input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+/* ─── v2.7: Custom PII flag ─── */
+.flag-custom {
+  background: var(--indigo-dim);
+  color: var(--indigo);
+  padding: 0.05rem 0.2rem;
+  border-radius: 2px;
+  cursor: help;
 }

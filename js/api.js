@@ -1,4 +1,4 @@
-// ─── Transcript Analysis Tool v2.6 — API Layer ───
+// ─── Transcript Analysis Tool v2.7 — API Layer ───
 
 // ─── v2.5: Human-readable API error messages ───
 function formatApiError(status, serverMsg, provider) {

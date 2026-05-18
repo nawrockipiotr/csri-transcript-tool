@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.6 — Prompts ───
+// ─── CSRI Transcript Analysis Tool v2.7 — Prompts ───
 
 function getLanguageDetectionPrompt() {
   return `Detect the primary language of this transcript. Also note any secondary languages present (code-switching, foreign inserts, quotes in other languages).
@@ -147,7 +147,7 @@ RULES:
 4. Be conservative — only flag issues you are reasonably confident about.${langNote}`;
 }
 
-function getAnonymizationPrompt(analysisLang) {
+function getAnonymizationPrompt(analysisLang, categories) {
   const langNote = analysisLang
     ? `\n\nIMPORTANT: Write the PII_SUMMARY section and any commentary in ${analysisLang}. The structured labels (PII_SUMMARY, Names found, Organizations found, etc.) stay in English as parsing tokens.`
     : '';
@@ -157,20 +157,26 @@ function getAnonymizationPrompt(analysisLang) {
 RESPONSE FORMAT:
 Return the COMPLETE original text with the following markers:
 
-- [NAME]real name[/NAME] — personal names (first, last, nicknames)
-- [ORG]organization name[/ORG] — company names, institution names, department names
-- [LOC]location[/LOC] — specific addresses, city names, neighborhood names, building names
-- [ID]identifier[/ID] — phone numbers, email addresses, ID numbers, account numbers
-- [DATE]specific date[/DATE] — specific dates that could identify events or people (not general time references like "last year")
+` + (function() {
+  const defaultDesc = {
+    'NAME': 'personal names (first, last, nicknames)',
+    'ORG': 'company names, institution names, department names',
+    'LOC': 'specific addresses, city names, neighborhood names, building names',
+    'ID': 'phone numbers, email addresses, ID numbers, account numbers',
+    'DATE': 'specific dates that could identify events or people (not general time references like "last year")'
+  };
+  const cats = categories && categories.length > 0 ? categories : ['NAME', 'ORG', 'LOC', 'ID', 'DATE'];
+  return cats.map(c => '- [' + c + ']content[/' + c + '] — ' + (defaultDesc[c] || 'custom PII category: ' + c.toLowerCase())).join('\n');
+})() + `
 
 After the marked text, provide:
 
 PII_SUMMARY:
-- Names found: [count]
-- Organizations found: [count]
-- Locations found: [count]
-- Identifiers found: [count]
-- Dates found: [count]
+` + (function() {
+  const defaultLabels = { 'NAME': 'Names', 'ORG': 'Organizations', 'LOC': 'Locations', 'ID': 'Identifiers', 'DATE': 'Dates' };
+  const cats = categories && categories.length > 0 ? categories : ['NAME', 'ORG', 'LOC', 'ID', 'DATE'];
+  return cats.map(c => '- ' + (defaultLabels[c] || c) + ' found: [count]').join('\n');
+})() + `
 - Risk level: [LOW/MEDIUM/HIGH — based on density and sensitivity of PII]
 
 RULES:

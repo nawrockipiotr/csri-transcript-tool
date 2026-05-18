@@ -1,4 +1,4 @@
-// ─── Transcript Analysis Tool v2.6 — Render ───
+// ─── Transcript Analysis Tool v2.7 — Render ───
 
 function sanitizeId(name) {
   return name.replace(/[^a-zA-Z0-9]/g, '_');
@@ -47,7 +47,7 @@ function buildScoreBreakdown(metrics, formatted) {
 }
 
 // ─── Main result renderer (v2.6: tabbed sections) ───
-function renderResult(fileName, translation, quality, summary, langData, speakerCheck, anonymization, backtransResult, timestampResult) {
+function renderResult(fileName, translation, quality, summary, langData, speakerCheck, anonymization, backtransResult, timestampResult, modelInfo, transcriptStats) {
   const resultsArea = document.getElementById('resultsArea');
   const block = document.createElement('div');
   block.className = 'result-block';
@@ -218,7 +218,40 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
     });
   }
 
-  // ── Build block HTML ──
+  // ── Transcript Stats tab (deterministic) ──
+  if (transcriptStats) {
+    let statsHtml = '<div class="stats-grid">';
+    statsHtml += '<div class="stat-item"><span class="stat-num">' + transcriptStats.wordCount.toLocaleString() + '</span><span class="stat-label">words</span></div>';
+    statsHtml += '<div class="stat-item"><span class="stat-num">' + transcriptStats.charCount.toLocaleString() + '</span><span class="stat-label">characters</span></div>';
+    if (transcriptStats.turns > 0) {
+      statsHtml += '<div class="stat-item"><span class="stat-num">' + transcriptStats.turns + '</span><span class="stat-label">speaker turns</span></div>';
+      statsHtml += '<div class="stat-item"><span class="stat-num">' + transcriptStats.speakerCount + '</span><span class="stat-label">speakers detected</span></div>';
+      statsHtml += '<div class="stat-item"><span class="stat-num">' + transcriptStats.avgTurnLength + '</span><span class="stat-label">avg words/turn</span></div>';
+    }
+    if (transcriptStats.duration) {
+      statsHtml += '<div class="stat-item"><span class="stat-num">' + transcriptStats.duration + '</span><span class="stat-label">duration (SRT)</span></div>';
+    }
+    statsHtml += '</div>';
+    // Speaker breakdown
+    if (transcriptStats.speakerCount > 0) {
+      const totalWords = Object.values(transcriptStats.speakerCounts).reduce((a, b) => a + b, 0);
+      statsHtml += '<div class="stats-speakers"><strong>Speaker breakdown:</strong>';
+      const sorted = Object.entries(transcriptStats.speakerCounts).sort((a, b) => b[1] - a[1]);
+      for (const [spk, count] of sorted) {
+        const pct = totalWords > 0 ? ((count / totalWords) * 100).toFixed(1) : '0';
+        statsHtml += '<div class="speaker-stat"><span class="speaker-name">' + escapeHtml(spk) + '</span><span class="speaker-bar-wrap"><span class="speaker-bar" style="width:' + pct + '%"></span></span><span class="speaker-pct">' + count + ' words (' + pct + '%)</span></div>';
+      }
+      statsHtml += '</div>';
+    }
+    tabs.push({
+      key: 'stats',
+      label: 'Stats',
+      badge: transcriptStats.wordCount.toLocaleString() + ' words',
+      contentHtml: '<div class="result-content" id="stats_' + fId + '">' + statsHtml + '</div>'
+    });
+  }
+
+    // ── Build block HTML ──
   if (tabs.length === 0) return; // nothing to render
 
   const fileIndex = files ? files.findIndex(f => f.name === fileName) : -1;
@@ -239,6 +272,9 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
     }
     headerHtml += ` <span class="confidence-${langData.confidence}">${langData.confidence} confidence</span>`;
     headerHtml += `</span>`;
+  }
+  if (modelInfo) {
+    headerHtml += `<span class="model-tag" title="${modelInfo.provider}">${modelInfo.model}</span>`;
   }
   headerHtml += `</div>`;
 
@@ -263,6 +299,50 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
   block.innerHTML = headerHtml + `<div class="result-body">${tabBarHtml}${panelsHtml}</div>`;
   resultsArea.appendChild(block);
   if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: block});
+  enableInlineEdit(block);
+}
+
+
+// ─── v2.7: Inline edit on QA flags ───
+function enableInlineEdit(block) {
+  block.addEventListener('click', function(e) {
+    const flag = e.target.closest('.flag-yellow, .flag-red');
+    if (!flag || flag.classList.contains('flag-corrected') || flag.querySelector('.flag-editing')) return;
+    
+    const originalText = flag.textContent;
+    const flagClass = flag.classList.contains('flag-red') ? 'flag-red' : 'flag-yellow';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'flag-editing';
+    input.value = originalText;
+    input.setAttribute('data-original', originalText);
+    input.setAttribute('data-flag-class', flagClass);
+    
+    flag.textContent = '';
+    flag.appendChild(input);
+    input.focus();
+    input.select();
+    
+    function commitEdit() {
+      const newText = input.value.trim();
+      if (!newText || newText === originalText) {
+        // Revert
+        flag.textContent = originalText;
+        return;
+      }
+      // Replace flag with corrected span
+      flag.className = 'flag-corrected';
+      flag.title = 'Corrected (was: ' + originalText + ')';
+      flag.textContent = newText;
+    }
+    
+    input.addEventListener('blur', commitEdit);
+    input.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+      if (ev.key === 'Escape') { flag.textContent = originalText; }
+    });
+  });
 }
 
 // ─── Tab switching ───
@@ -538,6 +618,7 @@ function renderConsistencyReport(text) {
   `;
   resultsArea.appendChild(block);
   if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: block});
+  enableInlineEdit(block);
 }
 
 // ─── v2.2: Build diff view HTML (for translation results with original) ───
@@ -593,6 +674,11 @@ function formatAnonymization(text) {
   html = html.replace(/\[LOC\]([\s\S]*?)\[\/LOC\]/g, '<span class="flag-pii flag-loc" title="Location">$1</span>');
   html = html.replace(/\[ID\]([\s\S]*?)\[\/ID\]/g, '<span class="flag-pii flag-id" title="Identifier">$1</span>');
   html = html.replace(/\[DATE\]([\s\S]*?)\[\/DATE\]/g, '<span class="flag-pii flag-date" title="Specific date">$1</span>');
+  // Catch-all for custom PII categories
+  html = html.replace(/\[([A-Z][A-Z0-9_]+)\]([\s\S]*?)\[\/\1\]/g, function(m, tag, inner) {
+    if (['NAME','ORG','LOC','ID','DATE'].includes(tag)) return m; // already handled
+    return '<span class="flag-pii flag-custom" title="' + tag + '">' + inner + '</span>';
+  });
 
   // Parse PII summary for stats
   let names = 0, orgs = 0, locs = 0, ids = 0, dates = 0, risk = 'LOW';
@@ -605,7 +691,10 @@ function formatAnonymization(text) {
     const rm = piiText.match(/Risk level:\s*(\w+)/); if (rm) risk = rm[1];
   }
 
-  const total = names + orgs + locs + ids + dates;
+  // Count custom categories from the HTML
+  const customMatches = html.match(/flag-custom/g);
+  const customCount = customMatches ? customMatches.length : 0;
+  const total = names + orgs + locs + ids + dates + customCount;
   const statsLine = `${total} PII items · Risk: ${risk}`;
 
   return {
