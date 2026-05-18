@@ -183,7 +183,7 @@ function exportQuality(fileId, format) {
   const metricsHeader = getQAMetricsHeader(fileId);
   const fullLegend = metadata + '\n\n' + metricsHeader + FLAGS_LEGEND + '\n\n';
 
-  if (format === 'html') {
+  if (format === 'html' || format === 'pdf') {
     const legendHtml = `<div style="background:#f3f4f6;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem;color:#374151;white-space:pre-line;">${escapeHtml(fullLegend.trim())}</div>`;
     const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quality: ${baseName}</title>
     <style>
@@ -221,7 +221,8 @@ function exportGeneric(fileId, prefix, format) {
   if (!el) return;
 
   const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx|pdf)$/i, '');
-  const label = prefix === 'summ' ? 'summary' : prefix === 'spkr' ? 'speaker_check' : 'anonymization';
+  const labelMap = { summ: 'summary', spkr: 'speaker_check', anon: 'anonymization', btrans: 'back_translation' };
+  const label = labelMap[prefix] || prefix;
   const metadata = getProcessingMetadata();
 
   if (format === 'html') {
@@ -254,13 +255,49 @@ function exportGeneric(fileId, prefix, format) {
   }
 }
 
-// ─── Anonymized export ───
-function exportAnonymized(fileId, mode) {
+// ─── Anonymized export (supports txt, docx, html) ───
+function exportAnonymized(fileId, mode, format) {
   const el = document.getElementById(`anon_${fileId}`);
   if (!el) return;
 
   const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx|pdf)$/i, '');
   const metadata = getProcessingMetadata();
+  const fmt = format || 'txt';
+
+  // HTML format: styled HTML with redaction or marking applied
+  if (fmt === 'html' || fmt === 'pdf') {
+    const metaHtml = `<div style="background:#f3f4f6;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.8rem;color:#6b7085;white-space:pre-line;">${escapeHtml(metadata)}</div>`;
+    let bodyHtml = el.innerHTML;
+    if (mode === 'redacted') {
+      bodyHtml = bodyHtml.replace(/<span class="flag-pii[^"]*"[^>]*>[\s\S]*?<\/span>/g, function(match) {
+        if (match.includes('flag-name')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[PERSON]</span>';
+        if (match.includes('flag-org')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[ORGANIZATION]</span>';
+        if (match.includes('flag-loc')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[LOCATION]</span>';
+        if (match.includes('flag-id')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[ID_REMOVED]</span>';
+        if (match.includes('flag-date')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[DATE]</span>';
+        return match;
+      });
+    }
+    const styles = mode === 'redacted' ? '' : `
+      .flag-pii { padding: 2px 6px; border-radius: 2px; }
+      .flag-name { background: #fce7f3; border-left: 3px solid #ec4899; }
+      .flag-org { background: #e0e7ff; border-left: 3px solid #6366f1; }
+      .flag-loc { background: #d1fae5; border-left: 3px solid #10b981; }
+      .flag-id { background: #fee2e2; border-left: 3px solid #ef4444; }
+      .flag-date { background: #fef3c7; border-left: 3px solid #f59e0b; }`;
+    const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Anonymized (${mode}): ${baseName}</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2rem; line-height: 1.8; max-width: 800px; margin: 0 auto; color: #1a1d27; }
+      .qa-body { white-space: pre-wrap; }
+      ${styles}
+    </style></head><body>
+    ${metaHtml}
+    ${bodyHtml}</body></html>`;
+    downloadText(htmlContent, `${baseName}_anonymized_${mode}.html`, 'text/html');
+    return;
+  }
+
+  // TXT and DOCX: convert HTML to plain text with redaction/marking
   let text = el.innerHTML;
 
   if (mode === 'redacted') {
@@ -280,7 +317,12 @@ function exportAnonymized(fileId, mode) {
   text = text.replace(/<[^>]+>/g, '');
   text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
   text = metadata + '\n\n' + text;
-  downloadText(text, `${baseName}_anonymized_${mode}.txt`, 'text/plain');
+
+  if (fmt === 'docx') {
+    exportDocx(text, `${baseName}_anonymized_${mode}.docx`);
+  } else {
+    downloadText(text, `${baseName}_anonymized_${mode}.txt`, 'text/plain');
+  }
 }
 
 // ─── Download helpers ───

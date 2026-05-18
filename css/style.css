@@ -1524,3 +1524,18 @@ input[type="checkbox"]:focus-visible {
 .icon-spin { animation: icon-spin 1.2s linear infinite; }
 .dropzone-icon { font-size: inherit; line-height: 1; }
 .dropzone-icon .icon-lg { margin-bottom: 0.5rem; }
+
+/* Export group labels (e.g., Redacted:/Marked: in anonymization) */
+.export-group-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  min-width: 5rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Re-run button spacing from filename */
+.rerun-btn {
+  margin-left: 0.75rem;
+}
