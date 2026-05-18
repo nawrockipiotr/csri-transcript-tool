@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.3 — Prompts ───
+// ─── CSRI Transcript Analysis Tool v2.4 — Prompts ───
 
 function getLanguageDetectionPrompt() {
   return `Detect the primary language of this transcript. Also note any secondary languages present (code-switching, foreign inserts, quotes in other languages).

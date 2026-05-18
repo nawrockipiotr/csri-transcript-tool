@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.3 — Export ───
+// ─── CSRI Transcript Analysis Tool v2.4 — Export ───
 
 function stripTimestamps(text) {
   return text
@@ -35,7 +35,7 @@ function getProcessingMetadata() {
   const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 
   return `--- Processing metadata ---
-Tool: CSRI Transcript Analysis Tool ${version} (CSRI, Faculty of Management, University of Warsaw)
+Tool: Transcript Analysis Tool ${version} (CSRI, Faculty of Management, University of Warsaw)
 Provider: ${provider}
 Model: ${model}
 Exported: ${timestamp}

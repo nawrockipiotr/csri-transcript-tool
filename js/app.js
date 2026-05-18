@@ -1,6 +1,6 @@
-// ─── CSRI Transcript Analysis Tool v2.3 — App Logic ───
+// ─── Transcript Analysis Tool v2.4 — App Logic ───
 
-const TOOL_VERSION = 'v2.3';
+const TOOL_VERSION = 'v2.4';
 
 // ─── State ───
 let files = [];
@@ -87,6 +87,7 @@ function setProvider(provider) {
     if (savedEndpoint) document.getElementById('localEndpoint').value = savedEndpoint;
     if (savedModel) document.getElementById('localModel').value = savedModel;
   }
+  updateCostEstimate();
 }
 
 function getModel() {
@@ -139,6 +140,67 @@ apiKeyInput.addEventListener('input', () => {
   }
 });
 
+
+// ─── v2.4: Cost estimation ───
+const COST_PER_1K_TOKENS = {
+  // [input, output] per 1K tokens in USD
+  'claude-haiku-4-5-20251001': [0.0008, 0.004],
+  'claude-sonnet-4-6': [0.003, 0.015],
+  'gpt-4o-mini': [0.00015, 0.0006],
+  'gpt-4o': [0.0025, 0.01],
+  'gemini-2.0-flash': [0.0001, 0.0004],
+  'gemini-2.5-pro-preview-05-06': [0.00125, 0.01],
+};
+
+function updateCostEstimate() {
+  const panel = document.getElementById('costEstimate');
+  const textEl = document.getElementById('costText');
+  if (!panel || !textEl || files.length === 0) {
+    if (panel) panel.style.display = 'none';
+    return;
+  }
+
+  if (currentProvider === 'local') {
+    panel.style.display = 'flex';
+    textEl.textContent = 'Local model — no API cost';
+    return;
+  }
+
+  const model = getModel();
+  const rates = COST_PER_1K_TOKENS[model];
+  if (!rates) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  // Rough estimate: avg transcript ~4000 chars ≈ 1000 tokens input, ~1000 tokens output per call
+  const avgCharsPerFile = 8000;
+  const tokensPerFile = avgCharsPerFile / 4; // ~2000 tokens input
+  const callsPerFile = estimateCallsPerFile();
+  const totalInputTokens = files.length * tokensPerFile * callsPerFile;
+  const totalOutputTokens = totalInputTokens * 0.8;
+
+  const cost = (totalInputTokens / 1000 * rates[0]) + (totalOutputTokens / 1000 * rates[1]);
+  const low = (cost * 0.5).toFixed(3);
+  const high = (cost * 1.5).toFixed(3);
+
+  panel.style.display = 'flex';
+  textEl.textContent = `Estimated cost: $${low} – $${high} USD for ${files.length} file(s) · ${model} · ${callsPerFile} API calls/file`;
+}
+
+function estimateCallsPerFile() {
+  let calls = 1; // language detection
+  if (currentMode === 'translate') calls += 2; // chunk translate + overhead
+  else if (currentMode === 'quality') calls += 2;
+  else if (currentMode === 'both') calls += 4;
+  if (document.getElementById('addSummary')?.checked) calls += 1;
+  if (document.getElementById('addAnonymization')?.checked) calls += 1;
+  if (document.getElementById('addSpeakerCheck')?.checked) calls += 1;
+  if (document.getElementById('useGlossary')?.checked) calls += 1;
+  if (document.getElementById('useBacktrans')?.checked) calls += 3;
+  return calls;
+}
+
 // ─── Mode Toggle ───
 function setMode(mode) {
   currentMode = mode;
@@ -148,6 +210,7 @@ function setMode(mode) {
 
   const showTargetLang = ['translate', 'both'].includes(mode);
   document.getElementById('targetLangSetting').style.display = showTargetLang ? '' : 'none';
+  updateCostEstimate();
 
   // All checkbox options visible for all modes except glossary/backtrans (translate/both only)
   ['summaryOption', 'anonymizeOption', 'speakerOption'].forEach(id => {
@@ -155,14 +218,33 @@ function setMode(mode) {
     if (el) el.style.display = '';
   });
 
-  const glossaryOpt = document.getElementById('glossaryOption');
-  if (glossaryOpt) glossaryOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
-
-  const backtransOpt = document.getElementById('backtransOption');
-  if (backtransOpt) backtransOpt.style.display = ['translate', 'both'].includes(mode) ? '' : 'none';
+  // #2 v2.4: Gray out instead of hiding — user sees all options always
+  const transMode = ['translate', 'both'].includes(mode);
+  ['glossaryOption', 'backtransOption'].forEach(id => {
+    const opt = document.getElementById(id);
+    if (!opt) return;
+    opt.style.display = '';
+    const checkbox = opt.querySelector('input[type="checkbox"]');
+    const unavail = opt.querySelector('.option-unavail');
+    if (transMode) {
+      opt.classList.remove('disabled-option');
+      if (checkbox) checkbox.disabled = false;
+      if (unavail) unavail.style.display = 'none';
+    } else {
+      opt.classList.add('disabled-option');
+      if (checkbox) { checkbox.disabled = true; checkbox.checked = false; }
+      if (unavail) unavail.style.display = '';
+    }
+  });
 }
 
 
+
+// ─── v2.4: Cost estimate hooks on option checkboxes ───
+['addSummary', 'addAnonymization', 'addSpeakerCheck', 'useGlossary', 'useBacktrans', 'highQuality'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', updateCostEstimate);
+});
 
 // ─── File Handling ───
 const dropzone = document.getElementById('dropzone');
@@ -208,14 +290,38 @@ function removeFile(idx) {
 }
 
 function renderFileList() {
-  fileListEl.innerHTML = files.map((f, i) => `
-    <div class="file-item">
+  fileListEl.innerHTML = files.map((f, i) => {
+    const status = f._status || '';
+    const statusClass = status ? 'file-status-' + status : '';
+    const statusLabel = status === 'processing' ? '⏳ processing' : status === 'done' ? '✓ done' : status === 'error' ? '✗ error' : status === 'queued' ? '◻ queued' : '';
+    return `
+    <div class="file-item" id="fileItem_${i}">
       <span class="name">${escapeHtml(f.name)}</span>
       <span class="size">${(f.size / 1024).toFixed(1)} KB</span>
-      <button class="remove" onclick="removeFile(${i})">×</button>
-    </div>
-  `).join('');
+      ${statusLabel ? '<span class="file-status ' + statusClass + '">' + statusLabel + '</span>' : ''}
+      ${!isProcessing ? '<button class="remove" onclick="removeFile(' + i + ')">×</button>' : ''}
+    </div>`;
+  }).join('');
   actionBtn.disabled = files.length === 0;
+  updateCostEstimate();
+}
+
+function setFileStatus(fileIndex, status) {
+  files[fileIndex]._status = status;
+  const el = document.getElementById('fileItem_' + fileIndex);
+  if (!el) return;
+  const statusSpan = el.querySelector('.file-status');
+  const labels = { processing: '⏳ processing', done: '✓ done', error: '✗ error', queued: '◻ queued' };
+  if (statusSpan) {
+    statusSpan.textContent = labels[status] || status;
+    statusSpan.className = 'file-status file-status-' + status;
+  } else {
+    const span = document.createElement('span');
+    span.className = 'file-status file-status-' + status;
+    span.textContent = labels[status] || status;
+    const removeBtn = el.querySelector('.remove');
+    el.insertBefore(span, removeBtn);
+  }
 }
 
 // ─── Read file content ───
@@ -293,7 +399,8 @@ function stopProcessing() {
     window.resumeAfterGlossary = null;
   }
   document.getElementById('stopBtn').classList.remove('visible');
-  document.getElementById('progressText').textContent = 'Stopped.';
+  const doneCount = files.filter(f => f._status === 'done').length;
+  document.getElementById('progressText').textContent = `Stopped. ${doneCount} file(s) completed — results preserved.`;
   actionBtn.disabled = false;
 }
 
@@ -444,6 +551,8 @@ async function processFiles() {
   actionBtn.disabled = true;
   stopBtn.classList.add('visible');
   progressBar.style.width = '0%';
+  const progressBarWrap = document.getElementById('progressBarWrap');
+  if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', '0');
 
   // Hide batch export bar (will show after processing)
   const batchBar = document.getElementById('batchExportBar');
@@ -491,7 +600,13 @@ async function processFiles() {
 
   let doneWork = 0;
 
-  for (const { file, content, chunks } of fileContents) {
+  // v2.4: Mark all files as queued
+  files.forEach((f, i) => setFileStatus(i, 'queued'));
+  renderFileList();
+
+  for (let fi = 0; fi < fileContents.length; fi++) {
+    const { file, content, chunks } = fileContents[fi];
+    setFileStatus(fi, 'processing');
     try {
       let translationResult = '';
       let qualityResult = '';
@@ -507,6 +622,7 @@ async function processFiles() {
       langData = await detectLanguage(apiKey, sampleText);
       doneWork++;
       progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
 
       if (['translate', 'both'].includes(currentMode) && langData.primary.toLowerCase() === targetLang.toLowerCase()) {
         const langInfo = document.createElement('div');
@@ -522,6 +638,7 @@ async function processFiles() {
           summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang), content);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         } else {
           const keyPoints = [];
           for (let ci = 0; ci < chunks.length; ci++) {
@@ -531,12 +648,14 @@ async function processFiles() {
             keyPoints.push(`Chunk ${ci + 1}:\n${extraction}`);
             doneWork++;
             progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
           }
           showProgress(`Synthesizing summary for ${file.name}...`);
           summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang),
             `Below are key points extracted from all chunks of a transcript. Synthesize them into a single coherent summary following your format.\n\n${keyPoints.join('\n\n')}`);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         }
       }
 
@@ -548,6 +667,7 @@ async function processFiles() {
           activeGlossaryText = glossaryToPromptText(glossaryData._approved);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         } else {
         showProgress(`Extracting glossary from ${file.name}...`);
         // Sample from beginning + middle + end for better term coverage
@@ -567,6 +687,7 @@ async function processFiles() {
         glossaryData[file.name] = terms;
         doneWork++;
         progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
 
         // If first file and glossary not yet approved, show table and wait
         if (!glossaryApproved && terms.length > 0) {
@@ -597,6 +718,7 @@ async function processFiles() {
           translatedParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         }
         translationResult = translatedParts.join('\n');
       }
@@ -633,6 +755,7 @@ async function processFiles() {
           bodies.push(bodyText.trim());
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         }
 
         const avgScore = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 'N/A';
@@ -666,6 +789,7 @@ async function processFiles() {
           translatedParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         }
         translationResult = translatedParts.join('\n');
       }
@@ -681,6 +805,7 @@ async function processFiles() {
           speakerParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         }
         speakerResult = speakerParts.join('\n\n---\n\n');
       }
@@ -695,6 +820,7 @@ async function processFiles() {
           anonParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         }
         anonymResult = anonParts.join('\n');
       }
@@ -711,6 +837,7 @@ async function processFiles() {
           backParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         }
         const backTranslation = backParts.join('\n');
 
@@ -720,6 +847,7 @@ async function processFiles() {
         const compareResult = await callAIWithRetry(apiKey, getBackTranslationComparePrompt(), compareInput);
         doneWork++;
         progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
         backtransResult = compareResult;
       }
 
@@ -736,12 +864,14 @@ async function processFiles() {
       }
 
       renderResult(file.name, translationResult, qualityResult, summaryResult, langData, speakerResult, anonymResult, backtransResult, timestampResult);
+      setFileStatus(fi, 'done');
 
     } catch (err) {
       if (err.name === 'AbortError') break;
+      setFileStatus(fi, 'error');
       showError(`Error processing ${file.name}: ${err.message}`);
     }
-  }
+  } // end file loop
 
   isProcessing = false;
   abortController = null;

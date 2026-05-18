@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.3 — Render ───
+// ─── Transcript Analysis Tool v2.4 — Render ───
 
 function sanitizeId(name) {
   return name.replace(/[^a-zA-Z0-9]/g, '_');
@@ -46,6 +46,17 @@ function renderLanguageInfo(langData, fileName) {
   html += ` <span class="confidence-${langData.confidence}">${langData.confidence} confidence</span>`;
   html += `</div>`;
   return html;
+}
+
+// ─── v2.4: Score breakdown explanation ───
+function buildScoreBreakdown(metrics, formatted) {
+  const reasons = [];
+  if (metrics.seriousCount > 0) reasons.push(metrics.seriousCount + ' serious flag(s) — incomprehensible or clearly wrong content');
+  if (metrics.minorCount > 0) reasons.push(metrics.minorCount + ' minor flag(s) — garbled but understandable');
+  if (parseFloat(metrics.flaggedPercent) > 10) reasons.push(metrics.flaggedPercent + '% of text flagged — indicates widespread issues');
+  else if (parseFloat(metrics.flaggedPercent) > 3) reasons.push(metrics.flaggedPercent + '% of text flagged — moderate issue density');
+  if (reasons.length === 0) reasons.push('No significant issues detected');
+  return '<div class="score-breakdown">Score rationale: ' + reasons.join('; ') + '.</div>';
 }
 
 // ─── Main result renderer ───
@@ -120,10 +131,13 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
     const formatted = formatQuality(quality);
     const metrics = computeQAMetrics(quality);
     
+    // v2.4: Score breakdown
+    const scoreBreakdown = buildScoreBreakdown(metrics, formatted);
     contentHtml += `<div class="result-header">
       <span>Quality Assessment — ${fileName}</span>
       <span class="detected-lang">${formatted.langLine}</span>
     </div>
+    ${scoreBreakdown}
     <div class="qa-metrics-bar">
       <span class="metric"><span class="metric-num">${metrics.totalFlags}</span> flags total</span>
       <span class="metric minor-metric"><span class="metric-num">${metrics.minorCount}</span> minor</span>
@@ -348,8 +362,8 @@ function renderGlossaryTable(terms, fileName) {
     <tr>
       <td>${escapeHtml(t.source)}</td>
       <td><input type="text" class="glossary-edit" value="${escapeHtml(t.target)}" /></td>
-      <td>${escapeHtml(t.category)}</td>
-      <td><input type="checkbox" checked /></td>
+      <td><span class="glossary-cat-badge">${escapeHtml(t.category)}</span></td>
+      <td><input type="checkbox" checked aria-label="Include ${escapeHtml(t.source)}" /></td>
     </tr>`).join('');
 
   const panel = document.createElement('div');
@@ -361,14 +375,45 @@ function renderGlossaryTable(terms, fileName) {
       <span class="detected-lang">${terms.length} terms extracted</span>
     </div>
     <div class="glossary-info">Review and edit translations below. Uncheck terms you don't want enforced.</div>
+    <div class="glossary-mass-actions">
+      <button class="glossary-mass-btn" onclick="glossarySelectAll(true)">Select all</button>
+      <button class="glossary-mass-btn" onclick="glossarySelectAll(false)">Deselect all</button>
+      <button class="glossary-mass-btn" onclick="glossarySortBy('category')">Sort by category</button>
+    </div>
     <div class="glossary-info" id="glossaryWaitMsg" style="color: var(--accent-teal); font-weight: 600;">⏳ Waiting for your approval before translating...</div>
     <table class="glossary-table" id="glossaryTable">
-      <thead><tr><th>Source Term</th><th>Translation</th><th>Category</th><th>Use</th></tr></thead>
+      <thead><tr>
+        <th class="sortable" onclick="glossarySortBy('source')">Source Term ↕</th>
+        <th>Translation</th>
+        <th class="sortable" onclick="glossarySortBy('category')">Category ↕</th>
+        <th>Use</th>
+      </tr></thead>
       <tbody>${tableRows}</tbody>
     </table>
     <button class="action-btn glossary-approve-btn" id="glossaryApproveBtn" onclick="approveGlossary()">Approve Glossary & Continue</button>
   `;
   resultsArea.prepend(panel);
+}
+
+// v2.4: Glossary mass operations
+function glossarySelectAll(checked) {
+  const table = document.getElementById('glossaryTable');
+  if (!table) return;
+  table.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = checked);
+}
+
+function glossarySortBy(field) {
+  const table = document.getElementById('glossaryTable');
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const idx = field === 'source' ? 0 : field === 'category' ? 2 : 0;
+  rows.sort((a, b) => {
+    const aText = a.cells[idx]?.textContent?.trim().toLowerCase() || '';
+    const bText = b.cells[idx]?.textContent?.trim().toLowerCase() || '';
+    return aText.localeCompare(bText);
+  });
+  rows.forEach(r => tbody.appendChild(r));
 }
 
 // ─── v2.2: Render consistency report ───

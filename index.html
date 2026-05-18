@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="v2.3">
+<meta name="version" content="v2.4">
 <title>Transcript Analysis Tool</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -15,7 +15,7 @@
   <div class="hero">
     <div class="hero-top-row">
       <div class="org-badge">Centre for Socially Responsible Innovations (CSRI)</div>
-      <span class="version-badge">v2.3</span>
+      <span class="version-badge">v2.4</span>
     </div>
     
     <h1>Transcript Analysis Tool</h1>
@@ -23,9 +23,9 @@
       A translation, quality assessment, and analysis tool for multilingual transcripts, developed at the 
       <strong>Centre for Socially Responsible Innovations (CSRI)</strong>, Faculty of Management, University of Warsaw.
     </p>
-    <!-- How to use — always visible -->
-    <div class="info-box">
-      <div class="info-title">How to use this tool</div>
+    <!-- How to use — collapsible, default open for first-timers -->
+    <details class="info-box howto-details" id="howtoBox" open>
+      <summary class="info-title" style="cursor:pointer; user-select:none;">How to use this tool <span style="font-weight:400; font-size:0.78rem; color:var(--text-dim);">(click to hide)</span></summary>
       <div class="info-content">
         <strong>1.</strong> Paste your API key from the selected AI provider (Anthropic, OpenAI, Google) or connect a local model server.<br>
         <strong>2.</strong> Choose a mode: <strong>Translation</strong> converts the transcript into your target language, <strong>Quality Assessment</strong> checks the transcript for errors and flags them, <strong>Both</strong> does both at once. Additional options below let you add speaker check, anonymization, glossary extraction, and back-translation.<br>
@@ -36,7 +36,7 @@
       <div class="info-content" style="margin-top: 0.5rem; font-style: italic;">
         Click a topic below to learn how each feature works.
       </div>
-    </div>
+    </details>
 
     <!-- Collapsible feature info buttons -->
     <div class="info-toggles">
@@ -223,7 +223,8 @@
     <label class="save-check">
       <input type="checkbox" id="saveKey" /> Save settings on this computer
     </label>
-    <div class="api-hint">Your API key is stored only in your browser's local storage and sent exclusively to the selected AI provider for processing. It is never shared with any other party. <strong>Note:</strong> when using cloud providers, transcript content is transmitted to their servers — ensure this is compatible with your data protection obligations.</div>
+    <div class="api-key-security" id="apiKeySecurity">🔒 Key stored in this browser only · sent only to the selected provider · never shared with third parties</div>
+    <div class="api-hint api-data-warning">⚠ When using cloud providers, transcript content is transmitted to their servers — ensure this is compatible with your data protection obligations.</div>
     <label class="quality-check">
       <input type="checkbox" id="highQuality" style="accent-color: var(--accent);" />
       <span style="font-weight: 600;">Use higher quality model</span>
@@ -305,6 +306,7 @@
       <span style="font-weight: 600;">Auto-Glossary</span>
       <span style="color: var(--text-dim); font-size: 0.78rem;">— extracts domain terms, lets you review, then enforces consistent translation</span>
     </label>
+    <span class="option-unavail" id="glossaryUnavail" style="display:none;">Requires Translation or Both mode</span>
   </div>
 
   <div class="summary-option" id="backtransOption">
@@ -313,6 +315,7 @@
       <span style="font-weight: 600;">Back-translation validation</span>
       <span style="color: var(--text-dim); font-size: 0.78rem;">— translates back to source language and scores fidelity (adds ~2× processing time)</span>
     </label>
+    <span class="option-unavail" id="backtransUnavail" style="display:none;">Requires Translation or Both mode</span>
   </div>
 
   <!-- Drop zone -->
@@ -326,17 +329,23 @@
   <!-- File List -->
   <div class="file-list" id="fileList"></div>
 
+  <!-- Cost Estimate -->
+  <div class="cost-estimate" id="costEstimate" style="display:none;">
+    <span class="cost-icon">💰</span>
+    <span class="cost-text" id="costText"></span>
+  </div>
+
   <!-- Action -->
   <button class="action-btn" id="actionBtn" onclick="processFiles()" disabled>Process Files</button>
-  <button class="stop-btn" id="stopBtn" onclick="stopProcessing()">Stop Processing</button>
+  <button class="stop-btn" id="stopBtn" onclick="stopProcessing()">Stop after current file</button>
 
   <!-- Error -->
-  <div class="error-msg" id="errorMsg"></div>
+  <div class="error-msg" id="errorMsg" role="alert" aria-live="assertive"></div>
 
   <!-- Progress -->
   <div class="progress-area" id="progressArea">
-    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="progress-text" id="progressText">Processing...</div>
+    <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBarWrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text" id="progressText" aria-live="polite" role="status">Processing...</div>
   </div>
 
   <!-- Batch Export Bar -->

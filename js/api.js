@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.3 — API Layer ───
+// ─── Transcript Analysis Tool v2.4 — API Layer ───
 
 const CHUNK_SIZES = {
   anthropic: 4000,
@@ -9,6 +9,37 @@ const CHUNK_SIZES = {
 
 function getChunkSize() {
   return CHUNK_SIZES[currentProvider] || 4000;
+}
+
+// ─── v2.4: Human-readable API error messages ───
+function formatApiError(status, serverMsg, provider) {
+  const providerLinks = {
+    Anthropic: 'console.anthropic.com',
+    OpenAI: 'platform.openai.com',
+    Google: 'aistudio.google.com',
+    Local: ''
+  };
+  const link = providerLinks[provider] || '';
+
+  switch (status) {
+    case 401:
+    case 403:
+      return `Invalid API key — check your ${provider} key` + (link ? ` at ${link}` : '') + '.';
+    case 429:
+      return `Rate limit exceeded — wait 60 seconds or reduce batch size. ${serverMsg || ''}`.trim();
+    case 404:
+      return `Model not found — check the model name` + (provider === 'Local' ? ' (run "ollama list" to see available models)' : '') + '.';
+    case 500:
+    case 502:
+    case 503:
+      return `${provider} server error (${status}) — try again in a few minutes. ${serverMsg || ''}`.trim();
+    case 0:
+      return provider === 'Local'
+        ? `Cannot reach local server — is it running? Check the endpoint URL.`
+        : `Network error — check your internet connection.`;
+    default:
+      return serverMsg || `${provider} API error ${status}`;
+  }
 }
 
 // ─── Retry with exponential backoff ───
@@ -68,7 +99,7 @@ async function callAnthropic(apiKey, systemPrompt, userContent) {
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `API error ${resp.status}`);
+    throw new Error(formatApiError(resp.status, err.error?.message, 'Anthropic'));
   }
 
   const data = await resp.json();
@@ -95,7 +126,7 @@ async function callOpenAI(apiKey, systemPrompt, userContent) {
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `API error ${resp.status}`);
+    throw new Error(formatApiError(resp.status, err.error?.message, 'OpenAI'));
   }
 
   const data = await resp.json();
@@ -116,7 +147,7 @@ async function callGoogle(apiKey, systemPrompt, userContent) {
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `API error ${resp.status}`);
+    throw new Error(formatApiError(resp.status, err.error?.message, 'Google'));
   }
 
   const data = await resp.json();
@@ -134,22 +165,28 @@ async function callLocal(apiKey, systemPrompt, userContent) {
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
-  const resp = await fetch(url, {
-    method: 'POST',
-    signal: abortController?.signal,
-    headers,
-    body: JSON.stringify({
-      model: getModel(),
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent }
-      ]
-    })
-  });
+  let resp;
+  try {
+    resp = await fetch(url, {
+      method: 'POST',
+      signal: abortController?.signal,
+      headers,
+      body: JSON.stringify({
+        model: getModel(),
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userContent }
+        ]
+      })
+    });
+  } catch (fetchErr) {
+    if (fetchErr.name === 'AbortError') throw fetchErr;
+    throw new Error(formatApiError(0, fetchErr.message, 'Local'));
+  }
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Local API error ${resp.status}`);
+    throw new Error(formatApiError(resp.status, err.error?.message, 'Local'));
   }
 
   const data = await resp.json();

@@ -1048,3 +1048,151 @@ h1 {
   vertical-align: middle;
   margin-right: 0.4rem;
 }
+
+
+/* ─── v2.4: API key security hint ─── */
+.api-key-security {
+  font-size: 0.8rem;
+  color: var(--green);
+  padding: 0.35rem 0.6rem;
+  background: var(--green-dim);
+  border-radius: 8px;
+  margin-top: 0.35rem;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.api-data-warning {
+  font-size: 0.78rem;
+  color: var(--yellow);
+  opacity: 1 !important;
+  font-weight: 500;
+}
+
+/* ─── v2.4: Option unavailability hint ─── */
+.option-unavail {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-left: 1.8rem;
+  font-style: italic;
+  display: block;
+  margin-top: 0.15rem;
+}
+.summary-option.disabled-option {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.summary-option.disabled-option label {
+  cursor: not-allowed;
+}
+
+/* ─── v2.4: Cost estimate ─── */
+.cost-estimate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  margin-bottom: 0.75rem;
+  font-size: 0.84rem;
+  color: var(--text-dim);
+}
+.cost-icon { font-size: 1rem; }
+
+/* ─── v2.4: File status in batch ─── */
+.file-item .file-status {
+  font-size: 0.78rem;
+  font-weight: 600;
+  min-width: 70px;
+  text-align: right;
+}
+.file-status-queued { color: var(--text-dim); }
+.file-status-processing { color: var(--accent-teal); }
+.file-status-done { color: var(--green); }
+.file-status-error { color: var(--red); }
+
+/* ─── v2.4: Stop button clarification ─── */
+.stop-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+/* ─── v2.4: Score breakdown ─── */
+.score-breakdown {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  padding: 0.4rem 1rem;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+/* ─── v2.4: Glossary table improvements ─── */
+.glossary-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.glossary-table th.sortable:hover {
+  color: var(--accent-teal);
+}
+.glossary-context {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  display: block;
+  margin-top: 0.15rem;
+  font-style: italic;
+}
+.glossary-mass-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+}
+.glossary-mass-btn {
+  background: none;
+  border: none;
+  color: var(--accent-teal);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+.glossary-mass-btn:hover { background: var(--accent-teal-dim); }
+
+/* ─── v2.4: Howto details ─── */
+.howto-details summary {
+  list-style: none;
+}
+.howto-details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ─── v2.4: Accessibility ─── */
+*:focus-visible {
+  outline: 2px solid var(--accent-teal);
+  outline-offset: 2px;
+}
+button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent-teal);
+  outline-offset: 2px;
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent-teal);
+  outline-offset: 3px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
