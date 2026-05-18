@@ -1,4 +1,4 @@
-// ─── Transcript Analysis Tool v2.4 — Render ───
+// ─── Transcript Analysis Tool v2.5 — Render ───
 
 function sanitizeId(name) {
   return name.replace(/[^a-zA-Z0-9]/g, '_');
@@ -216,6 +216,30 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       <span>Timestamp Check — ${fileName}</span>
       <span class="detected-lang">${timestampResult.totalEntries} entries · ✓ No issues</span>
     </div>`;
+  }
+
+  // v2.5: wrap in collapsible body + add toggle button to first header
+  const fileIndex = files ? files.findIndex(f => f.name === fileName) : -1;
+  const rerunBtn = fileIndex >= 0 ? ' <button class="rerun-btn" onclick="reprocessFile(' + fileIndex + ')" title="Re-process this file">↻ Re-run</button>' : '';
+  // Insert toggle + re-run into the first result-header
+  contentHtml = contentHtml.replace(
+    /(<div class="result-header">)/,
+    '<div class="result-header"><span class="result-header-left"><button class="result-toggle" onclick="toggleResultBlock(this)" title="Collapse/expand">▼</button>'
+  );
+  // Close the header-left span after the first </span> that follows
+  contentHtml = contentHtml.replace(
+    /<div class="result-header"><span class="result-header-left"><button class="result-toggle"[^<]*<\/button>([\s\S]*?<\/span>)/,
+    function(match, p1) {
+      return '<div class="result-header"><span class="result-header-left"><button class="result-toggle" onclick="toggleResultBlock(this)" title="Collapse/expand">▼</button>' + p1 + rerunBtn + '</span>';
+    }
+  );
+
+  // Find the first result-header closing tag and wrap everything after in result-body
+  const firstHeaderEnd = contentHtml.indexOf('</div>', contentHtml.indexOf('result-header'));
+  if (firstHeaderEnd > 0) {
+    const headerPart = contentHtml.substring(0, firstHeaderEnd + 6);
+    const bodyPart = contentHtml.substring(firstHeaderEnd + 6);
+    contentHtml = headerPart + '<div class="result-body">' + bodyPart + '</div>';
   }
 
   block.innerHTML = contentHtml;

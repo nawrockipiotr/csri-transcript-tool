@@ -1196,3 +1196,236 @@ input[type="checkbox"]:focus-visible {
   clip: rect(0,0,0,0);
   border: 0;
 }
+
+/* ─── v2.5: Dark mode ─── */
+.dark-mode {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --surface2: #0f3460;
+  --border: #2a4a7f;
+  --text: #e0e0e0;
+  --text-dim: #a0a0b0;
+  --accent: #4a7fc1;
+  --accent-dim: #1a2a4a;
+  --accent-teal: #5b8ad8;
+  --accent-teal-dim: #1a2a4a;
+  --green: #4ade80;
+  --green-dim: #4ade8015;
+  --yellow: #fbbf24;
+  --yellow-dim: #fbbf2415;
+  --red: #f87171;
+  --red-dim: #f8717115;
+  --blue: #60a5fa;
+  --blue-dim: #60a5fa15;
+  --pink: #f472b6;
+  --pink-dim: #f472b615;
+  --indigo: #818cf8;
+  --indigo-dim: #818cf815;
+  --teal: #34d399;
+  --teal-dim: #34d39915;
+  --amber: #fbbf24;
+  --amber-dim: #fbbf2415;
+}
+.dark-mode body, .dark-mode { color: var(--text); }
+.dark-mode .hero, .dark-mode .api-section, .dark-mode .mode-toggle,
+.dark-mode .summary-option, .dark-mode .result-block, .dark-mode .batch-export-bar {
+  background: var(--surface);
+}
+.dark-mode .diff-orig-line { background: #2d1b1b; }
+.dark-mode .diff-trans-line { background: #1b2d1b; }
+.dark-mode .diff-del { background: #4a1c1c; color: #fca5a5; }
+.dark-mode .diff-ins { background: #1c4a1c; color: #86efac; }
+.dark-mode .dropzone { border-color: var(--border); }
+.dark-mode .dropzone:hover, .dark-mode .dropzone.dragover { border-color: var(--accent-teal); background: var(--accent-dim); }
+.dark-mode .glossary-edit { background: var(--surface2); color: var(--text); }
+.dark-mode .api-row input { background: var(--surface2); color: var(--text); }
+.dark-mode .setting select { background: var(--surface2); color: var(--text); }
+
+/* Dark mode toggle button */
+.dark-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.dark-toggle:hover { border-color: var(--accent-teal); color: var(--accent-teal); }
+
+/* ─── v2.5: Collapsible result blocks ─── */
+.result-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.15s;
+  margin-right: 0.4rem;
+}
+.result-toggle:hover { color: var(--accent-teal); background: var(--accent-teal-dim); }
+.result-body { transition: max-height 0.3s ease, opacity 0.2s ease; overflow: hidden; }
+.result-body.collapsed { max-height: 0 !important; opacity: 0; overflow: hidden; }
+.result-header-left { display: flex; align-items: center; }
+
+/* ─── v2.5: Re-run button ─── */
+.rerun-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-teal);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.rerun-btn:hover { background: var(--accent-teal-dim); border-color: var(--accent-teal); }
+
+/* ─── v2.5: Advanced Settings ─── */
+.advanced-settings {
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+.advanced-settings summary {
+  padding: 0.65rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.advanced-settings summary::-webkit-details-marker { display: none; }
+.advanced-settings summary:hover { color: var(--accent-teal); }
+.advanced-settings-body {
+  padding: 0.5rem 1rem 1rem;
+  border-top: 1px solid var(--border);
+}
+.advanced-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.advanced-row label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 120px;
+}
+.advanced-row select, .advanced-row input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--text);
+}
+.advanced-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ─── v2.5: ETA display ─── */
+.eta-text {
+  font-size: 0.8rem;
+  color: var(--accent-teal);
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+/* ─── v2.5: File type icons ─── */
+.file-icon {
+  font-size: 0.9rem;
+  margin-right: 0.3rem;
+  flex-shrink: 0;
+}
+
+/* ─── v2.5: Session restore bar ─── */
+.session-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: var(--accent-teal-dim);
+  border: 1px solid var(--accent-teal);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.session-bar-btn {
+  padding: 0.3rem 0.7rem;
+  background: var(--accent-teal);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.session-bar-btn:hover { opacity: 0.85; }
+.session-bar-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+  margin-left: auto;
+}
+
+/* ─── v2.5: Inline styles moved to classes ─── */
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.option-bold { font-weight: 600; }
+.option-hint { color: var(--text-dim); font-size: 0.78rem; }
+.local-field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-top: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.dropzone-subtext { margin-top: 0.3rem; font-size: 0.75rem; }
+.info-dim { font-size: 0.75rem; opacity: 0.8; }
+.info-margin-top { margin-top: 0.5rem; }
+.info-italic { font-style: italic; }
+.howto-hide-hint { font-weight: 400; font-size: 0.78rem; color: var(--text-dim); }
+.code-inline { font-size: 0.7rem; }
+.glossary-cat-badge {
+  display: inline-block;
+  background: var(--accent-dim);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+}

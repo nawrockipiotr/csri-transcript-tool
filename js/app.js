@@ -1,6 +1,22 @@
-// ─── Transcript Analysis Tool v2.4 — App Logic ───
+// ─── Transcript Analysis Tool v2.5 — App Logic ───
 
-const TOOL_VERSION = 'v2.4';
+const TOOL_VERSION = 'v2.5';
+
+
+// ─── v2.5: Dark mode ───
+function toggleDarkMode() {
+  const isDark = document.documentElement.classList.toggle('dark-mode');
+  localStorage.setItem('transcript_tool_dark_mode', isDark ? '1' : '0');
+  const btn = document.getElementById('darkToggle');
+  if (btn) btn.textContent = isDark ? '☀ Light' : '🌙 Dark';
+}
+(function initDarkMode() {
+  if (localStorage.getItem('transcript_tool_dark_mode') === '1') {
+    document.documentElement.classList.add('dark-mode');
+    const btn = document.getElementById('darkToggle');
+    if (btn) btn.textContent = '☀ Light';
+  }
+})();
 
 // ─── State ───
 let files = [];
@@ -8,6 +24,10 @@ let currentMode = 'translate';
 let abortController = null;
 let isProcessing = false;
 let currentProvider = 'anthropic';
+
+
+// ─── v2.5: ETA tracking ───
+let etaStartTime = 0;
 
 // ─── Progress helpers ───
 function showProgress(msg) {
@@ -17,6 +37,33 @@ function showProgress(msg) {
 function showProgressDone(msg) {
   const el = document.getElementById('progressText');
   if (el) el.textContent = msg;
+}
+
+
+// ─── v2.5: ETA display ───
+function updateETA(doneWork, totalWork) {
+  const elapsed = (Date.now() - etaStartTime) / 1000; // seconds
+  if (doneWork < 2 || elapsed < 3) return; // need at least 2 data points
+  const rate = doneWork / elapsed;
+  const remaining = (totalWork - doneWork) / rate;
+  const etaEl = document.getElementById('etaText');
+  if (remaining < 60) {
+    if (etaEl) etaEl.textContent = '~' + Math.ceil(remaining) + 's remaining';
+  } else {
+    if (etaEl) etaEl.textContent = '~' + Math.ceil(remaining / 60) + 'min remaining';
+  }
+}
+
+// ─── v2.5: File type icons ───
+function getFileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  switch (ext) {
+    case 'txt': return '📝';
+    case 'srt': return '📊';
+    case 'docx': return '📄';
+    case 'pdf': return '📕';
+    default: return '📎';
+  }
 }
 
 // v2.2 state
@@ -173,9 +220,10 @@ function updateCostEstimate() {
     return;
   }
 
-  // Rough estimate: avg transcript ~4000 chars ≈ 1000 tokens input, ~1000 tokens output per call
-  const avgCharsPerFile = 8000;
-  const tokensPerFile = avgCharsPerFile / 4; // ~2000 tokens input
+  // v2.5: Use actual file sizes for better estimate
+  const totalFileBytes = files.reduce((sum, f) => sum + (f.size || 8000), 0);
+  const avgCharsPerFile = Math.max(totalFileBytes / files.length, 1000);
+  const tokensPerFile = avgCharsPerFile / 4;
   const callsPerFile = estimateCallsPerFile();
   const totalInputTokens = files.length * tokensPerFile * callsPerFile;
   const totalOutputTokens = totalInputTokens * 0.8;
@@ -241,7 +289,7 @@ function setMode(mode) {
 
 
 // ─── v2.4: Cost estimate hooks on option checkboxes ───
-['addSummary', 'addAnonymization', 'addSpeakerCheck', 'useGlossary', 'useBacktrans', 'highQuality'].forEach(id => {
+['addSummary', 'addAnonymization', 'addSpeakerCheck', 'useGlossary', 'useBacktrans', 'highQuality', 'processingDetail'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', updateCostEstimate);
 });
@@ -296,6 +344,7 @@ function renderFileList() {
     const statusLabel = status === 'processing' ? '⏳ processing' : status === 'done' ? '✓ done' : status === 'error' ? '✗ error' : status === 'queued' ? '◻ queued' : '';
     return `
     <div class="file-item" id="fileItem_${i}">
+      <span class="file-icon">${getFileIcon(f.name)}</span>
       <span class="name">${escapeHtml(f.name)}</span>
       <span class="size">${(f.size / 1024).toFixed(1)} KB</span>
       ${statusLabel ? '<span class="file-status ' + statusClass + '">' + statusLabel + '</span>' : ''}
@@ -367,9 +416,20 @@ async function readFileContent(file) {
   return '';
 }
 
+// ─── v2.5: Smart chunk size ───
+function getChunkSize(fileSize) {
+  const detail = document.getElementById('processingDetail')?.value || 'balanced';
+  const base = { fast: 8000, balanced: 5000, thorough: 3000 };
+  let size = base[detail] || 5000;
+  if (fileSize && fileSize > 200000 && detail !== 'thorough') {
+    size = Math.min(size * 1.5, 12000);
+  }
+  return size;
+}
+
 // ─── Chunk text ───
-function chunkText(text, maxChars) {
-  const limit = maxChars || getChunkSize();
+function chunkText(text, maxChars, fileSize) {
+  const limit = maxChars || getChunkSize(fileSize);
   const lines = text.split('\n');
   const chunks = [];
   let current = '';
@@ -401,6 +461,8 @@ function stopProcessing() {
   document.getElementById('stopBtn').classList.remove('visible');
   const doneCount = files.filter(f => f._status === 'done').length;
   document.getElementById('progressText').textContent = `Stopped. ${doneCount} file(s) completed — results preserved.`;
+  const etaEl = document.getElementById('etaText');
+  if (etaEl) etaEl.textContent = '';
   actionBtn.disabled = false;
 }
 
@@ -520,7 +582,7 @@ function approveGlossary() {
 // ─── Batch QA report data (populated during processing) ───
 let batchReportData = [];
 
-async function processFiles() {
+async function processFiles(appendMode) {
   const apiKey = apiKeyInput.value.trim();
   // Local provider: API key is optional
   if (!apiKey && currentProvider !== 'local') { showError('Enter your API key.'); return; }
@@ -536,6 +598,7 @@ async function processFiles() {
   abortController = new AbortController();
   isProcessing = true;
   batchReportData = [];
+  etaStartTime = Date.now();
 
   const targetLang = document.getElementById('targetLang').value;
   const progressArea = document.getElementById('progressArea');
@@ -546,13 +609,23 @@ async function processFiles() {
 
   progressArea.classList.add('visible');
   resultsArea.classList.add('visible');
-  resultsArea.innerHTML = '';
+  if (!appendMode) resultsArea.innerHTML = '';
   hideError();
   actionBtn.disabled = true;
   stopBtn.classList.add('visible');
   progressBar.style.width = '0%';
   const progressBarWrap = document.getElementById('progressBarWrap');
   if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', '0');
+
+  // v2.5: ETA display
+  let etaEl = document.getElementById('etaText');
+  if (!etaEl) {
+    etaEl = document.createElement('span');
+    etaEl.id = 'etaText';
+    etaEl.className = 'eta-text';
+    progressText.parentNode.insertBefore(etaEl, progressText.nextSibling);
+  }
+  etaEl.textContent = '';
 
   // Hide batch export bar (will show after processing)
   const batchBar = document.getElementById('batchExportBar');
@@ -563,7 +636,7 @@ async function processFiles() {
   for (const file of files) {
     showProgress(`Reading ${file.name}...`);
     const content = await readFileContent(file);
-    const chunks = chunkText(content);
+    const chunks = chunkText(content, null, content.length);
     fileContents.push({ file, content, chunks });
   }
 
@@ -623,6 +696,7 @@ async function processFiles() {
       doneWork++;
       progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
 
       if (['translate', 'both'].includes(currentMode) && langData.primary.toLowerCase() === targetLang.toLowerCase()) {
         const langInfo = document.createElement('div');
@@ -639,6 +713,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         } else {
           const keyPoints = [];
           for (let ci = 0; ci < chunks.length; ci++) {
@@ -649,6 +724,7 @@ async function processFiles() {
             doneWork++;
             progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
           }
           showProgress(`Synthesizing summary for ${file.name}...`);
           summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang),
@@ -656,6 +732,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         }
       }
 
@@ -668,6 +745,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         } else {
         showProgress(`Extracting glossary from ${file.name}...`);
         // Sample from beginning + middle + end for better term coverage
@@ -688,6 +766,7 @@ async function processFiles() {
         doneWork++;
         progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
 
         // If first file and glossary not yet approved, show table and wait
         if (!glossaryApproved && terms.length > 0) {
@@ -719,6 +798,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         }
         translationResult = translatedParts.join('\n');
       }
@@ -756,6 +836,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         }
 
         const avgScore = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 'N/A';
@@ -778,7 +859,7 @@ async function processFiles() {
 
       // ─── Both mode: translate from ORIGINAL text ───
       if (currentMode === 'both') {
-        const origChunks = chunkText(content);
+        const origChunks = chunkText(content, null, content.length);
         const translatedParts = [];
         const translatePrompt = activeGlossaryText
           ? getTranslateWithGlossaryPrompt(targetLang, activeGlossaryText)
@@ -790,6 +871,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         }
         translationResult = translatedParts.join('\n');
       }
@@ -806,6 +888,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         }
         speakerResult = speakerParts.join('\n\n---\n\n');
       }
@@ -821,6 +904,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         }
         anonymResult = anonParts.join('\n');
       }
@@ -838,6 +922,7 @@ async function processFiles() {
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         }
         const backTranslation = backParts.join('\n');
 
@@ -848,6 +933,7 @@ async function processFiles() {
         doneWork++;
         progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+      updateETA(doneWork, totalWork);
         backtransResult = compareResult;
       }
 
@@ -878,6 +964,23 @@ async function processFiles() {
   stopBtn.classList.remove('visible');
   progressText.textContent = 'Done.';
   actionBtn.disabled = false;
+  const etaFinal = document.getElementById('etaText');
+  if (etaFinal) etaFinal.textContent = '';
+
+
+  // v2.5: Save session results to localStorage
+  try {
+    const resultsHtml = resultsArea.innerHTML;
+    if (resultsHtml && resultsHtml.length < 5000000) { // max ~5MB
+      localStorage.setItem('transcript_tool_session', JSON.stringify({
+        html: resultsHtml,
+        timestamp: new Date().toISOString(),
+        fileCount: files.length,
+        mode: currentMode,
+        batchReportData: batchReportData
+      }));
+    }
+  } catch(e) { /* localStorage full — skip */ }
 
   // Show batch export bar if multiple files processed
   if (files.length > 1 && batchBar) {
@@ -886,6 +989,10 @@ async function processFiles() {
     const qaReportBtn = document.getElementById('batchQAReportBtn');
     if (qaReportBtn) {
       qaReportBtn.style.display = batchReportData.length > 0 ? '' : 'none';
+    }
+    const qaXlsxBtn = document.getElementById('batchQAXlsxBtn');
+    if (qaXlsxBtn) {
+      qaXlsxBtn.style.display = batchReportData.length > 0 ? '' : 'none';
     }
     // Show consistency check button if translations collected
     const consistBtn = document.getElementById('batchConsistencyBtn');
@@ -1072,4 +1179,93 @@ function toggleInfo(id) {
       if (b.getAttribute('onclick')?.includes(id)) b.classList.add('active');
     });
   }
+}
+
+// ─── v2.5: Session persistence ───
+function restoreSession() {
+  try {
+    const saved = localStorage.getItem('transcript_tool_session');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+    const resultsArea = document.getElementById('resultsArea');
+    resultsArea.innerHTML = data.html;
+    resultsArea.classList.add('visible');
+    if (data.batchReportData) batchReportData = data.batchReportData;
+    document.getElementById('sessionBar').style.display = 'none';
+  } catch(e) { console.warn('Session restore failed:', e); }
+}
+
+function dismissSession() {
+  document.getElementById('sessionBar').style.display = 'none';
+  localStorage.removeItem('transcript_tool_session');
+}
+
+(function checkSavedSession() {
+  try {
+    const saved = localStorage.getItem('transcript_tool_session');
+    if (saved) {
+      const data = JSON.parse(saved);
+      const bar = document.getElementById('sessionBar');
+      if (bar) {
+        const d = new Date(data.timestamp);
+        const timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        bar.querySelector('span').textContent = '📋 Previous results available (' + data.fileCount + ' files, ' + timeStr + ')';
+        bar.style.display = 'flex';
+      }
+    }
+  } catch(e) {}
+})();
+
+// ─── v2.5: Re-process single file ───
+async function reprocessFile(fileIndex) {
+  if (isProcessing) return;
+  const file = files[fileIndex];
+  if (!file) return;
+
+  // Reset and process just this one file
+  const oldFiles = [...files];
+  files = [file];
+
+  // Remove old result for this file
+  const resultsArea = document.getElementById('resultsArea');
+  const resultBlocks = resultsArea.querySelectorAll('.result-block');
+  for (const block of resultBlocks) {
+    if (block.querySelector('.result-header span')?.textContent?.includes(file.name)) {
+      block.remove();
+      break;
+    }
+  }
+
+  await processFiles(true);
+  files = oldFiles;
+  renderFileList();
+}
+
+// ─── v2.5: Collapse/expand result blocks ───
+function toggleResultBlock(btn) {
+  const block = btn.closest('.result-block');
+  if (!block) return;
+  const body = block.querySelector('.result-body');
+  if (!body) return;
+  const collapsed = body.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '▶' : '▼';
+}
+
+// ─── v2.5: XLSX QA Report export ───
+function exportQAReportXlsx() {
+  if (batchReportData.length === 0 || typeof XLSX === 'undefined') return;
+  const ws_data = [['File', 'Language', 'Score', 'Minor Flags', 'Serious Flags', 'Total Flags', 'Flagged %', 'Summary']];
+  for (const row of batchReportData) {
+    ws_data.push([row.fileName, row.language, parseFloat(row.score) || 0, row.minorFlags, row.seriousFlags, row.totalFlags, parseFloat(row.flaggedPercent) || 0, row.summary || '']);
+  }
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+  // Column widths
+  ws['!cols'] = [
+    { wch: 30 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 50 }
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'QA Report');
+  XLSX.writeFile(wb, 'QA_report_' + new Date().toISOString().substring(0, 10) + '.xlsx');
 }

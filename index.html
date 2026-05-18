@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="v2.4">
+<meta name="version" content="v2.5">
 <title>Transcript Analysis Tool</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -15,7 +15,8 @@
   <div class="hero">
     <div class="hero-top-row">
       <div class="org-badge">Centre for Socially Responsible Innovations (CSRI)</div>
-      <span class="version-badge">v2.4</span>
+      <span class="version-badge">v2.5</span>
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙 Dark</button>
     </div>
     
     <h1>Transcript Analysis Tool</h1>
@@ -25,7 +26,7 @@
     </p>
     <!-- How to use — collapsible, default open for first-timers -->
     <details class="info-box howto-details" id="howtoBox" open>
-      <summary class="info-title" style="cursor:pointer; user-select:none;">How to use this tool <span style="font-weight:400; font-size:0.78rem; color:var(--text-dim);">(click to hide)</span></summary>
+      <summary class="info-title">How to use this tool <span class="howto-hide-hint">(click to hide)</span></summary>
       <div class="info-content">
         <strong>1.</strong> Paste your API key from the selected AI provider (Anthropic, OpenAI, Google) or connect a local model server.<br>
         <strong>2.</strong> Choose a mode: <strong>Translation</strong> converts the transcript into your target language, <strong>Quality Assessment</strong> checks the transcript for errors and flags them, <strong>Both</strong> does both at once. Additional options below let you add speaker check, anonymization, glossary extraction, and back-translation.<br>
@@ -33,7 +34,7 @@
         <strong>4.</strong> Click <strong>Process Files</strong> and wait for results. You can stop at any time.<br>
         <strong>5.</strong> Export results using the format buttons below each result, or use <strong>Export All (ZIP)</strong> for batch download.
       </div>
-      <div class="info-content" style="margin-top: 0.5rem; font-style: italic;">
+      <div class="info-content info-margin-top info-italic">
         Click a topic below to learn how each feature works.
       </div>
     </details>
@@ -69,9 +70,9 @@
             <span><strong>Serious</strong> — incomprehensible, scrambled names, missing speech, or nonsensical fragments that need human verification</span>
           </div>
         </div>
-        <div class="info-content" style="margin-top: 0.5rem;">
+        <div class="info-content info-margin-top">
           <strong>Quality Score guide:</strong> 1–2 largely unintelligible · 3–4 poor, frequent errors · 5–6 moderate, understandable with errors · 7–8 good, minor issues · 9–10 excellent.<br>
-          <span style="font-size: 0.75rem; opacity: 0.8;">Flag counts and % of text flagged are computed deterministically and shown separately.</span>
+          <span class="info-dim">Flag counts and % of text flagged are computed deterministically and shown separately.</span>
         </div>
       </div>
     </div>
@@ -108,7 +109,7 @@
       <div class="info-box">
         <div class="info-content">
           Analyzes the quality of speaker diarization (who said what) in the transcript. Checks for: missing speaker labels, same label used for different speakers, same speaker appearing under different labels, unnecessary turn splits, and missing conversational turns. Reports the number of declared vs. estimated speakers and label coverage percentage. Flags problematic turns with <span class="flag-speaker" style="cursor:default;">blue markers</span>.
-          <br><span style="font-size: 0.75rem; opacity: 0.8;">Best used on transcripts with speaker labels (e.g., "Speaker 1:", "Person 2:"). If your transcript has no labels, the tool will still estimate the number of distinct speakers.</span>
+          <br><span class="info-dim">Best used on transcripts with speaker labels (e.g., "Speaker 1:", "Person 2:"). If your transcript has no labels, the tool will still estimate the number of distinct speakers.</span>
         </div>
       </div>
     </div>
@@ -140,9 +141,9 @@
             <span><strong>Date</strong> — specific dates that could identify events or people</span>
           </div>
         </div>
-        <div class="info-content" style="margin-top: 0.5rem;">
+        <div class="info-content info-margin-top">
           Export options: <strong>TXT (redacted)</strong> replaces PII with category placeholders, <strong>TXT (marked)</strong> shows original values with category labels.
-          <br><span style="font-size: 0.75rem; opacity: 0.8;">Generic references ("the company", "last year") are not flagged. Speaker labels are not PII. Risk level (LOW/MEDIUM/HIGH) is based on PII density. AI-based PII detection may produce false negatives — always verify manually before sharing or publishing.</span>
+          <br><span class="info-dim">Generic references ("the company", "last year") are not flagged. Speaker labels are not PII. Risk level (LOW/MEDIUM/HIGH) is based on PII density. AI-based PII detection may produce false negatives — always verify manually before sharing or publishing.</span>
         </div>
       </div>
     </div>
@@ -151,7 +152,7 @@
       <div class="info-box">
         <div class="info-content">
           Available in Translation and Both modes. When enabled, the tool first extracts domain-specific terms (jargon, acronyms, recurring concepts) from the transcript and presents them in an editable table. You can review, edit translations, and deselect terms before approving. Approved glossary terms are then enforced during translation for consistent terminology across the entire file.
-          <br><span style="font-size: 0.75rem; opacity: 0.8;">The glossary is extracted from the first ~6000 characters. For multi-file batches, the glossary from the first file is reused for all subsequent files.</span>
+          <br><span class="info-dim">The glossary is extracted from the first ~6000 characters. For multi-file batches, the glossary from the first file is reused for all subsequent files.</span>
         </div>
       </div>
     </div>
@@ -160,7 +161,7 @@
       <div class="info-box">
         <div class="info-content">
           Available in Translation and Both modes. When enabled, the translated text is translated back into the source language, then compared with the original. The comparison produces a fidelity score (1–10), a list of meaningful divergences with severity ratings (minor/major), and a summary assessment. This helps detect meaning shifts, omissions, or mistranslations.
-          <br><span style="font-size: 0.75rem; opacity: 0.8;">Adds approximately 2x processing time. Comparison uses the first ~4000 characters of each text.</span>
+          <br><span class="info-dim">Adds approximately 2x processing time. Comparison uses the first ~4000 characters of each text.</span>
         </div>
       </div>
     </div>
@@ -169,7 +170,7 @@
       <div class="info-box">
         <div class="info-content">
           Available after batch translation (2+ files). The button appears in the batch export bar. Checks whether domain-specific terms are translated consistently across all files in the batch. Reports inconsistencies with recommended translations and justifications.
-          <br><span style="font-size: 0.75rem; opacity: 0.8;">Uses the first ~2000 characters of each translation for analysis.</span>
+          <br><span class="info-dim">Uses the first ~2000 characters of each translation for analysis.</span>
         </div>
       </div>
     </div>
@@ -178,7 +179,7 @@
       <div class="info-box">
         <div class="info-content">
           After translation, a toggle button cycles through three views: <strong>Translation only</strong> (default), <strong>Side by side</strong> (original and translation in parallel columns), and <strong>Inline diff</strong> (line-by-line comparison with deletions and insertions highlighted). Useful for reviewing what changed during translation.
-          <br><span style="font-size: 0.75rem; opacity: 0.8;">Diff is limited to the first 200 lines for performance.</span>
+          <br><span class="info-dim">Diff is limited to the first 200 lines for performance.</span>
         </div>
       </div>
     </div>
@@ -209,16 +210,16 @@
       <input type="password" id="apiKey" placeholder="sk-ant-..." />
     </div>
     <div id="localFields" style="display: none;">
-      <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-top: 0.5rem; margin-bottom: 0.35rem;">Server Endpoint</label>
+      <label class="local-field-label">Server Endpoint</label>
       <div class="api-row">
         <input type="text" id="localEndpoint" placeholder="http://localhost:11434/v1" value="http://localhost:11434/v1" />
       </div>
       <div class="api-hint">OpenAI-compatible endpoint. Ollama: localhost:11434/v1 · LM Studio: localhost:1234/v1 · vLLM: localhost:8000/v1</div>
-      <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-top: 0.5rem; margin-bottom: 0.35rem;">Model Name</label>
+      <label class="local-field-label">Model Name</label>
       <div class="api-row">
         <input type="text" id="localModel" placeholder="e.g. llama3.1, mistral, gemma2" />
       </div>
-      <div class="api-hint">The model name as registered on your local server (run <code style="font-size:0.7rem;">ollama list</code> to see available models).</div>
+      <div class="api-hint">The model name as registered on your local server (run <code class="code-inline">ollama list</code> to see available models).</div>
     </div>
     <label class="save-check">
       <input type="checkbox" id="saveKey" /> Save settings on this computer
@@ -276,53 +277,77 @@
 
   <!-- Options -->
   <div class="summary-option" id="summaryOption">
-    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+    <label class="option-label">
       <input type="checkbox" id="addSummary" style="accent-color: var(--accent);" />
-      <span style="font-weight: 600;">Add summary</span>
-      <span style="color: var(--text-dim); font-size: 0.78rem;">— prepends an overview at the beginning of the output (not included in SRT export)</span>
+      <span class="option-bold">Add summary</span>
+      <span class="option-hint">— prepends an overview at the beginning of the output (not included in SRT export)</span>
     </label>
   </div>
 
   <div class="summary-option" id="anonymizeOption">
-    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+    <label class="option-label">
       <input type="checkbox" id="addAnonymization" style="accent-color: var(--accent);" />
-      <span style="font-weight: 600;">Anonymize PII</span>
-      <span style="color: var(--text-dim); font-size: 0.78rem;">— identifies and marks personal data alongside the main output</span>
+      <span class="option-bold">Anonymize PII</span>
+      <span class="option-hint">— identifies and marks personal data alongside the main output</span>
     </label>
   </div>
 
 
   <div class="summary-option" id="speakerOption">
-    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+    <label class="option-label">
       <input type="checkbox" id="addSpeakerCheck" style="accent-color: var(--accent-teal);" />
-      <span style="font-weight: 600;">Speaker Check</span>
-      <span style="color: var(--text-dim); font-size: 0.78rem;">— analyzes speaker label quality, detects mislabeled or missing turns</span>
+      <span class="option-bold">Speaker Check</span>
+      <span class="option-hint">— analyzes speaker label quality, detects mislabeled or missing turns</span>
     </label>
   </div>
 
   <div class="summary-option" id="glossaryOption">
-    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+    <label class="option-label">
       <input type="checkbox" id="useGlossary" style="accent-color: var(--accent);" />
-      <span style="font-weight: 600;">Auto-Glossary</span>
-      <span style="color: var(--text-dim); font-size: 0.78rem;">— extracts domain terms, lets you review, then enforces consistent translation</span>
+      <span class="option-bold">Auto-Glossary</span>
+      <span class="option-hint">— extracts domain terms, lets you review, then enforces consistent translation</span>
     </label>
     <span class="option-unavail" id="glossaryUnavail" style="display:none;">Requires Translation or Both mode</span>
   </div>
 
   <div class="summary-option" id="backtransOption">
-    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+    <label class="option-label">
       <input type="checkbox" id="useBacktrans" style="accent-color: var(--accent);" />
-      <span style="font-weight: 600;">Back-translation validation</span>
-      <span style="color: var(--text-dim); font-size: 0.78rem;">— translates back to source language and scores fidelity (adds ~2× processing time)</span>
+      <span class="option-bold">Back-translation validation</span>
+      <span class="option-hint">— translates back to source language and scores fidelity (adds ~2× processing time)</span>
     </label>
     <span class="option-unavail" id="backtransUnavail" style="display:none;">Requires Translation or Both mode</span>
+  </div>
+
+
+  <!-- Advanced Settings -->
+  <details class="advanced-settings" id="advancedSettings">
+    <summary>⚙ Advanced Settings</summary>
+    <div class="advanced-settings-body">
+      <div class="advanced-row">
+        <label>Processing detail</label>
+        <select id="processingDetail" onchange="updateCostEstimate()">
+          <option value="fast">Fast — fewer API calls, lower cost</option>
+          <option value="balanced" selected>Balanced — recommended</option>
+          <option value="thorough">Thorough — more API calls, higher accuracy</option>
+        </select>
+      </div>
+      <div class="advanced-hint">Controls how the transcript is split for processing. Fast uses larger chunks (fewer calls), Thorough uses smaller chunks (more detail per segment).</div>
+    </div>
+  </details>
+
+  <!-- Session restore bar -->
+  <div class="session-bar" id="sessionBar" style="display:none;">
+    <span>📋 Previous session results available</span>
+    <button class="session-bar-btn" onclick="restoreSession()">Restore</button>
+    <button class="session-bar-dismiss" onclick="dismissSession()">×</button>
   </div>
 
   <!-- Drop zone -->
   <div class="dropzone" id="dropzone">
     <div class="dropzone-icon">📄</div>
     <div class="dropzone-text">Drag & drop files here or <strong>click to browse</strong></div>
-    <div class="dropzone-text" style="margin-top:0.3rem; font-size:0.75rem;">TXT, DOCX, SRT, PDF — multiple files supported for batch processing</div>
+    <div class="dropzone-text dropzone-subtext">TXT, DOCX, SRT, PDF — multiple files supported for batch processing</div>
     <input type="file" id="fileInput" multiple accept=".txt,.docx,.srt,.pdf" />
   </div>
 
@@ -353,6 +378,7 @@
     <span class="batch-export-label">Batch export:</span>
     <button class="export-btn" onclick="exportAllZip()">Export All (ZIP)</button>
     <button class="export-btn" id="batchQAReportBtn" onclick="exportQAReport()" style="display: none;">QA Report (CSV)</button>
+    <button class="export-btn" id="batchQAXlsxBtn" onclick="exportQAReportXlsx()" style="display: none;">QA Report (XLSX)</button>
     <button class="export-btn" id="batchConsistencyBtn" onclick="runConsistencyCheck()" style="display: none;">Consistency Check</button>
   </div>
 
@@ -363,6 +389,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="js/prompts.js"></script>
 <script src="js/api.js"></script>
 <script src="js/render.js"></script>

@@ -1,4 +1,4 @@
-// ─── Transcript Analysis Tool v2.4 — API Layer ───
+// ─── Transcript Analysis Tool v2.5 — API Layer ───
 
 const CHUNK_SIZES = {
   anthropic: 4000,
@@ -11,7 +11,7 @@ function getChunkSize() {
   return CHUNK_SIZES[currentProvider] || 4000;
 }
 
-// ─── v2.4: Human-readable API error messages ───
+// ─── v2.5: Human-readable API error messages ───
 function formatApiError(status, serverMsg, provider) {
   const providerLinks = {
     Anthropic: 'console.anthropic.com',

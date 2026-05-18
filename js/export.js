@@ -1,4 +1,4 @@
-// ─── CSRI Transcript Analysis Tool v2.4 — Export ───
+// ─── CSRI Transcript Analysis Tool v2.5 — Export ───
 
 function stripTimestamps(text) {
   return text
