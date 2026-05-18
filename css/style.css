@@ -1832,14 +1832,14 @@ input[type="checkbox"]:focus-visible {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--accent-teal);
+  background: #f59e0b;
   cursor: pointer;
 }
 .creativity-slider-wrap input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--accent-teal);
+  background: #f59e0b;
   border: none;
   cursor: pointer;
 }
