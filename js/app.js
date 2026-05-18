@@ -65,6 +65,7 @@ function getFileIcon(name) {
 // v2.2 state
 let glossaryData = {};        // { fileName: [{source, target, category}] }
 let glossaryApproved = false; // true after user clicks Approve
+let uploadedGlossary = null;   // user-uploaded glossary terms (array or null)
 let batchTranslations = [];   // [{fileName, original, translation}] for consistency check
 
 const providerConfig = {
@@ -285,6 +286,39 @@ function setMode(mode) {
 
 
 // ─── v2.4: Cost estimate hooks on option checkboxes ───
+// Show/hide glossary upload row when checkbox toggled
+document.getElementById('useGlossary')?.addEventListener('change', function() {
+  const uploadRow = document.getElementById('glossaryUploadRow');
+  if (uploadRow) uploadRow.style.display = this.checked ? 'flex' : 'none';
+  if (!this.checked) {
+    uploadedGlossary = null;
+    const status = document.getElementById('glossaryUploadStatus');
+    if (status) status.textContent = '';
+    const fileInput = document.getElementById('glossaryFileInput');
+    if (fileInput) fileInput.value = '';
+  }
+});
+
+// Glossary file upload handler
+document.getElementById('glossaryFileInput')?.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('glossaryUploadStatus');
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const text = ev.target.result;
+    const terms = parseUploadedGlossary(text);
+    if (terms.length === 0) {
+      if (status) { status.textContent = 'No valid terms found. Format: source|target (one per line)'; status.style.color = 'var(--red)'; }
+      uploadedGlossary = null;
+      return;
+    }
+    uploadedGlossary = terms;
+    if (status) { status.textContent = terms.length + ' terms loaded from ' + file.name; status.style.color = 'var(--green)'; }
+  };
+  reader.readAsText(file);
+});
+
 ['addSummary', 'addAnonymization', 'addSpeakerCheck', 'useGlossary', 'useBacktrans', 'highQuality', 'processingDetail'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', updateCostEstimate);
@@ -536,6 +570,27 @@ function parseGlossaryResponse(text) {
   return terms;
 }
 
+function parseUploadedGlossary(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  const terms = [];
+  const firstLine = lines[0] || '';
+  let delim = '|';
+  if (firstLine.includes('\t')) delim = '\t';
+  else if (firstLine.includes('|')) delim = '|';
+  else if (firstLine.includes(';')) delim = ';';
+  else if (firstLine.includes(',')) delim = ',';
+  let start = 0;
+  const hdr = ['source', 'target', 'term', 'translation', 'category', 'original'];
+  if (hdr.some(w => firstLine.toLowerCase().includes(w))) start = 1;
+  for (let i = start; i < lines.length; i++) {
+    const parts = lines[i].split(delim).map(p => p.trim().replace(/^["']|["']$/g, ''));
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      terms.push({ source: parts[0], target: parts[1], category: parts[2] || 'DOMAIN' });
+    }
+  }
+  return terms;
+}
+
 function glossaryToPromptText(terms) {
   return terms.map(t => `"${t.source}" → "${t.target}"`).join('\n');
 }
@@ -560,18 +615,22 @@ function approveGlossary() {
   glossaryData._approved = approved;
   glossaryApproved = true;
 
-  // Hide the glossary panel and enable process button
+  // Collapse glossary panel to compact bar
   const panel = document.getElementById('glossaryPanel');
-  if (panel) panel.classList.add('approved');
-  const approveBtn = document.getElementById('glossaryApproveBtn');
-  if (approveBtn) {
-    approveBtn.textContent = '\u2713 Glossary approved (' + approved.length + ' terms)';
-    approveBtn.classList.remove('waiting');
-    approveBtn.disabled = true;
+  if (panel) {
+    panel.classList.add('approved');
+    // Replace panel content with collapsible summary bar
+    const termsList = approved.map(t => `"${t.source}" → "${t.target}"`).join(', ');
+    panel.innerHTML = `
+      <div class="glossary-collapsed-bar" onclick="this.parentElement.classList.toggle('glossary-expanded')">
+        <span><i data-lucide="book-open" class="icon-sm"></i> Glossary approved — ${approved.length} terms</span>
+        <span class="glossary-expand-hint"><i data-lucide="chevron-down" class="icon-xs"></i></span>
+      </div>
+      <div class="glossary-collapsed-content">
+        <div class="glossary-terms-preview">${escapeHtml(termsList)}</div>
+      </div>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: panel});
   }
-  // Hide the waiting message
-  const waitMsg = document.getElementById('glossaryWaitMsg');
-  if (waitMsg) waitMsg.style.display = 'none';
 
   // Resume processing
   if (typeof resumeAfterGlossary === 'function') resumeAfterGlossary();
@@ -734,53 +793,66 @@ async function processFiles(appendMode) {
         }
       }
 
-      // ─── v2.2: Glossary extraction (before translation) ───
+      // ─── v2.2: Glossary (uploaded or AI-extracted) ───
       let activeGlossaryText = '';
       if (useGlossary && ['translate', 'both'].includes(currentMode)) {
-        // Reuse first file's approved glossary for subsequent files
-        if (glossaryApproved && glossaryData._approved) {
+        if (uploadedGlossary && uploadedGlossary.length > 0) {
+          // User uploaded their own glossary — use directly, show for review on first file
+          if (!glossaryApproved) {
+            glossaryData._uploaded = true;
+            renderGlossaryTable(uploadedGlossary, 'Uploaded glossary');
+            progressText.textContent = 'Review uploaded glossary and click Approve to continue';
+            const glossaryEl = document.getElementById('glossaryApproveBtn');
+            if (glossaryEl) glossaryEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await new Promise(resolve => { window.resumeAfterGlossary = resolve; });
+            if (!isProcessing) throw { name: 'AbortError' };
+          }
+          const approvedTerms = glossaryData._approved || uploadedGlossary;
+          activeGlossaryText = glossaryToPromptText(approvedTerms);
+          doneWork++;
+          progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+          if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+          updateETA(doneWork, totalWork);
+        } else if (glossaryApproved && glossaryData._approved) {
+          // Reuse first file's approved glossary for subsequent files
           activeGlossaryText = glossaryToPromptText(glossaryData._approved);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
-      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
-      updateETA(doneWork, totalWork);
+          if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+          updateETA(doneWork, totalWork);
         } else {
-        showProgress(`Extracting glossary from ${file.name}...`);
-        // Sample from beginning + middle + end for better term coverage
-        const len = content.length;
-        let sample;
-        if (len <= 6000) {
-          sample = content;
-        } else {
-          const chunkSize = 2000;
-          const begin = content.substring(0, chunkSize);
-          const mid = content.substring(Math.floor(len / 2) - chunkSize / 2, Math.floor(len / 2) + chunkSize / 2);
-          const end = content.substring(len - chunkSize);
-          sample = begin + '\n[...]\n' + mid + '\n[...]\n' + end;
-        }
-        const glossaryRaw = await callAIWithRetry(apiKey, getGlossaryExtractionPrompt(targetLang), sample);
-        const terms = parseGlossaryResponse(glossaryRaw);
-        glossaryData[file.name] = terms;
-        doneWork++;
-        progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
-      if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
-      updateETA(doneWork, totalWork);
+          // AI extraction
+          showProgress(`Extracting glossary from ${file.name}...`);
+          const len = content.length;
+          let sample;
+          if (len <= 6000) {
+            sample = content;
+          } else {
+            const chunkSize = 2000;
+            const begin = content.substring(0, chunkSize);
+            const mid = content.substring(Math.floor(len / 2) - chunkSize / 2, Math.floor(len / 2) + chunkSize / 2);
+            const end = content.substring(len - chunkSize);
+            sample = begin + '\n[...]\n' + mid + '\n[...]\n' + end;
+          }
+          const glossaryRaw = await callAIWithRetry(apiKey, getGlossaryExtractionPrompt(targetLang), sample);
+          const terms = parseGlossaryResponse(glossaryRaw);
+          glossaryData[file.name] = terms;
+          doneWork++;
+          progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
+          if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
+          updateETA(doneWork, totalWork);
 
-        // If first file and glossary not yet approved, show table and wait
-        if (!glossaryApproved && terms.length > 0) {
-          renderGlossaryTable(terms, file.name);
-          progressText.textContent = 'Review glossary below and click Approve to continue';
-          // Auto-scroll to glossary table
-          const glossaryEl = document.getElementById('glossaryApproveBtn');
-          if (glossaryEl) glossaryEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          // Wait for user approval
-          await new Promise(resolve => { window.resumeAfterGlossary = resolve; });
-          if (!isProcessing) throw { name: 'AbortError' };
+          if (!glossaryApproved && terms.length > 0) {
+            renderGlossaryTable(terms, file.name);
+            progressText.textContent = 'Review glossary below and click Approve to continue';
+            const glossaryEl = document.getElementById('glossaryApproveBtn');
+            if (glossaryEl) glossaryEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await new Promise(resolve => { window.resumeAfterGlossary = resolve; });
+            if (!isProcessing) throw { name: 'AbortError' };
+          }
+          const approvedTerms = glossaryData._approved || terms;
+          activeGlossaryText = glossaryToPromptText(approvedTerms);
         }
-        // Build glossary text for prompt
-        const approvedTerms = glossaryData._approved || terms;
-        activeGlossaryText = glossaryToPromptText(approvedTerms);
-        } // end else (first file extraction)
       }
 
       // ─── Translation mode ───

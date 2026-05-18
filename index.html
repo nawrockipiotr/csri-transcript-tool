@@ -308,6 +308,13 @@
       <span class="option-hint">— extracts domain terms, lets you review, then enforces consistent translation</span>
     </label>
     <span class="option-unavail" id="glossaryUnavail" style="display:none;">Requires Translation or Both mode</span>
+    <div class="glossary-upload-row" id="glossaryUploadRow" style="display:none;">
+      <label class="glossary-upload-label">
+        <i data-lucide="upload" class="icon-xs"></i> Or upload your own glossary
+        <input type="file" id="glossaryFileInput" accept=".csv,.txt,.tsv" style="display:none;" />
+      </label>
+      <span class="glossary-upload-status" id="glossaryUploadStatus"></span>
+    </div>
   </div>
 
   <div class="summary-option" id="backtransOption">
