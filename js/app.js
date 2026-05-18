@@ -1226,6 +1226,9 @@ async function reprocessFile(fileIndex) {
   const oldFiles = [...files];
   files = [file];
 
+  // Remove old batch report entry for this file
+  batchReportData = batchReportData.filter(r => r.fileName !== file.name);
+
   // Remove old result for this file
   const resultsArea = document.getElementById('resultsArea');
   const resultBlocks = resultsArea.querySelectorAll('.result-block');
