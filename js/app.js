@@ -1,6 +1,6 @@
 // ─── Transcript Analysis Tool v2.5 — App Logic ───
 
-const TOOL_VERSION = 'v2.5';
+const TOOL_VERSION = 'v2.6';
 
 
 // ─── v2.5: Dark mode ───
@@ -8,13 +8,13 @@ function toggleDarkMode() {
   const isDark = document.documentElement.classList.toggle('dark-mode');
   localStorage.setItem('transcript_tool_dark_mode', isDark ? '1' : '0');
   const btn = document.getElementById('darkToggle');
-  if (btn) btn.textContent = isDark ? '☀ Light' : '🌙 Dark';
+  if (btn) btn.innerHTML = isDark ? '<i data-lucide="sun" class="icon-sm"></i> Light' : '<i data-lucide="moon" class="icon-sm"></i> Dark'; lucide.createIcons({nameAttr: 'data-lucide', node: btn});
 }
 (function initDarkMode() {
   if (localStorage.getItem('transcript_tool_dark_mode') === '1') {
     document.documentElement.classList.add('dark-mode');
     const btn = document.getElementById('darkToggle');
-    if (btn) btn.textContent = '☀ Light';
+    if (btn) btn.innerHTML = '<i data-lucide="sun" class="icon-sm"></i> Light';
   }
 })();
 
@@ -57,13 +57,9 @@ function updateETA(doneWork, totalWork) {
 // ─── v2.5: File type icons ───
 function getFileIcon(name) {
   const ext = name.split('.').pop().toLowerCase();
-  switch (ext) {
-    case 'txt': return '📝';
-    case 'srt': return '📊';
-    case 'docx': return '📄';
-    case 'pdf': return '📕';
-    default: return '📎';
-  }
+  const icons = { txt: 'file-text', srt: 'subtitles', docx: 'file-type', pdf: 'book-open' };
+  const iconName = icons[ext] || 'paperclip';
+  return '<i data-lucide="' + iconName + '" class="icon-sm"></i>';
 }
 
 // v2.2 state
@@ -341,7 +337,7 @@ function renderFileList() {
   fileListEl.innerHTML = files.map((f, i) => {
     const status = f._status || '';
     const statusClass = status ? 'file-status-' + status : '';
-    const statusLabel = status === 'processing' ? '⏳ processing' : status === 'done' ? '✓ done' : status === 'error' ? '✗ error' : status === 'queued' ? '◻ queued' : '';
+    const statusLabel = status === 'processing' ? '<i data-lucide="loader" class="icon-xs icon-spin"></i> processing' : status === 'done' ? '<i data-lucide="check" class="icon-xs"></i> done' : status === 'error' ? '<i data-lucide="x" class="icon-xs"></i> error' : status === 'queued' ? '<i data-lucide="minus" class="icon-xs"></i> queued' : '';
     return `
     <div class="file-item" id="fileItem_${i}">
       <span class="file-icon">${getFileIcon(f.name)}</span>
@@ -353,6 +349,7 @@ function renderFileList() {
   }).join('');
   actionBtn.disabled = files.length === 0;
   updateCostEstimate();
+  if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: fileListEl});
 }
 
 function setFileStatus(fileIndex, status) {
@@ -360,17 +357,18 @@ function setFileStatus(fileIndex, status) {
   const el = document.getElementById('fileItem_' + fileIndex);
   if (!el) return;
   const statusSpan = el.querySelector('.file-status');
-  const labels = { processing: '⏳ processing', done: '✓ done', error: '✗ error', queued: '◻ queued' };
+  const labels = { processing: '<i data-lucide="loader" class="icon-xs icon-spin"></i> processing', done: '<i data-lucide="check" class="icon-xs"></i> done', error: '<i data-lucide="x" class="icon-xs"></i> error', queued: '<i data-lucide="minus" class="icon-xs"></i> queued' };
   if (statusSpan) {
-    statusSpan.textContent = labels[status] || status;
+    statusSpan.innerHTML = labels[status] || status;
     statusSpan.className = 'file-status file-status-' + status;
   } else {
     const span = document.createElement('span');
     span.className = 'file-status file-status-' + status;
-    span.textContent = labels[status] || status;
+    span.innerHTML = labels[status] || status;
     const removeBtn = el.querySelector('.remove');
     el.insertBefore(span, removeBtn);
   }
+  if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: el});
 }
 
 // ─── Read file content ───
@@ -701,7 +699,7 @@ async function processFiles(appendMode) {
       if (['translate', 'both'].includes(currentMode) && langData.primary.toLowerCase() === targetLang.toLowerCase()) {
         const langInfo = document.createElement('div');
         langInfo.className = 'lang-warning';
-        langInfo.innerHTML = `⚠ <strong>${file.name}</strong>: detected language (${langData.primary}) matches target language (${targetLang}). Translation may not be needed. Processing anyway.`;
+        langInfo.innerHTML = `<i data-lucide="alert-triangle" class="icon-xs"></i> <strong>${file.name}</strong>: detected language (${langData.primary}) matches target language (${targetLang}). Translation may not be needed. Processing anyway.`;
         resultsArea.appendChild(langInfo);
       }
 
@@ -1209,7 +1207,7 @@ function dismissSession() {
       if (bar) {
         const d = new Date(data.timestamp);
         const timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        bar.querySelector('span').textContent = '📋 Previous results available (' + data.fileCount + ' files, ' + timeStr + ')';
+        bar.querySelector('span').innerHTML = '<i data-lucide="clipboard-list" class="icon-sm"></i> Previous results available (' + data.fileCount + ' files, ' + timeStr + ')'; if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: bar});
         bar.style.display = 'flex';
       }
     }
@@ -1251,7 +1249,7 @@ function toggleResultBlock(btn) {
   const body = block.querySelector('.result-body');
   if (!body) return;
   const collapsed = body.classList.toggle('collapsed');
-  btn.textContent = collapsed ? '▶' : '▼';
+  btn.innerHTML = collapsed ? '<i data-lucide="chevron-right" class="icon-sm"></i>' : '<i data-lucide="chevron-down" class="icon-sm"></i>'; if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: btn});
 }
 
 // ─── v2.5: XLSX QA Report export ───

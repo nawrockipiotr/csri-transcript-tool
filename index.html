@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="v2.5">
+<meta name="version" content="v2.6">
 <title>Transcript Analysis Tool</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -15,8 +15,8 @@
   <div class="hero">
     <div class="hero-top-row">
       <div class="org-badge">Centre for Socially Responsible Innovations (CSRI)</div>
-      <span class="version-badge">v2.5</span>
-      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙 Dark</button>
+      <span class="version-badge">v2.6</span>
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode"><i data-lucide="moon" class="icon-sm"></i> Dark</button>
     </div>
     
     <h1>Transcript Analysis Tool</h1>
@@ -224,8 +224,8 @@
     <label class="save-check">
       <input type="checkbox" id="saveKey" /> Save settings on this computer
     </label>
-    <div class="api-key-security" id="apiKeySecurity">🔒 Key stored in this browser only · sent only to the selected provider · never shared with third parties</div>
-    <div class="api-hint api-data-warning">⚠ When using cloud providers, transcript content is transmitted to their servers — ensure this is compatible with your data protection obligations.</div>
+    <div class="api-key-security" id="apiKeySecurity"><i data-lucide="lock" class="icon-xs"></i> Key stored in this browser only · sent only to the selected provider · never shared with third parties</div>
+    <div class="api-hint api-data-warning"><i data-lucide="alert-triangle" class="icon-xs"></i> When using cloud providers, transcript content is transmitted to their servers — ensure this is compatible with your data protection obligations.</div>
     <label class="quality-check">
       <input type="checkbox" id="highQuality" style="accent-color: var(--accent);" />
       <span style="font-weight: 600;">Use higher quality model</span>
@@ -322,7 +322,7 @@
 
   <!-- Advanced Settings -->
   <details class="advanced-settings" id="advancedSettings">
-    <summary>⚙ Advanced Settings</summary>
+    <summary><i data-lucide="settings" class="icon-sm"></i> Advanced Settings</summary>
     <div class="advanced-settings-body">
       <div class="advanced-row">
         <label>Processing detail</label>
@@ -338,14 +338,14 @@
 
   <!-- Session restore bar -->
   <div class="session-bar" id="sessionBar" style="display:none;">
-    <span>📋 Previous session results available</span>
+    <span><i data-lucide="clipboard-list" class="icon-sm"></i> Previous session results available</span>
     <button class="session-bar-btn" onclick="restoreSession()">Restore</button>
     <button class="session-bar-dismiss" onclick="dismissSession()">×</button>
   </div>
 
   <!-- Drop zone -->
   <div class="dropzone" id="dropzone">
-    <div class="dropzone-icon">📄</div>
+    <div class="dropzone-icon"><i data-lucide="upload" class="icon-lg"></i></div>
     <div class="dropzone-text">Drag & drop files here or <strong>click to browse</strong></div>
     <div class="dropzone-text dropzone-subtext">TXT, DOCX, SRT, PDF — multiple files supported for batch processing</div>
     <input type="file" id="fileInput" multiple accept=".txt,.docx,.srt,.pdf" />
@@ -356,7 +356,7 @@
 
   <!-- Cost Estimate -->
   <div class="cost-estimate" id="costEstimate" style="display:none;">
-    <span class="cost-icon">💰</span>
+    <span class="cost-icon"><i data-lucide="coins" class="icon-sm"></i></span>
     <span class="cost-text" id="costText"></span>
   </div>
 
@@ -386,6 +386,7 @@
   <div class="results-area" id="resultsArea"></div>
 </div>
 
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -396,5 +397,6 @@
 <script src="js/export.js"></script>
 <script src="js/app.js"></script>
 
+<script>lucide.createIcons();</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// ─── Transcript Analysis Tool v2.5 — API Layer ───
+// ─── Transcript Analysis Tool v2.6 — API Layer ───
 
 const CHUNK_SIZES = {
   anthropic: 4000,

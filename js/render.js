@@ -1,4 +1,4 @@
-// ─── Transcript Analysis Tool v2.5 — Render ───
+// ─── Transcript Analysis Tool v2.6 — Render ───
 
 function sanitizeId(name) {
   return name.replace(/[^a-zA-Z0-9]/g, '_');
@@ -223,7 +223,7 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
   // Block header with file name, language info, collapse toggle, re-run
   let headerHtml = `<div class="result-header">
     <span class="result-header-left">
-      <button class="result-toggle" onclick="toggleResultBlock(this)" title="Collapse/expand">&#9660;</button>
+      <button class="result-toggle" onclick="toggleResultBlock(this)" title="Collapse/expand"><i data-lucide="chevron-down" class="icon-sm"></i></button>
       <span>${escapeHtml(fileName)}</span>
       ${rerunBtn}
     </span>`;
@@ -258,6 +258,7 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
 
   block.innerHTML = headerHtml + `<div class="result-body">${tabBarHtml}${panelsHtml}</div>`;
   resultsArea.appendChild(block);
+  if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: block});
 }
 
 // ─── Tab switching ───
@@ -430,7 +431,7 @@ function formatBackTranslation(text) {
 function formatTimestampIssues(issues) {
   return issues.map(issue => {
     const sevClass = issue.severity === 'serious' ? 'flag-red' : 'flag-yellow';
-    const icon = issue.severity === 'serious' ? '❌' : '⚠';
+    const icon = issue.severity === 'serious' ? '<i data-lucide="x-circle" class="icon-xs"></i>' : '<i data-lucide="alert-triangle" class="icon-xs"></i>';
     return `<div class="timestamp-issue"><span class="${sevClass}">${icon} #${issue.index} ${issue.type}</span>: ${escapeHtml(issue.detail)}</div>`;
   }).join('');
 }
@@ -465,7 +466,7 @@ function renderGlossaryTable(terms, fileName) {
       <button class="glossary-mass-btn" onclick="glossarySelectAll(false)">Deselect all</button>
       <button class="glossary-mass-btn" onclick="glossarySortBy('category')">Sort by category</button>
     </div>
-    <div class="glossary-info" id="glossaryWaitMsg" style="color: var(--accent-teal); font-weight: 600;">⏳ Waiting for your approval before translating...</div>
+    <div class="glossary-info" id="glossaryWaitMsg" style="color: var(--accent-teal); font-weight: 600;"><i data-lucide="loader" class="icon-sm icon-spin"></i> Waiting for your approval before translating...</div>
     <table class="glossary-table" id="glossaryTable">
       <thead><tr>
         <th class="sortable" onclick="glossarySortBy('source')">Source Term ↕</th>
@@ -478,6 +479,7 @@ function renderGlossaryTable(terms, fileName) {
     <button class="action-btn glossary-approve-btn" id="glossaryApproveBtn" onclick="approveGlossary()">Approve Glossary & Continue</button>
   `;
   resultsArea.prepend(panel);
+  if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: panel});
 }
 
 // v2.4: Glossary mass operations
@@ -528,6 +530,7 @@ function renderConsistencyReport(text) {
     <div class="result-content" style="white-space: pre-wrap;"><div class="qa-body">${html}</div></div>
   `;
   resultsArea.appendChild(block);
+  if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: block});
 }
 
 // ─── v2.2: Build diff view HTML (for translation results with original) ───
