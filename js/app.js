@@ -199,7 +199,10 @@ function getCreativityTemperature() {
 }
 
 function updateCreativityLabel() {
-  // no-op for now, slider labels are static
+  const slider = document.getElementById('creativitySlider');
+  if (!slider) return;
+  const val = parseFloat(slider.value) / 10;
+  slider.title = 'Temperature: ' + val.toFixed(1);
 }
 
 function updateCostEstimate() {
