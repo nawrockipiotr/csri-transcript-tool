@@ -1,16 +1,5 @@
 // ─── Transcript Analysis Tool v2.6 — API Layer ───
 
-const CHUNK_SIZES = {
-  anthropic: 4000,
-  openai: 4000,
-  google: 8000,
-  local: 4000
-};
-
-function getChunkSize() {
-  return CHUNK_SIZES[currentProvider] || 4000;
-}
-
 // ─── v2.5: Human-readable API error messages ───
 function formatApiError(status, serverMsg, provider) {
   const providerLinks = {

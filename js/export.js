@@ -168,9 +168,7 @@ function exportFile(fileId, type, format) {
   if (format === 'docx') {
     exportDocx(text, `${baseName}_${langCode}.docx`);
   }
-  if (format === 'pdf') {
-    exportPdf(text, `${baseName}_${langCode}.pdf`);
-  }
+
 }
 
 // ─── Quality export ───
@@ -183,7 +181,7 @@ function exportQuality(fileId, format) {
   const metricsHeader = getQAMetricsHeader(fileId);
   const fullLegend = metadata + '\n\n' + metricsHeader + FLAGS_LEGEND + '\n\n';
 
-  if (format === 'html' || format === 'pdf') {
+  if (format === 'html') {
     const legendHtml = `<div style="background:#f3f4f6;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem;color:#374151;white-space:pre-line;">${escapeHtml(fullLegend.trim())}</div>`;
     const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quality: ${baseName}</title>
     <style>
@@ -265,7 +263,7 @@ function exportAnonymized(fileId, mode, format) {
   const fmt = format || 'txt';
 
   // HTML format: styled HTML with redaction or marking applied
-  if (fmt === 'html' || fmt === 'pdf') {
+  if (fmt === 'html') {
     const metaHtml = `<div style="background:#f3f4f6;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.8rem;color:#6b7085;white-space:pre-line;">${escapeHtml(metadata)}</div>`;
     let bodyHtml = el.innerHTML;
     if (mode === 'redacted') {
@@ -413,16 +411,6 @@ async function exportQualityDocx(el, filename, legendText) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-// ─── PDF export (downloads styled HTML for Save As PDF) ───
-function exportPdf(text, filename) {
-  const htmlFilename = filename.replace(/\.pdf$/i, '.html');
-  const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(filename)}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2cm; line-height: 1.8; max-width: 700px; margin: 0 auto; font-size: 11pt; white-space: pre-wrap; color: #1a1d27; }
-    @media print { body { padding: 0; } @page { margin: 2cm; } }
-  </style></head><body>${escapeHtml(text)}</body></html>`;
-  downloadText(htmlContent, htmlFilename, 'text/html');
-}
 
 // ─── Export diff view as styled HTML ───
 function exportDiffHtml(viewEl, viewType, filename) {

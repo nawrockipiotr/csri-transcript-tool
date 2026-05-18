@@ -1,4 +1,4 @@
-// ─── Transcript Analysis Tool v2.5 — App Logic ───
+// ─── Transcript Analysis Tool v2.6 — App Logic ───
 
 const TOOL_VERSION = 'v2.6';
 
@@ -1166,6 +1166,22 @@ async function exportAllZip() {
       redacted = redacted.replace(/<span class="flag-pii flag-date"[^>]*>([\s\S]*?)<\/span>/g, '[DATE]');
       redacted = redacted.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
       zip.file(`${baseName}_anonymized.txt`, metadata + '\n\n' + redacted);
+    }
+
+    // Back-translation
+    const btransEl = block.querySelector('[id^="btrans_"]');
+    if (btransEl) {
+      const fileId = btransEl.id.replace('btrans_', '');
+      const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx|pdf)$/i, '');
+      zip.file(`${baseName}_back_translation.txt`, metadata + '\n\n' + btransEl.textContent);
+    }
+
+    // Summary (standalone)
+    const summEl = block.querySelector('[id^="summ_"]');
+    if (summEl) {
+      const fileId = summEl.id.replace('summ_', '');
+      const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx|pdf)$/i, '');
+      zip.file(`${baseName}_summary.txt`, metadata + '\n\n' + summEl.textContent);
     }
   }
 
