@@ -30,6 +30,7 @@ html, body { background: transparent !important; background-color: transparent !
   --teal-dim: #10b98115;
   --amber: #f59e0b;
   --amber-dim: #f59e0b15;
+  --bg-dim: #f3f4f6;
   --radius: 14px;
 }
 
@@ -1224,6 +1225,7 @@ input[type="checkbox"]:focus-visible {
   --teal-dim: #34d39915;
   --amber: #fbbf24;
   --amber-dim: #fbbf2415;
+  --bg-dim: #0f172a;
 }
 .dark-mode body, .dark-mode { color: var(--text); }
 .dark-mode .hero, .dark-mode .api-section, .dark-mode .mode-toggle,

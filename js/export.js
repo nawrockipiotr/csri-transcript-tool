@@ -122,6 +122,7 @@ function exportFile(fileId, type, format) {
     html = html.replace(/<span class="flag-yellow"[^>]*>([\s\S]*?)<\/span>/g, '\u00ab$1\u00bb');
     html = html.replace(/<span class="flag-red"[^>]*>([\s\S]*?)<\/span>/g, '\u00ab\u200b$1\u200b\u00bb');
     html = html.replace(/<span class="flag-cs"[^>]*>([\s\S]*?)<\/span>/g, '[CS: $1]');
+    html = html.replace(/<span class="flag-corrected"[^>]*>([\s\S]*?)<\/span>/g, '$1');
     html = html.replace(/<[^>]+>/g, '');
     html = html.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
     text = html;
@@ -188,6 +189,8 @@ function exportQuality(fileId, format) {
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2rem; line-height: 1.8; max-width: 800px; margin: 0 auto; color: #1a1d27; }
       .flag-yellow { background: #fef9c3; border-left: 3px solid #facc15; padding: 2px 6px; }
       .flag-red { background: #fee2e2; border-left: 3px solid #f87171; padding: 2px 6px; }
+      .flag-corrected { background: #dcfce7; color: #166534; padding: 2px 6px; border-left: 3px solid #22c55e; }
+      .flag-corrected::after { content: ' ✓'; font-size: 0.8em; opacity: 0.7; }
       .qa-summary-text { padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; color: #6b7085; font-size: 0.9rem; }
       .qa-body { white-space: pre-wrap; }
     </style></head><body>
@@ -202,6 +205,7 @@ function exportQuality(fileId, format) {
     let bodyText = el.innerHTML;
     bodyText = bodyText.replace(/<span class="flag-yellow"[^>]*>([\s\S]*?)<\/span>/g, '[⚠ MINOR: $1]');
     bodyText = bodyText.replace(/<span class="flag-red"[^>]*>([\s\S]*?)<\/span>/g, '[❌ SERIOUS: $1]');
+    bodyText = bodyText.replace(/<span class="flag-corrected"[^>]*>([\s\S]*?)<\/span>/g, '[✓ CORRECTED: $1]');
     bodyText = bodyText.replace(/<[^>]+>/g, '');
     bodyText = bodyText.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
     text += bodyText;
@@ -273,6 +277,11 @@ function exportAnonymized(fileId, mode, format) {
         if (match.includes('flag-loc')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[LOCATION]</span>';
         if (match.includes('flag-id')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[ID_REMOVED]</span>';
         if (match.includes('flag-date')) return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[DATE]</span>';
+        if (match.includes('flag-custom')) {
+          const title = match.match(/title="([^"]+)"/);
+          const label = title ? title[1] : 'REDACTED';
+          return '<span style="background:#e5e7eb;padding:2px 6px;border-radius:2px;">[' + label + ']</span>';
+        }
         return match;
       });
     }
@@ -282,7 +291,8 @@ function exportAnonymized(fileId, mode, format) {
       .flag-org { background: #e0e7ff; border-left: 3px solid #6366f1; }
       .flag-loc { background: #d1fae5; border-left: 3px solid #10b981; }
       .flag-id { background: #fee2e2; border-left: 3px solid #ef4444; }
-      .flag-date { background: #fef3c7; border-left: 3px solid #f59e0b; }`;
+      .flag-date { background: #fef3c7; border-left: 3px solid #f59e0b; }
+      .flag-custom { background: #e0e7ff; border-left: 3px solid #818cf8; }`;
     const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Anonymized (${mode}): ${baseName}</title>
     <style>
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2rem; line-height: 1.8; max-width: 800px; margin: 0 auto; color: #1a1d27; }
@@ -304,12 +314,14 @@ function exportAnonymized(fileId, mode, format) {
     text = text.replace(/<span class="flag-pii flag-loc"[^>]*>([\s\S]*?)<\/span>/g, '[LOCATION]');
     text = text.replace(/<span class="flag-pii flag-id"[^>]*>([\s\S]*?)<\/span>/g, '[ID_REMOVED]');
     text = text.replace(/<span class="flag-pii flag-date"[^>]*>([\s\S]*?)<\/span>/g, '[DATE]');
+    text = text.replace(/<span class="flag-pii flag-custom"[^>]*title="([^"]*)"[^>]*>[\s\S]*?<\/span>/g, '[$1]');
   } else {
     text = text.replace(/<span class="flag-pii flag-name"[^>]*>([\s\S]*?)<\/span>/g, '[NAME: $1]');
     text = text.replace(/<span class="flag-pii flag-org"[^>]*>([\s\S]*?)<\/span>/g, '[ORG: $1]');
     text = text.replace(/<span class="flag-pii flag-loc"[^>]*>([\s\S]*?)<\/span>/g, '[LOC: $1]');
     text = text.replace(/<span class="flag-pii flag-id"[^>]*>([\s\S]*?)<\/span>/g, '[ID: $1]');
     text = text.replace(/<span class="flag-pii flag-date"[^>]*>([\s\S]*?)<\/span>/g, '[DATE: $1]');
+    text = text.replace(/<span class="flag-pii flag-custom"[^>]*title="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g, '[$1: $2]');
   }
 
   text = text.replace(/<[^>]+>/g, '');
@@ -382,6 +394,8 @@ async function exportQualityDocx(el, filename, legendText) {
           runs.push(new TextRun({ text, size: 22, font: 'Calibri', highlight: 'yellow' }));
         } else if (child.classList.contains('flag-red')) {
           runs.push(new TextRun({ text, size: 22, font: 'Calibri', color: 'CC0000', bold: true }));
+        } else if (child.classList.contains('flag-corrected')) {
+          runs.push(new TextRun({ text, size: 22, font: 'Calibri', color: '16A34A', italics: true }));
         } else {
           for (const c of child.childNodes) {
             if (c.nodeType === Node.TEXT_NODE && c.textContent) {
