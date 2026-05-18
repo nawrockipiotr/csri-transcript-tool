@@ -766,7 +766,7 @@ async function processFiles(appendMode) {
       if (addSummary) {
         if (chunks.length === 1) {
           showProgress(`Generating summary for ${file.name}...`);
-          summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang), content);
+          summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang, langData?.primary), content);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
@@ -784,7 +784,7 @@ async function processFiles(appendMode) {
       updateETA(doneWork, totalWork);
           }
           showProgress(`Synthesizing summary for ${file.name}...`);
-          summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang),
+          summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang, langData?.primary),
             `Below are key points extracted from all chunks of a transcript. Synthesize them into a single coherent summary following your format.\n\n${keyPoints.join('\n\n')}`);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';

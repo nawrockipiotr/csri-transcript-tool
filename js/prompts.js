@@ -61,7 +61,7 @@ RULES:
 10. Missing speaker labels: if a turn clearly belongs to a different speaker but has no label or the same label as previous turn, note this in SUMMARY but do not flag it inline (speaker check is a separate function).`;
 }
 
-function getSummaryPrompt(targetLang) {
+function getSummaryPrompt(targetLang, sourceLang) {
   return `You are a research transcript analyst. Generate a structured summary of the provided transcript entirely in ${targetLang} — including ALL section headers and labels.
 
 RESPONSE FORMAT (translate every header and label into ${targetLang}):
@@ -69,7 +69,7 @@ RESPONSE FORMAT (translate every header and label into ${targetLang}):
 === SUMMARY ===
 
 [Context header in ${targetLang}]:
-- [Source language label in ${targetLang}]: [the language(s) actually SPOKEN in the recording — detect from the transcript content, not from metadata. If multiple languages are spoken (code-switching), list all of them, e.g., "Spanish (primary), English (secondary)"]
+- [Source language label in ${targetLang}]: ${sourceLang ? sourceLang : "[detect from the transcript content]"}${sourceLang ? " (pre-detected; use this value, translate the language name into " + targetLang + ")" : ""}
 - [Participants label in ${targetLang}]: [approximate number based on speaker turns and conversational cues. Do NOT assign names — speaker labels may be unreliable]
 - [Estimated length label in ${targetLang}]: [estimate based on timestamps if available, or text volume]
 - [Format label in ${targetLang}]: [type of interaction: interview, focus group, workshop, meeting, lecture, etc. — infer from content]
@@ -93,7 +93,7 @@ RULES:
 5. Do NOT interpret or evaluate — summarize factually.
 6. Do NOT inflate estimates — base length on timestamps or text volume.
 7. Keep it concise: 150-300 words total.
-8. CRITICAL: Detect the source language from the CONTENT of the transcript (what language are the speakers actually using?), not from file names, metadata, or the translation target language. If the transcript has already been translated, try to identify the original language from contextual clues.
+8. The source language has been pre-detected and provided above. Use that value — translate the language name into ${targetLang} (e.g., "Latvian" becomes "łotewski" in Polish, "lettisch" in German). Do NOT re-detect or guess the language yourself. If no pre-detected value was provided, detect from transcript content.
 9. REMINDER: Your ENTIRE output MUST be in ${targetLang}. Even if the source text is in another language, write your summary in ${targetLang}.`;
 }
 

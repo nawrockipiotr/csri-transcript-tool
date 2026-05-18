@@ -840,7 +840,6 @@ h1 {
 
 /* ─── v2.2: Glossary Table ─── */
 .glossary-panel { border: 2px solid var(--accent-teal); }
-.glossary-panel.approved { border-color: var(--green); opacity: 0.7; }
 .glossary-info {
   font-size: 0.9rem;
   color: var(--text-dim);
