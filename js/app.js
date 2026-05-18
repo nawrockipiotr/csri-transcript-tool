@@ -615,20 +615,51 @@ function approveGlossary() {
   glossaryData._approved = approved;
   glossaryApproved = true;
 
-  // Collapse glossary panel to compact bar
+  // Convert glossary panel to read-only collapsed table
   const panel = document.getElementById('glossaryPanel');
   if (panel) {
     panel.classList.add('approved');
-    // Replace panel content with collapsible summary bar
-    const termsList = approved.map(t => `"${t.source}" → "${t.target}"`).join(', ');
-    panel.innerHTML = `
-      <div class="glossary-collapsed-bar" onclick="this.parentElement.classList.toggle('glossary-expanded')">
-        <span><i data-lucide="book-open" class="icon-sm"></i> Glossary approved — ${approved.length} terms</span>
-        <span class="glossary-expand-hint"><i data-lucide="chevron-down" class="icon-xs"></i></span>
-      </div>
-      <div class="glossary-collapsed-content">
-        <div class="glossary-terms-preview">${escapeHtml(termsList)}</div>
-      </div>`;
+    // Remove unchecked rows, convert to read-only
+    const tbody = table.querySelector('tbody');
+    if (tbody) {
+      const allRows = tbody.querySelectorAll('tr');
+      allRows.forEach(row => {
+        const cb = row.querySelector('input[type="checkbox"]');
+        if (cb && !cb.checked) {
+          row.remove();
+          return;
+        }
+        // Remove checkbox cell
+        const useCell = row.querySelector('td:last-child');
+        if (useCell) useCell.remove();
+        // Convert editable input to plain text
+        const inputCell = row.querySelectorAll('td')[1];
+        if (inputCell) {
+          const input = inputCell.querySelector('input');
+          if (input) inputCell.textContent = input.value;
+        }
+      });
+    }
+    // Remove "Use" column header
+    const useHeader = table.querySelector('thead th:last-child');
+    if (useHeader) useHeader.remove();
+    // Remove approve button and info text
+    const approveBtn = panel.querySelector('#glossaryApproveBtn');
+    if (approveBtn) approveBtn.remove();
+    const infoEl = panel.querySelector('.glossary-info');
+    if (infoEl) infoEl.remove();
+    // Add collapsible header bar (collapsed by default)
+    const bar = document.createElement('div');
+    bar.className = 'glossary-collapsed-bar';
+    bar.onclick = function() { panel.classList.toggle('glossary-expanded'); };
+    bar.innerHTML = '<span><i data-lucide="book-open" class="icon-sm"></i> Glossary approved — ' + approved.length + ' terms</span><span class="glossary-expand-hint"><i data-lucide="chevron-down" class="icon-xs"></i></span>';
+    // Wrap existing table in collapsed content div
+    const tableWrapper = document.createElement('div');
+    tableWrapper.className = 'glossary-collapsed-content';
+    tableWrapper.appendChild(table);
+    panel.innerHTML = '';
+    panel.appendChild(bar);
+    panel.appendChild(tableWrapper);
     if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: panel});
   }
 
