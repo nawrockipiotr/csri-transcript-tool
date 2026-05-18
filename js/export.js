@@ -9,11 +9,6 @@ function stripTimestamps(text) {
     .trim();
 }
 
-function stripFlags(text) {
-  return text
-    .replace(/\[(Y|R|CS|S|NAME|ORG|LOC|ID|DATE)\]/g, '')
-    .replace(/\[\/(Y|R|CS|S|NAME|ORG|LOC|ID|DATE)\]/g, '');
-}
 
 // ─── Get target language for filenames ───
 function getTargetLangCode() {
@@ -346,6 +341,7 @@ function downloadText(content, filename, mimeType) {
 }
 
 async function exportDocx(text, filename) {
+  try {
   const { Document, Packer, Paragraph, TextRun } = docx;
 
   const paragraphs = text.split('\n').map(line =>
@@ -364,9 +360,14 @@ async function exportDocx(text, filename) {
   a.download = filename;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch (err) {
+    console.error('DOCX export failed:', err);
+    alert('DOCX export failed: ' + (err.message || err));
+  }
 }
 
 async function exportQualityDocx(el, filename, legendText) {
+  try {
   const { Document, Packer, Paragraph, TextRun } = docx;
   
   const children = [];
@@ -423,6 +424,10 @@ async function exportQualityDocx(el, filename, legendText) {
   a.download = filename;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch (err) {
+    console.error('Quality DOCX export failed:', err);
+    alert('DOCX export failed: ' + (err.message || err));
+  }
 }
 
 

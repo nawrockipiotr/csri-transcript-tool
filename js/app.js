@@ -34,10 +34,6 @@ function showProgress(msg) {
   const el = document.getElementById('progressText');
   if (el) el.innerHTML = '<span class="api-spinner"></span>' + msg;
 }
-function showProgressDone(msg) {
-  const el = document.getElementById('progressText');
-  if (el) el.textContent = msg;
-}
 
 
 // ─── v2.5: ETA display ───
@@ -1228,6 +1224,7 @@ async function processFiles(appendMode) {
 
 // ─── Batch Export: ZIP all results ───
 async function exportAllZip() {
+  try {
   const resultsArea = document.getElementById('resultsArea');
   const blocks = resultsArea.querySelectorAll('.result-block');
   if (blocks.length === 0) return;
@@ -1322,6 +1319,10 @@ async function exportAllZip() {
   a.download = `transcript_tool_results_${new Date().toISOString().substring(0, 10)}.zip`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch (err) {
+    console.error('ZIP export failed:', err);
+    alert('Export failed: ' + (err.message || err));
+  }
 }
 
 // ─── Batch QA Report CSV ───
