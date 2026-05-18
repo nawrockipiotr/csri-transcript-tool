@@ -59,47 +59,45 @@ function buildScoreBreakdown(metrics, formatted) {
   return '<div class="score-breakdown">Score rationale: ' + reasons.join('; ') + '.</div>';
 }
 
-// ─── Main result renderer ───
+// ─── Main result renderer (v2.6: tabbed sections) ───
 function renderResult(fileName, translation, quality, summary, langData, speakerCheck, anonymization, backtransResult, timestampResult) {
   const resultsArea = document.getElementById('resultsArea');
   const block = document.createElement('div');
   block.className = 'result-block';
+  const fId = sanitizeId(fileName);
 
-  let contentHtml = '';
+  // Collect sections as tab data: { key, label, badge, contentHtml }
+  const tabs = [];
 
-  // Language info bar
-  if (langData) {
-    contentHtml += renderLanguageInfo(langData, fileName);
-  }
-
-  // Summary
+  // ── Summary tab ──
   if (summary) {
-    contentHtml += `<div class="result-header">
-      <span>Summary — ${fileName}</span>
-    </div>
-    <div class="result-content" id="summ_${sanitizeId(fileName)}" style="white-space: pre-wrap;">${escapeHtml(summary)}</div>`;
+    tabs.push({
+      key: 'summary',
+      label: 'Summary',
+      badge: '',
+      contentHtml: `<div class="result-content" id="summ_${fId}" style="white-space: pre-wrap;">${escapeHtml(summary)}</div>`
+    });
   }
 
-  // Translation
+  // ── Translation tab ──
   if (translation) {
     let transHtml = escapeHtml(translation);
     transHtml = transHtml.replace(/\[Y\]([\s\S]*?)\[\/Y\]/g, '<span class="flag-yellow">$1</span>');
     transHtml = transHtml.replace(/\[R\]([\s\S]*?)\[\/R\]/g, '<span class="flag-red">$1</span>');
     transHtml = transHtml.replace(/\[CS\]([\s\S]*?)\[\/CS\]/g, '<span class="flag-cs" title="Code-switch: originally in a different language">$1</span>');
 
-    // v2.2: Build diff view if we have original content stored
     const hasDiff = batchTranslations.some(bt => bt.fileName === fileName);
     let diffHtml = '';
     if (hasDiff) {
       const bt = batchTranslations.find(b => b.fileName === fileName);
-      const diff = buildDiffView(bt.original, bt.translation, sanitizeId(fileName));
+      const diff = buildDiffView(bt.original, bt.translation, fId);
       diffHtml = `
-        <div class="diff-seg-control" id="diffSeg_${sanitizeId(fileName)}">
-          <button class="diff-seg-btn active" data-view="translation" onclick="setDiffView('${sanitizeId(fileName)}', 'translation')">📄 Translation</button>
-          <button class="diff-seg-btn" data-view="sidebyside" onclick="setDiffView('${sanitizeId(fileName)}', 'sidebyside')">⇔ Side by side</button>
-          <button class="diff-seg-btn" data-view="inline" onclick="setDiffView('${sanitizeId(fileName)}', 'inline')">±  Inline diff</button>
+        <div class="diff-seg-control" id="diffSeg_${fId}">
+          <button class="diff-seg-btn active" data-view="translation" onclick="setDiffView('${fId}', 'translation')">Translation</button>
+          <button class="diff-seg-btn" data-view="sidebyside" onclick="setDiffView('${fId}', 'sidebyside')">Side by side</button>
+          <button class="diff-seg-btn" data-view="inline" onclick="setDiffView('${fId}', 'inline')">Inline diff</button>
         </div>
-        <div id="diff_${sanitizeId(fileName)}" data-diff-state="translation">
+        <div id="diff_${fId}" data-diff-state="translation">
           <div class="diff-translation">${transHtml}</div>
           <div class="diff-sidebyside" style="display:none;">${diff.sideHtml}</div>
           <div class="diff-inline" style="display:none;">${diff.inlineHtml}</div>
@@ -108,142 +106,218 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       diffHtml = transHtml;
     }
 
-    contentHtml += `<div class="result-header">
-      <span>Translation — ${fileName}</span>
-    </div>
-    <div class="result-content" id="trans_${sanitizeId(fileName)}">${diffHtml}</div>
-    <div class="export-row">
-      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'srt')">SRT</button>
-      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'txt')">TXT</button>
-      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'docx')">DOCX</button>
-      <button class="export-btn" onclick="exportFile('${sanitizeId(fileName)}', 'translation', 'pdf')">HTML</button>
-      <label class="clean-transcript-check">
-        <input type="checkbox" id="clean_${sanitizeId(fileName)}" /> No timestamps
-      </label>
-      <label class="clean-transcript-check">
-        <input type="checkbox" id="inclsumm_${sanitizeId(fileName)}" checked /> Include summary
-      </label>
-    </div>`;
+    tabs.push({
+      key: 'translation',
+      label: 'Translation',
+      badge: '',
+      contentHtml: `<div class="result-content" id="trans_${fId}">${diffHtml}</div>
+      <div class="export-row">
+        <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'srt')">SRT</button>
+        <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'txt')">TXT</button>
+        <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'docx')">DOCX</button>
+        <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'pdf')">HTML</button>
+        <label class="clean-transcript-check">
+          <input type="checkbox" id="clean_${fId}" /> No timestamps
+        </label>
+        <label class="clean-transcript-check">
+          <input type="checkbox" id="inclsumm_${fId}" checked /> Include summary
+        </label>
+      </div>`
+    });
   }
 
-  // Quality Assessment
+  // ── Quality tab ──
   if (quality) {
     const formatted = formatQuality(quality);
     const metrics = computeQAMetrics(quality);
-    
-    // v2.4: Score breakdown
     const scoreBreakdown = buildScoreBreakdown(metrics, formatted);
-    contentHtml += `<div class="result-header">
-      <span>Quality Assessment — ${fileName}</span>
-      <span class="detected-lang">${formatted.langLine}</span>
-    </div>
-    ${scoreBreakdown}
-    <div class="qa-metrics-bar">
-      <span class="metric"><span class="metric-num">${metrics.totalFlags}</span> flags total</span>
-      <span class="metric minor-metric"><span class="metric-num">${metrics.minorCount}</span> minor</span>
-      <span class="metric serious-metric"><span class="metric-num">${metrics.seriousCount}</span> serious</span>
-      <span class="metric"><span class="metric-num">${metrics.flaggedPercent}%</span> text flagged</span>
-    </div>
-    <div class="qa-legend">
-      <span class="legend-item"><span class="legend-swatch yellow-swatch"></span> Minor — garbled but understandable from context</span>
-      <span class="legend-item"><span class="legend-swatch red-swatch"></span> Serious — incomprehensible, clearly wrong, major gap</span>
-    </div>
-    <div class="result-content" id="qual_${sanitizeId(fileName)}">${formatted.html}</div>
-    <div class="export-row">
-      <button class="export-btn" onclick="exportQuality('${sanitizeId(fileName)}', 'html')">HTML (with colors)</button>
-      <button class="export-btn" onclick="exportQuality('${sanitizeId(fileName)}', 'txt')">TXT (annotated)</button>
-      <button class="export-btn" onclick="exportQuality('${sanitizeId(fileName)}', 'docx')">DOCX (with colors)</button>
-    </div>`;
+    const badgeText = formatted.langLine;
+
+    tabs.push({
+      key: 'quality',
+      label: 'Quality',
+      badge: badgeText,
+      contentHtml: `${scoreBreakdown}
+      <div class="qa-metrics-bar">
+        <span class="metric"><span class="metric-num">${metrics.totalFlags}</span> flags total</span>
+        <span class="metric minor-metric"><span class="metric-num">${metrics.minorCount}</span> minor</span>
+        <span class="metric serious-metric"><span class="metric-num">${metrics.seriousCount}</span> serious</span>
+        <span class="metric"><span class="metric-num">${metrics.flaggedPercent}%</span> text flagged</span>
+      </div>
+      <div class="qa-legend">
+        <span class="legend-item"><span class="legend-swatch yellow-swatch"></span> Minor — garbled but understandable from context</span>
+        <span class="legend-item"><span class="legend-swatch red-swatch"></span> Serious — incomprehensible, clearly wrong, major gap</span>
+      </div>
+      <div class="result-content" id="qual_${fId}">${formatted.html}</div>
+      <div class="export-row">
+        <button class="export-btn" onclick="exportQuality('${fId}', 'html')">HTML (with colors)</button>
+        <button class="export-btn" onclick="exportQuality('${fId}', 'txt')">TXT (annotated)</button>
+        <button class="export-btn" onclick="exportQuality('${fId}', 'docx')">DOCX (with colors)</button>
+      </div>`
+    });
   }
 
-  // Speaker Check
+  // ── Speaker Check tab ──
   if (speakerCheck) {
     const formatted = formatSpeakerCheck(speakerCheck);
-    contentHtml += `<div class="result-header">
-      <span>Speaker Check — ${fileName}</span>
-      <span class="detected-lang">${formatted.statsLine}</span>
-    </div>
-    <div class="result-content" id="spkr_${sanitizeId(fileName)}">${formatted.html}</div>
-    <div class="export-row">
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'spkr', 'txt')">TXT</button>
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'spkr', 'docx')">DOCX</button>
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'spkr', 'html')">HTML</button>
-    </div>`;
+    tabs.push({
+      key: 'speaker',
+      label: 'Speakers',
+      badge: formatted.statsLine,
+      contentHtml: `<div class="result-content" id="spkr_${fId}">${formatted.html}</div>
+      <div class="export-row">
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'spkr', 'txt')">TXT</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'spkr', 'docx')">DOCX</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'spkr', 'html')">HTML</button>
+      </div>`
+    });
   }
 
-  // Anonymization
+  // ── Anonymization tab ──
   if (anonymization) {
     const formatted = formatAnonymization(anonymization);
-    contentHtml += `<div class="result-header">
-      <span>Anonymization — ${fileName}</span>
-      <span class="detected-lang">${formatted.statsLine}</span>
-    </div>
-    <div class="result-content" id="anon_${sanitizeId(fileName)}">${formatted.html}</div>
-    <div class="export-row">
-      <button class="export-btn" onclick="exportAnonymized('${sanitizeId(fileName)}', 'redacted')">TXT (redacted)</button>
-      <button class="export-btn" onclick="exportAnonymized('${sanitizeId(fileName)}', 'marked')">TXT (marked)</button>
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'anon', 'docx')">DOCX</button>
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'anon', 'html')">HTML</button>
-    </div>`;
+    tabs.push({
+      key: 'anon',
+      label: 'Anonymization',
+      badge: formatted.statsLine,
+      contentHtml: `<div class="result-content" id="anon_${fId}">${formatted.html}</div>
+      <div class="export-row">
+        <button class="export-btn" onclick="exportAnonymized('${fId}', 'redacted')">TXT (redacted)</button>
+        <button class="export-btn" onclick="exportAnonymized('${fId}', 'marked')">TXT (marked)</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'anon', 'docx')">DOCX</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'anon', 'html')">HTML</button>
+      </div>`
+    });
   }
 
-  // v2.2: Back-translation result
+  // ── Back-translation tab ──
   if (backtransResult) {
     const bt = formatBackTranslation(backtransResult);
-    contentHtml += `<div class="result-header">
-      <span>Back-Translation Validation — ${fileName}</span>
-      <span class="detected-lang">${bt.scoreLine}</span>
-    </div>
-    <div class="result-content" id="btrans_${sanitizeId(fileName)}" style="white-space: pre-wrap;">${bt.html}</div>
-    <div class="export-row">
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'btrans', 'txt')">TXT</button>
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'btrans', 'docx')">DOCX</button>
-      <button class="export-btn" onclick="exportGeneric('${sanitizeId(fileName)}', 'btrans', 'html')">HTML</button>
-    </div>`;
+    tabs.push({
+      key: 'btrans',
+      label: 'Back-translation',
+      badge: bt.scoreLine,
+      contentHtml: `<div class="result-content" id="btrans_${fId}" style="white-space: pre-wrap;">${bt.html}</div>
+      <div class="export-row">
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'btrans', 'txt')">TXT</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'btrans', 'docx')">DOCX</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'btrans', 'html')">HTML</button>
+      </div>`
+    });
   }
 
-  // v2.2: Timestamp check result
+  // ── Timestamps tab ──
   if (timestampResult && timestampResult.issues.length > 0) {
-    contentHtml += `<div class="result-header">
-      <span>Timestamp Check — ${fileName}</span>
-      <span class="detected-lang">${timestampResult.totalEntries} entries · ${timestampResult.issues.length} issues</span>
-    </div>
-    <div class="result-content" id="tstamp_${sanitizeId(fileName)}">
-      <div class="qa-body">${formatTimestampIssues(timestampResult.issues)}</div>
-    </div>`;
+    tabs.push({
+      key: 'timestamps',
+      label: 'Timestamps',
+      badge: `${timestampResult.issues.length} issues`,
+      contentHtml: `<div class="result-content" id="tstamp_${fId}">
+        <div class="qa-body">${formatTimestampIssues(timestampResult.issues)}</div>
+      </div>`
+    });
   } else if (timestampResult && timestampResult.issues.length === 0) {
-    contentHtml += `<div class="result-header">
-      <span>Timestamp Check — ${fileName}</span>
-      <span class="detected-lang">${timestampResult.totalEntries} entries · ✓ No issues</span>
-    </div>`;
+    tabs.push({
+      key: 'timestamps',
+      label: 'Timestamps',
+      badge: 'No issues',
+      contentHtml: `<div class="result-content" id="tstamp_${fId}">
+        <div class="qa-body" style="padding: 1rem; color: var(--text-dim);">All ${timestampResult.totalEntries} timestamp entries are valid.</div>
+      </div>`
+    });
   }
 
-  // v2.5: wrap in collapsible body + add toggle button to first header
+  // ── Build block HTML ──
+  if (tabs.length === 0) return; // nothing to render
+
   const fileIndex = files ? files.findIndex(f => f.name === fileName) : -1;
-  const rerunBtn = fileIndex >= 0 ? ' <button class="rerun-btn" onclick="reprocessFile(' + fileIndex + ')" title="Re-process this file">↻ Re-run</button>' : '';
-  // Insert toggle + re-run into the first result-header
-  contentHtml = contentHtml.replace(
-    /(<div class="result-header">)/,
-    '<div class="result-header"><span class="result-header-left"><button class="result-toggle" onclick="toggleResultBlock(this)" title="Collapse/expand">▼</button>'
-  );
-  // Close the header-left span after the first </span> that follows
-  contentHtml = contentHtml.replace(
-    /<div class="result-header"><span class="result-header-left"><button class="result-toggle"[^<]*<\/button>([\s\S]*?<\/span>)/,
-    function(match, p1) {
-      return '<div class="result-header"><span class="result-header-left"><button class="result-toggle" onclick="toggleResultBlock(this)" title="Collapse/expand">▼</button>' + p1 + rerunBtn + '</span>';
+  const rerunBtn = fileIndex >= 0 ? `<button class="rerun-btn" onclick="reprocessFile(${fileIndex})" title="Re-process this file">Re-run</button>` : '';
+
+  // Block header with file name, language info, collapse toggle, re-run
+  let headerHtml = `<div class="result-header">
+    <span class="result-header-left">
+      <button class="result-toggle" onclick="toggleResultBlock(this)" title="Collapse/expand">&#9660;</button>
+      <span>${escapeHtml(fileName)}</span>
+      ${rerunBtn}
+    </span>`;
+  if (langData) {
+    headerHtml += `<span class="result-header-right">`;
+    headerHtml += `<span class="lang-tag">Detected: <strong>${langData.primary}</strong></span>`;
+    if (langData.secondary && langData.secondary !== 'none') {
+      headerHtml += ` <span class="lang-tag secondary">+ ${langData.secondary}</span>`;
     }
-  );
-
-  // Find the first result-header closing tag and wrap everything after in result-body
-  const firstHeaderEnd = contentHtml.indexOf('</div>', contentHtml.indexOf('result-header'));
-  if (firstHeaderEnd > 0) {
-    const headerPart = contentHtml.substring(0, firstHeaderEnd + 6);
-    const bodyPart = contentHtml.substring(firstHeaderEnd + 6);
-    contentHtml = headerPart + '<div class="result-body">' + bodyPart + '</div>';
+    headerHtml += ` <span class="confidence-${langData.confidence}">${langData.confidence} confidence</span>`;
+    headerHtml += `</span>`;
   }
+  headerHtml += `</div>`;
 
-  block.innerHTML = contentHtml;
+  // Tab bar
+  let tabBarHtml = `<div class="result-tabs" data-file="${fId}">`;
+  tabs.forEach((tab, i) => {
+    const activeClass = i === 0 ? ' active' : '';
+    tabBarHtml += `<button class="result-tab${activeClass}" data-tab="${tab.key}" onclick="switchResultTab(this, '${fId}')">${tab.label}</button>`;
+  });
+  // "Show all" button
+  tabBarHtml += `<button class="result-tab result-tab-expand" data-tab="__all" onclick="expandAllTabs(this, '${fId}')">Show all</button>`;
+  tabBarHtml += `</div>`;
+
+  // Tab panels
+  let panelsHtml = '';
+  tabs.forEach((tab, i) => {
+    const hiddenClass = i === 0 ? '' : ' hidden';
+    const badgeHtml = tab.badge ? `<div class="tab-badge">${tab.badge}</div>` : '';
+    panelsHtml += `<div class="result-tab-panel${hiddenClass}" data-tab-panel="${tab.key}">${badgeHtml}${tab.contentHtml}</div>`;
+  });
+
+  block.innerHTML = headerHtml + `<div class="result-body">${tabBarHtml}${panelsHtml}</div>`;
   resultsArea.appendChild(block);
+}
+
+// ─── Tab switching ───
+function switchResultTab(btn, fileId) {
+  const tabBar = btn.closest('.result-tabs');
+  const block = btn.closest('.result-block');
+  if (!tabBar || !block) return;
+
+  const tabKey = btn.dataset.tab;
+
+  // Deactivate expand mode
+  block.classList.remove('tabs-expanded');
+
+  // Update tab bar
+  tabBar.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show/hide panels
+  block.querySelectorAll('.result-tab-panel').forEach(panel => {
+    panel.classList.toggle('hidden', panel.dataset.tabPanel !== tabKey);
+  });
+
+  // Reset expand button text
+  const expandBtn = tabBar.querySelector('[data-tab="__all"]');
+  if (expandBtn) expandBtn.textContent = 'Show all';
+}
+
+function expandAllTabs(btn, fileId) {
+  const block = btn.closest('.result-block');
+  if (!block) return;
+  const isExpanded = block.classList.toggle('tabs-expanded');
+
+  if (isExpanded) {
+    // Show all panels
+    block.querySelectorAll('.result-tab-panel').forEach(p => p.classList.remove('hidden'));
+    // Deactivate individual tabs
+    block.querySelectorAll('.result-tabs .result-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    btn.textContent = 'Show one';
+  } else {
+    // Revert to first tab
+    const firstTab = block.querySelector('.result-tabs .result-tab:not(.result-tab-expand)');
+    if (firstTab) {
+      switchResultTab(firstTab, fileId);
+    }
+    btn.textContent = 'Show all';
+  }
 }
 
 // ─── Format quality assessment ───

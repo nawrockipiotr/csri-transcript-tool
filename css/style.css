@@ -1429,3 +1429,88 @@ input[type="checkbox"]:focus-visible {
   border-radius: 4px;
   font-size: 0.78rem;
 }
+
+/* ─── v2.6: Tabbed result sections ─── */
+.result-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.result-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  padding: 0 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.result-tabs::-webkit-scrollbar { display: none; }
+.result-tab {
+  padding: 0.55rem 1rem;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.result-tab:hover { color: var(--accent-teal); }
+.result-tab.active {
+  color: var(--accent-teal);
+  border-bottom-color: var(--accent-teal);
+}
+.result-tab-expand {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+.result-tab-expand:hover { opacity: 1; }
+.result-tab-expand.active {
+  color: var(--accent-teal);
+  border-bottom-color: var(--accent-teal);
+  opacity: 1;
+}
+.result-tab-panel {
+  animation: tabFadeIn 0.2s ease;
+}
+.result-tab-panel.hidden {
+  display: none;
+}
+.tabs-expanded .result-tab-panel {
+  display: block !important;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.tabs-expanded .result-tab-panel:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.tab-badge {
+  padding: 0.4rem 1rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode tab adjustments */
+.dark-mode .result-tabs { border-bottom-color: var(--border); }
+.dark-mode .result-tab { color: var(--text-dim); }
+.dark-mode .result-tab.active { color: var(--accent-teal); border-bottom-color: var(--accent-teal); }
+.dark-mode .tab-badge { color: var(--text-dim); }
