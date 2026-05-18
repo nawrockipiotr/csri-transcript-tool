@@ -597,7 +597,7 @@ async function processFiles(appendMode) {
 
   abortController = new AbortController();
   isProcessing = true;
-  batchReportData = [];
+  if (!appendMode) batchReportData = [];
   etaStartTime = Date.now();
 
   const targetLang = document.getElementById('targetLang').value;
