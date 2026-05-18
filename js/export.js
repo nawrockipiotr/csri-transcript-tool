@@ -221,7 +221,7 @@ function exportGeneric(fileId, prefix, format) {
   if (!el) return;
 
   const baseName = fileId.replace(/_/g, ' ').replace(/\s(txt|srt|docx|pdf)$/i, '');
-  const label = prefix === 'spkr' ? 'speaker_check' : 'anonymization';
+  const label = prefix === 'summ' ? 'summary' : prefix === 'spkr' ? 'speaker_check' : 'anonymization';
   const metadata = getProcessingMetadata();
 
   if (format === 'html') {

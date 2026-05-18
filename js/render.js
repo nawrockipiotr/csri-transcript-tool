@@ -62,7 +62,12 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       key: 'summary',
       label: 'Summary',
       badge: '',
-      contentHtml: `<div class="result-content" id="summ_${fId}" style="white-space: pre-wrap;">${escapeHtml(summary)}</div>`
+      contentHtml: `<div class="result-content" id="summ_${fId}" style="white-space: pre-wrap;">${escapeHtml(summary)}</div>
+      <div class="export-row">
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'summ', 'txt')">TXT</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'summ', 'docx')">DOCX</button>
+        <button class="export-btn" onclick="exportGeneric('${fId}', 'summ', 'html')">HTML</button>
+      </div>`
     });
   }
 
@@ -149,7 +154,7 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
     const formatted = formatSpeakerCheck(speakerCheck);
     tabs.push({
       key: 'speaker',
-      label: 'Speakers',
+      label: 'Speaker Check',
       badge: formatted.statsLine,
       contentHtml: `<div class="result-content" id="spkr_${fId}">${formatted.html}</div>
       <div class="export-row">
