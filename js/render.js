@@ -35,19 +35,6 @@ function computeQAMetrics(text) {
   };
 }
 
-// ─── Render language detection info ───
-function renderLanguageInfo(langData, fileName) {
-  if (!langData) return '';
-  let html = `<div class="lang-info">`;
-  html += `<span class="lang-tag">Detected: <strong>${langData.primary}</strong></span>`;
-  if (langData.secondary && langData.secondary !== 'none') {
-    html += ` <span class="lang-tag secondary">+ ${langData.secondary}</span>`;
-  }
-  html += ` <span class="confidence-${langData.confidence}">${langData.confidence} confidence</span>`;
-  html += `</div>`;
-  return html;
-}
-
 // ─── v2.4: Score breakdown explanation ───
 function buildScoreBreakdown(metrics, formatted) {
   const reasons = [];

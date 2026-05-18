@@ -63,7 +63,9 @@ function getQAMetricsHeader(fileId) {
   const block = qualEl.closest('.result-block');
   if (!block) return '';
 
-  const headerEl = block.querySelector('.result-header .detected-lang');
+  // v2.6: quality info is in tab-badge inside quality panel, not in result-header
+  const qualPanel = qualEl.closest('.result-tab-panel');
+  const headerEl = qualPanel ? qualPanel.querySelector('.tab-badge') : block.querySelector('.result-header .detected-lang');
   const scorePart = headerEl ? headerEl.textContent.trim() : '';
 
   const metricsBar = block.querySelector('.qa-metrics-bar');
