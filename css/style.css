@@ -1418,7 +1418,7 @@ input[type="checkbox"]:focus-visible {
   margin-bottom: 0.35rem;
 }
 .dropzone-subtext { margin-top: 0.3rem; font-size: 0.75rem; }
-.info-dim { font-size: 0.85rem; opacity: 0.85; }
+.info-dim { font-size: 0.9rem; opacity: 0.75; }
 .info-margin-top { margin-top: 0.5rem; }
 .info-italic { font-style: italic; }
 .howto-hide-hint { font-weight: 400; font-size: 0.78rem; color: var(--text-dim); }
