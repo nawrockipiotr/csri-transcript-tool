@@ -1850,3 +1850,13 @@ input[type="checkbox"]:focus-visible {
   color: var(--text-dim);
   margin-top: 0.2rem;
 }
+
+/* ─── Version tag ─── */
+.version-tag {
+  font-size: 0.45em;
+  font-weight: 400;
+  color: var(--text-dim);
+  vertical-align: super;
+  margin-left: 0.3rem;
+  opacity: 0.7;
+}
