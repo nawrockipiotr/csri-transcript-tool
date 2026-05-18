@@ -66,7 +66,6 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       <div class="export-row">
         <button class="export-btn" onclick="exportGeneric('${fId}', 'summ', 'txt')">TXT</button>
         <button class="export-btn" onclick="exportGeneric('${fId}', 'summ', 'docx')">DOCX</button>
-        <button class="export-btn" onclick="exportGeneric('${fId}', 'summ', 'pdf')">PDF (print)</button>
       </div>`
     });
   }
@@ -107,7 +106,6 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
         <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'srt')">SRT</button>
         <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'txt')">TXT</button>
         <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'docx')">DOCX</button>
-        <button class="export-btn" onclick="exportFile('${fId}', 'translation', 'pdf')">PDF (print)</button>
         <label class="clean-transcript-check">
           <input type="checkbox" id="clean_${fId}" /> No timestamps
         </label>
@@ -142,7 +140,6 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       </div>
       <div class="result-content" id="qual_${fId}">${formatted.html}</div>
       <div class="export-row">
-        <button class="export-btn" onclick="exportQuality('${fId}', 'pdf')">PDF (print)</button>
         <button class="export-btn" onclick="exportQuality('${fId}', 'txt')">TXT (annotated)</button>
         <button class="export-btn" onclick="exportQuality('${fId}', 'docx')">DOCX (with colors)</button>
       </div>`
@@ -160,7 +157,6 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       <div class="export-row">
         <button class="export-btn" onclick="exportGeneric('${fId}', 'spkr', 'txt')">TXT</button>
         <button class="export-btn" onclick="exportGeneric('${fId}', 'spkr', 'docx')">DOCX</button>
-        <button class="export-btn" onclick="exportGeneric('${fId}', 'spkr', 'pdf')">PDF (print)</button>
       </div>`
     });
   }
@@ -177,13 +173,11 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
         <span class="export-group-label">Redacted:</span>
         <button class="export-btn" onclick="exportAnonymized('${fId}', 'redacted', 'txt')">TXT</button>
         <button class="export-btn" onclick="exportAnonymized('${fId}', 'redacted', 'docx')">DOCX</button>
-        <button class="export-btn" onclick="exportAnonymized('${fId}', 'redacted', 'pdf')">PDF (print)</button>
       </div>
       <div class="export-row">
         <span class="export-group-label">Marked:</span>
         <button class="export-btn" onclick="exportAnonymized('${fId}', 'marked', 'txt')">TXT</button>
         <button class="export-btn" onclick="exportAnonymized('${fId}', 'marked', 'docx')">DOCX</button>
-        <button class="export-btn" onclick="exportAnonymized('${fId}', 'marked', 'pdf')">PDF (print)</button>
       </div>`
     });
   }
@@ -199,7 +193,6 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
       <div class="export-row">
         <button class="export-btn" onclick="exportGeneric('${fId}', 'btrans', 'txt')">TXT</button>
         <button class="export-btn" onclick="exportGeneric('${fId}', 'btrans', 'docx')">DOCX</button>
-        <button class="export-btn" onclick="exportGeneric('${fId}', 'btrans', 'pdf')">PDF (print)</button>
       </div>`
     });
   }
