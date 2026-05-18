@@ -366,6 +366,18 @@
         </select>
       </div>
       <div class="advanced-hint">Controls how the transcript is split for processing. Fast uses larger chunks (fewer calls), Thorough uses smaller chunks (more detail per segment).</div>
+      <div class="advanced-row" style="margin-top: 0.75rem;">
+        <label>AI creativity</label>
+        <div class="creativity-slider-wrap">
+          <input type="range" id="creativitySlider" min="0" max="10" value="3" step="1" oninput="updateCreativityLabel()">
+          <div class="creativity-labels">
+            <span>Precise</span>
+            <span>Balanced</span>
+            <span>Creative</span>
+          </div>
+        </div>
+      </div>
+      <div class="advanced-hint">Lower = literal, consistent output. Higher = natural, varied phrasing.</div>
     </div>
   </details>
 

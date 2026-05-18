@@ -192,6 +192,16 @@ const COST_PER_1K_TOKENS = {
   'gemini-2.5-pro-preview-05-06': [0.00125, 0.01],
 };
 
+function getCreativityTemperature() {
+  const slider = document.getElementById('creativitySlider');
+  if (!slider) return 0.3;
+  return parseFloat(slider.value) / 10;
+}
+
+function updateCreativityLabel() {
+  // no-op for now, slider labels are static
+}
+
 function updateCostEstimate() {
   const panel = document.getElementById('costEstimate');
   const textEl = document.getElementById('costText');
@@ -918,7 +928,7 @@ async function processFiles(appendMode) {
       if (addSummary) {
         if (chunks.length === 1) {
           showProgress(`Generating summary for ${file.name}...`);
-          summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang, langData?.primary), content);
+          summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang, langData?.primary), content, 3, { temperature: getCreativityTemperature() });
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
@@ -928,7 +938,7 @@ async function processFiles(appendMode) {
           for (let ci = 0; ci < chunks.length; ci++) {
             showProgress(`Extracting key points from ${file.name}... chunk ${ci + 1}/${chunks.length}`);
             const extraction = await callAIWithRetry(apiKey, getSummaryExtractionPrompt(targetLang),
-              chunks[ci] + `\n[Chunk ${ci + 1} of ${chunks.length}]`);
+              chunks[ci] + `\n[Chunk ${ci + 1} of ${chunks.length}]`, 3, { temperature: getCreativityTemperature() });
             keyPoints.push(`Chunk ${ci + 1}:\n${extraction}`);
             doneWork++;
             progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -937,7 +947,7 @@ async function processFiles(appendMode) {
           }
           showProgress(`Synthesizing summary for ${file.name}...`);
           summaryResult = await callAIWithRetry(apiKey, getSummaryPrompt(targetLang, langData?.primary),
-            `Below are key points extracted from all chunks of a transcript. Synthesize them into a single coherent summary following your format.\n\n${keyPoints.join('\n\n')}`);
+            `Below are key points extracted from all chunks of a transcript. Synthesize them into a single coherent summary following your format.\n\n${keyPoints.join('\n\n')}`, 3, { temperature: getCreativityTemperature() });
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
@@ -1012,7 +1022,7 @@ async function processFiles(appendMode) {
           : getTranslatePrompt(targetLang);
         for (let ci = 0; ci < chunks.length; ci++) {
           showProgress(`Translating ${file.name}... chunk ${ci + 1}/${chunks.length}`);
-          const result = await callAIWithRetry(apiKey, translatePrompt, chunks[ci]);
+          const result = await callAIWithRetry(apiKey, translatePrompt, chunks[ci], 3, { temperature: getCreativityTemperature() });
           translatedParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -1034,7 +1044,7 @@ async function processFiles(appendMode) {
           const chunkNote = chunks.length > 1
             ? `\n[This is chunk ${ci + 1} of ${chunks.length} from the same file. Assess only this chunk.]`
             : '';
-          const result = await callAIWithRetry(apiKey, getQualityPrompt(), chunks[ci] + chunkNote);
+          const result = await callAIWithRetry(apiKey, getQualityPrompt(), chunks[ci] + chunkNote, 3, { temperature: getCreativityTemperature() });
 
           const lines = result.split('\n');
           let bodyStart = 0;
@@ -1085,7 +1095,7 @@ async function processFiles(appendMode) {
           : getTranslatePrompt(targetLang);
         for (let ci = 0; ci < origChunks.length; ci++) {
           showProgress(`Translating ${file.name}... chunk ${ci + 1}/${origChunks.length}`);
-          const result = await callAIWithRetry(apiKey, translatePrompt, origChunks[ci]);
+          const result = await callAIWithRetry(apiKey, translatePrompt, origChunks[ci], 3, { temperature: getCreativityTemperature() });
           translatedParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -1102,7 +1112,7 @@ async function processFiles(appendMode) {
         for (let ci = 0; ci < chunks.length; ci++) {
           showProgress(`Checking speakers in ${file.name}... chunk ${ci + 1}/${chunks.length}`);
           const chunkNote = chunks.length > 1 ? `\n[This is chunk ${ci + 1} of ${chunks.length}.]` : '';
-          const result = await callAIWithRetry(apiKey, getSpeakerCheckPrompt(spkLang), chunks[ci] + chunkNote);
+          const result = await callAIWithRetry(apiKey, getSpeakerCheckPrompt(spkLang), chunks[ci] + chunkNote, 3, { temperature: getCreativityTemperature() });
           speakerParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -1118,7 +1128,7 @@ async function processFiles(appendMode) {
         for (let ci = 0; ci < chunks.length; ci++) {
           showProgress(`Anonymizing ${file.name}... chunk ${ci + 1}/${chunks.length}`);
           const anonLang = targetLang || 'English';
-          const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(anonLang, anonCategories), chunks[ci]);
+          const result = await callAIWithRetry(apiKey, getAnonymizationPrompt(anonLang, anonCategories), chunks[ci], 3, { temperature: getCreativityTemperature() });
           anonParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -1136,7 +1146,7 @@ async function processFiles(appendMode) {
         const sourceLang = langData.primary;
         for (let ci = 0; ci < transChunks.length; ci++) {
           showProgress(`Back-translating ${file.name}... chunk ${ci + 1}/${transChunks.length}`);
-          const result = await callAIWithRetry(apiKey, getBackTranslatePrompt(sourceLang), transChunks[ci]);
+          const result = await callAIWithRetry(apiKey, getBackTranslatePrompt(sourceLang), transChunks[ci], 3, { temperature: getCreativityTemperature() });
           backParts.push(result);
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
@@ -1148,7 +1158,7 @@ async function processFiles(appendMode) {
         // Compare original vs back-translation
         showProgress(`Comparing translations for ${file.name}...`);
         const compareInput = `ORIGINAL:\n${content.substring(0, 4000)}\n\nBACK-TRANSLATION:\n${backTranslation.substring(0, 4000)}`;
-        const compareResult = await callAIWithRetry(apiKey, getBackTranslationComparePrompt(), compareInput);
+        const compareResult = await callAIWithRetry(apiKey, getBackTranslationComparePrompt(), compareInput, 3, { temperature: getCreativityTemperature() });
         doneWork++;
         progressBar.style.width = ((doneWork / totalWork) * 100) + '%';
       if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
@@ -1361,7 +1371,7 @@ async function runConsistencyCheck() {
   ).join('\n\n');
 
   try {
-    const result = await callAIWithRetry(apiKey, getConsistencyCheckPrompt(targetLang), segments);
+    const result = await callAIWithRetry(apiKey, getConsistencyCheckPrompt(targetLang), segments, 3, { temperature: getCreativityTemperature() });
     renderConsistencyReport(result);
     showProgress('Consistency check complete.');
   } catch (err) {
