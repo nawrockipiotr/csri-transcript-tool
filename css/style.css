@@ -1611,3 +1611,12 @@ input[type="checkbox"]:focus-visible {
   font-size: 0.78rem;
   font-weight: 500;
 }
+
+/* Glossary frequency column */
+.freq-cell {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  min-width: 3rem;
+}

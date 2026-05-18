@@ -43,11 +43,11 @@ function formatApiError(status, serverMsg, provider) {
 }
 
 // ─── Retry with exponential backoff ───
-async function callAIWithRetry(apiKey, systemPrompt, userContent, maxRetries = 3) {
+async function callAIWithRetry(apiKey, systemPrompt, userContent, maxRetries = 3, options = {}) {
   let lastError;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      return await callAI(apiKey, systemPrompt, userContent);
+      return await callAI(apiKey, systemPrompt, userContent, options);
     } catch (err) {
       lastError = err;
       if (err.name === 'AbortError') throw err;
@@ -67,19 +67,19 @@ async function callAIWithRetry(apiKey, systemPrompt, userContent, maxRetries = 3
 }
 
 // ─── Core API dispatch ───
-async function callAI(apiKey, systemPrompt, userContent) {
+async function callAI(apiKey, systemPrompt, userContent, options = {}) {
   if (currentProvider === 'anthropic') {
-    return callAnthropic(apiKey, systemPrompt, userContent);
+    return callAnthropic(apiKey, systemPrompt, userContent, options);
   } else if (currentProvider === 'openai') {
-    return callOpenAI(apiKey, systemPrompt, userContent);
+    return callOpenAI(apiKey, systemPrompt, userContent, options);
   } else if (currentProvider === 'google') {
-    return callGoogle(apiKey, systemPrompt, userContent);
+    return callGoogle(apiKey, systemPrompt, userContent, options);
   } else if (currentProvider === 'local') {
-    return callLocal(apiKey, systemPrompt, userContent);
+    return callLocal(apiKey, systemPrompt, userContent, options);
   }
 }
 
-async function callAnthropic(apiKey, systemPrompt, userContent) {
+async function callAnthropic(apiKey, systemPrompt, userContent, options = {}) {
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     signal: abortController?.signal,
@@ -93,7 +93,8 @@ async function callAnthropic(apiKey, systemPrompt, userContent) {
       model: getModel(),
       max_tokens: 8192,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userContent }]
+      messages: [{ role: 'user', content: userContent }],
+      ...(options.temperature !== undefined && { temperature: options.temperature })
     })
   });
 
@@ -106,7 +107,7 @@ async function callAnthropic(apiKey, systemPrompt, userContent) {
   return data.content.map(c => c.text || '').join('');
 }
 
-async function callOpenAI(apiKey, systemPrompt, userContent) {
+async function callOpenAI(apiKey, systemPrompt, userContent, options = {}) {
   const resp = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     signal: abortController?.signal,
@@ -120,7 +121,8 @@ async function callOpenAI(apiKey, systemPrompt, userContent) {
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
-      ]
+      ],
+      ...(options.temperature !== undefined && { temperature: options.temperature })
     })
   });
 
@@ -133,7 +135,7 @@ async function callOpenAI(apiKey, systemPrompt, userContent) {
   return data.choices[0]?.message?.content || '';
 }
 
-async function callGoogle(apiKey, systemPrompt, userContent) {
+async function callGoogle(apiKey, systemPrompt, userContent, options = {}) {
   const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${getModel()}:generateContent?key=${apiKey}`, {
     method: 'POST',
     signal: abortController?.signal,
@@ -141,7 +143,7 @@ async function callGoogle(apiKey, systemPrompt, userContent) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: systemPrompt }] },
       contents: [{ parts: [{ text: userContent }] }],
-      generationConfig: { maxOutputTokens: 8192 }
+      generationConfig: { maxOutputTokens: 8192, ...(options.temperature !== undefined && { temperature: options.temperature }) }
     })
   });
 
@@ -155,7 +157,7 @@ async function callGoogle(apiKey, systemPrompt, userContent) {
 }
 
 // ─── Local OpenAI-compatible server (Ollama, LM Studio, vLLM, etc.) ───
-async function callLocal(apiKey, systemPrompt, userContent) {
+async function callLocal(apiKey, systemPrompt, userContent, options = {}) {
   const endpoint = document.getElementById('localEndpoint')?.value?.trim() || 'http://localhost:11434/v1';
   const url = endpoint.replace(/\/+$/, '') + '/chat/completions';
 
@@ -176,7 +178,8 @@ async function callLocal(apiKey, systemPrompt, userContent) {
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent }
-        ]
+        ],
+        ...(options.temperature !== undefined && { temperature: options.temperature })
       })
     });
   } catch (fetchErr) {

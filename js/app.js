@@ -821,21 +821,18 @@ async function processFiles(appendMode) {
           if (progressBarWrap) progressBarWrap.setAttribute('aria-valuenow', Math.round((doneWork / totalWork) * 100));
           updateETA(doneWork, totalWork);
         } else {
-          // AI extraction
+          // AI extraction (full text, temperature 0 for reproducibility)
           showProgress(`Extracting glossary from ${file.name}...`);
-          const len = content.length;
-          let sample;
-          if (len <= 6000) {
-            sample = content;
-          } else {
-            const chunkSize = 2000;
-            const begin = content.substring(0, chunkSize);
-            const mid = content.substring(Math.floor(len / 2) - chunkSize / 2, Math.floor(len / 2) + chunkSize / 2);
-            const end = content.substring(len - chunkSize);
-            sample = begin + '\n[...]\n' + mid + '\n[...]\n' + end;
-          }
-          const glossaryRaw = await callAIWithRetry(apiKey, getGlossaryExtractionPrompt(targetLang), sample);
-          const terms = parseGlossaryResponse(glossaryRaw);
+          const glossaryRaw = await callAIWithRetry(apiKey, getGlossaryExtractionPrompt(targetLang), content, 3, { temperature: 0 });
+          let terms = parseGlossaryResponse(glossaryRaw);
+          // Add frequency count for each term
+          terms = terms.map(t => {
+            const regex = new RegExp(t.source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            const matches = content.match(regex);
+            return { ...t, freq: matches ? matches.length : 0 };
+          });
+          // Sort by frequency descending
+          terms.sort((a, b) => b.freq - a.freq);
           glossaryData[file.name] = terms;
           doneWork++;
           progressBar.style.width = ((doneWork / totalWork) * 100) + '%';

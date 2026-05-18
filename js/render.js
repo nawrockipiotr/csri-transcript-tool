@@ -453,6 +453,7 @@ function renderGlossaryTable(terms, fileName) {
       <td>${escapeHtml(t.source)}</td>
       <td><input type="text" class="glossary-edit" value="${escapeHtml(t.target)}" /></td>
       <td><span class="glossary-cat-badge">${escapeHtml(t.category)}</span></td>
+      <td class="freq-cell">${t.freq !== undefined ? t.freq : '—'}</td>
       <td><input type="checkbox" checked aria-label="Include ${escapeHtml(t.source)}" /></td>
     </tr>`).join('');
 
@@ -476,6 +477,7 @@ function renderGlossaryTable(terms, fileName) {
         <th class="sortable" onclick="glossarySortBy('source')">Source Term ↕</th>
         <th>Translation</th>
         <th class="sortable" onclick="glossarySortBy('category')">Category ↕</th>
+        <th class="sortable" onclick="glossarySortBy('freq')">Freq ↕</th>
         <th>Use</th>
       </tr></thead>
       <tbody>${tableRows}</tbody>
@@ -498,11 +500,12 @@ function glossarySortBy(field) {
   if (!table) return;
   const tbody = table.querySelector('tbody');
   const rows = Array.from(tbody.querySelectorAll('tr'));
-  const idx = field === 'source' ? 0 : field === 'category' ? 2 : 0;
+  const idx = field === 'source' ? 0 : field === 'category' ? 2 : field === 'freq' ? 3 : 0;
   rows.sort((a, b) => {
-    const aText = a.cells[idx]?.textContent?.trim().toLowerCase() || '';
-    const bText = b.cells[idx]?.textContent?.trim().toLowerCase() || '';
-    return aText.localeCompare(bText);
+    const aText = a.cells[idx]?.textContent?.trim() || '';
+    const bText = b.cells[idx]?.textContent?.trim() || '';
+    if (field === 'freq') return (parseInt(bText) || 0) - (parseInt(aText) || 0);
+    return aText.toLowerCase().localeCompare(bText.toLowerCase());
   });
   rows.forEach(r => tbody.appendChild(r));
 }
