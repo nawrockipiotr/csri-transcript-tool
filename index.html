@@ -53,6 +53,7 @@
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoTimestamp')">Timestamp check</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoStats')">Stats</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoInlineEdit')">Inline edit</button>
+      <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoCodingExport')">Coding export</button>
     </div>
 
     <!-- Collapsible info panels -->
@@ -212,6 +213,13 @@
       </div>
     </div>
 
+    <div class="info-panel" id="infoCodingExport">
+      <div class="info-box">
+        <div class="info-content">
+          If you plan to code this transcript (assign thematic labels to passages), the <strong>Coding JSON</strong> button in each file's results exports a ready-to-import file. The transcript is split into speaker turns &mdash; each turn becomes one codable unit with its original text, translation, timestamps, QA flags, and glossary terms attached. You can assign speaker roles (moderator / informant) before export. The output file is designed for the CSRI Coding Tool but follows an open JSON schema.
+        </div>
+      </div>
+    </div>
     <div class="hero-author">Transcript Analysis Tool · by Piotr Nawrocki</div>
   </div>
   <div class="hero-bar"></div>
