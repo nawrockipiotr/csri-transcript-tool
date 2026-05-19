@@ -286,6 +286,7 @@ function renderResult(fileName, translation, quality, summary, langData, speaker
   });
   // "Show all" button
   tabBarHtml += `<button class="result-tab result-tab-expand" data-tab="__all" onclick="expandAllTabs(this, '${fId}')">Show all</button>`;
+  tabBarHtml += `<button class="export-btn coding-export-btn" onclick="exportCodingJSON('${fId}')" title="Export structured JSON for qualitative coding"><i data-lucide="tag" class="icon-xs"></i> Coding JSON</button>`;
   tabBarHtml += `</div>`;
 
   // Tab panels

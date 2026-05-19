@@ -1,6 +1,6 @@
 // ─── Transcript Analysis Tool v2.7 — App Logic ───
 
-const TOOL_VERSION = 'v2.7';
+const TOOL_VERSION = 'v2.8';
 
 
 // ─── v2.5: Dark mode ───
@@ -803,6 +803,7 @@ function computeTranscriptStats(text, fileName) {
 
 // ─── Batch QA report data (populated during processing) ───
 let batchReportData = [];
+window._fileExportData = {};  // data for coding JSON export
 
 async function processFiles(appendMode) {
   const apiKey = apiKeyInput.value.trim();
@@ -819,7 +820,7 @@ async function processFiles(appendMode) {
 
   abortController = new AbortController();
   isProcessing = true;
-  if (!appendMode) batchReportData = [];
+  if (!appendMode) { batchReportData = []; window._fileExportData = {}; }
   etaStartTime = Date.now();
 
   const targetLang = document.getElementById('targetLang').value;
@@ -1183,6 +1184,20 @@ async function processFiles(appendMode) {
 
       const transcriptStats = computeTranscriptStats(content, file.name);
       renderResult(file.name, translationResult, qualityResult, summaryResult, langData, speakerResult, anonymResult, backtransResult, timestampResult, { provider: currentProvider, model: getModel() }, transcriptStats);
+
+      // Save data for coding JSON export
+      const codingFId = file.name.replace(/[^a-zA-Z0-9]/g, '_');
+      window._fileExportData[codingFId] = {
+        fileName: file.name,
+        content: content,
+        translationResult: translationResult,
+        qualityResult: qualityResult,
+        langData: langData,
+        glossaryTerms: glossaryData._approved || [],
+        mode: currentMode,
+        isSrt: file.name.split('.').pop().toLowerCase() === 'srt'
+      };
+
       setFileStatus(fi, 'done');
 
     } catch (err) {

@@ -1860,3 +1860,82 @@ input[type="checkbox"]:focus-visible {
   margin-left: 0.3rem;
   opacity: 0.7;
 }
+
+/* ─── Coding export modal ─── */
+.coding-export-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.coding-export-modal {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.coding-export-modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+.coding-export-hint {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+.coding-export-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.coding-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.coding-role-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.coding-role-select {
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.88rem;
+}
+.coding-export-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.coding-export-cancel {
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.coding-export-confirm {
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent-teal);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.coding-export-confirm:hover {
+  opacity: 0.9;
+}
