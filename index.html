@@ -14,8 +14,10 @@
   <!-- Hero -->
   <div class="hero">
     <div class="hero-top-row">
-      <div class="org-badge" data-i18n="org_badge">Centre for Socially Responsible Innovations (CSRI)</div>
-      <div class="lang-toggle" id="langToggle"><button class="lang-btn" id="langBtnPl" onclick="toggleUILang('pl')">PL</button><button class="lang-btn active" id="langBtnEn" onclick="toggleUILang('en')">EN</button></div>
+      <div class="org-badge-row">
+        <div class="org-badge" data-i18n="org_badge">Centre for Socially Responsible Innovations (CSRI)</div>
+        <div class="lang-toggle" id="langToggle"><button class="lang-btn" id="langBtnPl" onclick="toggleUILang('pl')">PL</button><button class="lang-btn active" id="langBtnEn" onclick="toggleUILang('en')">EN</button></div>
+      </div>
       <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode"><i data-lucide="moon" class="icon-sm"></i> Dark</button>
     </div>
     
@@ -230,7 +232,7 @@
       <button class="provider-tab" data-provider="google" onclick="setProvider('google')">Google (Gemini)</button>
       <button class="provider-tab" data-provider="local" onclick="setProvider('local')" data-i18n="tab_local">Local</button>
     </div>
-    <label id="apiKeyLabel">Anthropic API Key</label>
+    <label id="apiKeyLabel" data-i18n="lbl_api_key_anthropic">Anthropic API Key</label>
     <div class="api-row">
       <input type="password" id="apiKey" placeholder="sk-ant-..." />
     </div>
@@ -249,13 +251,13 @@
     <label class="save-check">
       <input type="checkbox" id="saveKey" /> <span data-i18n="lbl_save_settings">Save settings on this computer</span>
     </label>
-    <div class="api-key-security" id="apiKeySecurity"><i data-lucide="lock" class="icon-xs"></i> Key stored in this browser only · sent only to the selected provider · never shared with third parties</div>
+    <div class="api-key-security" id="apiKeySecurity"><i data-lucide="lock" class="icon-xs"></i> <span data-i18n="security_note">Key stored in this browser only · sent only to the selected provider · never shared with third parties</span></div>
     <div class="api-hint api-data-warning"><i data-lucide="alert-triangle" class="icon-xs"></i> <span data-i18n="data_warning">When using cloud providers, transcript content is transmitted to their servers — ensure this is compatible with your data protection obligations.</span></div>
     <label class="quality-check">
       <input type="checkbox" id="highQuality" style="accent-color: var(--accent);" />
       <span style="font-weight: 600;" data-i18n="lbl_high_quality">Use higher quality model</span>
     </label>
-    <div class="api-hint" id="modelHint">Default: Claude Haiku (fast, cheap). Higher quality: Claude Sonnet (better translation accuracy, ~10× more expensive).</div>
+    <div class="api-hint" id="modelHint" data-i18n="hint_model_default">Default: Claude Haiku (fast, cheap). Higher quality: Claude Sonnet (better translation accuracy, ~10× more expensive).</div>
   </div>
 
   <!-- Mode -->
@@ -318,7 +320,7 @@
     <div class="anon-categories-row" id="anonCategoriesRow" style="display:none;">
       <span class="anon-cat-label" data-i18n="opt_anon_categories">Categories:</span>
       <div class="anon-cat-tags" id="anonCatTags"></div>
-      <input type="text" class="anon-cat-input" id="anonCatInput" placeholder="+ add category" title="Type a custom PII category and press Enter" aria-label="Add custom PII category" />
+      <input type="text" class="anon-cat-input" id="anonCatInput" placeholder="+ add category" data-i18n="opt_anon_add" data-i18n-attr="placeholder" title="Type a custom PII category and press Enter" aria-label="Add custom PII category" />
     </div>
   </div>
 
@@ -340,7 +342,7 @@
     <span class="option-unavail" id="glossaryUnavail" style="display:none;" data-i18n="opt_glossary_unavail">Requires Translation or Both mode</span>
     <div class="glossary-upload-row" id="glossaryUploadRow" style="display:none;">
       <label class="glossary-upload-label">
-        <i data-lucide="upload" class="icon-xs"></i> Or upload your own glossary
+        <i data-lucide="upload" class="icon-xs"></i> <span data-i18n="opt_glossary_upload">Or upload your own glossary</span>
         <input type="file" id="glossaryFileInput" accept=".csv,.txt,.tsv" style="display:none;" />
       </label>
       <span class="glossary-upload-status" id="glossaryUploadStatus"></span>
@@ -369,26 +371,26 @@
           <option value="thorough" data-i18n="adv_thorough">Thorough — more API calls, higher accuracy</option>
         </select>
       </div>
-      <div class="advanced-hint">Controls how the transcript is split for processing. Fast uses larger chunks (fewer calls), Thorough uses smaller chunks (more detail per segment).</div>
+      <div class="advanced-hint"><span data-i18n="adv_detail_hint">Controls how the transcript is split for processing. Fast uses larger chunks (fewer calls), Thorough uses smaller chunks (more detail per segment).</span></div>
       <div class="advanced-row" style="margin-top: 0.75rem;">
         <label data-i18n="adv_creativity">AI creativity</label>
         <div class="creativity-slider-wrap">
           <input type="range" id="creativitySlider" min="0" max="10" value="3" step="1" oninput="updateCreativityLabel()">
           <div class="creativity-labels">
-            <span>Precise</span>
-            <span>Balanced</span>
-            <span>Creative</span>
+            <span data-i18n="adv_precise">Precise</span>
+            <span data-i18n="adv_balanced_label">Balanced</span>
+            <span data-i18n="adv_creative">Creative</span>
           </div>
         </div>
       </div>
-      <div class="advanced-hint">Precise mode keeps translations close to the original wording. Creative mode produces more natural, free-flowing text but may paraphrase more freely.</div>
+      <div class="advanced-hint"><span data-i18n="adv_creativity_hint">Precise mode keeps translations close to the original wording. Creative mode produces more natural, free-flowing text but may paraphrase more freely.</span></div>
     </div>
   </details>
 
   <!-- Session restore bar -->
   <div class="session-bar" id="sessionBar" style="display:none;">
-    <span><i data-lucide="clipboard-list" class="icon-sm"></i> Previous session results available</span>
-    <button class="session-bar-btn" onclick="restoreSession()">Restore</button>
+    <span><i data-lucide="clipboard-list" class="icon-sm"></i> <span data-i18n="session_available">Previous session results available</span></span>
+    <button class="session-bar-btn" onclick="restoreSession()" data-i18n="session_restore">Restore</button>
     <button class="session-bar-dismiss" onclick="dismissSession()">×</button>
   </div>
 

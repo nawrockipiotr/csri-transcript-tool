@@ -66,22 +66,22 @@ let batchTranslations = [];   // [{fileName, original, translation}] for consist
 
 const providerConfig = {
   anthropic: {
-    label: 'Anthropic API Key', placeholder: 'sk-ant-...', storageKey: 'transcript_tool_api_key_anthropic',
+    label: 'Anthropic API Key', i18nLabel: 'lbl_api_key_anthropic', i18nHint: 'hint_anthropic', placeholder: 'sk-ant-...', storageKey: 'transcript_tool_api_key_anthropic',
     model: 'claude-haiku-4-5-20251001', modelHQ: 'claude-sonnet-4-6',
     hint: 'Default: Claude Haiku 4.5 (fast, cheap). Higher quality: Claude Sonnet 4.6 (~10× more expensive).'
   },
   openai: {
-    label: 'OpenAI API Key', placeholder: 'sk-...', storageKey: 'transcript_tool_api_key_openai',
+    label: 'OpenAI API Key', i18nLabel: 'lbl_api_key_openai', i18nHint: 'hint_openai', placeholder: 'sk-...', storageKey: 'transcript_tool_api_key_openai',
     model: 'gpt-4o-mini', modelHQ: 'gpt-4o',
     hint: 'Default: GPT-4o mini (fast, cheap). Higher quality: GPT-4o (~15× more expensive).'
   },
   google: {
-    label: 'Google AI API Key', placeholder: 'AIza...', storageKey: 'transcript_tool_api_key_google',
+    label: 'Google AI API Key', i18nLabel: 'lbl_api_key_google', i18nHint: 'hint_google', placeholder: 'AIza...', storageKey: 'transcript_tool_api_key_google',
     model: 'gemini-2.0-flash', modelHQ: 'gemini-2.5-pro-preview-05-06',
     hint: 'Default: Gemini Flash (fast, cheap). Higher quality: Gemini Pro (~10× more expensive).'
   },
   local: {
-    label: 'API Key (optional)', placeholder: 'leave empty if not required', storageKey: 'transcript_tool_api_key_local',
+    label: 'API Key (optional)', i18nLabel: 'lbl_api_key_local', i18nHint: 'hint_local', placeholder: 'leave empty if not required', storageKey: 'transcript_tool_api_key_local',
     model: '', modelHQ: '',
     hint: 'Local model via OpenAI-compatible API (Ollama, LM Studio, vLLM). Data stays on your machine — no external data transfer.'
   }
@@ -94,9 +94,9 @@ function setProvider(provider) {
     b.classList.toggle('active', b.dataset.provider === provider);
   });
   const cfg = providerConfig[provider];
-  document.getElementById('apiKeyLabel').textContent = cfg.label;
+  document.getElementById('apiKeyLabel').textContent = cfg.i18nLabel ? I18N.get(cfg.i18nLabel) : cfg.label;
   apiKeyInput.placeholder = cfg.placeholder;
-  document.getElementById('modelHint').textContent = cfg.hint;
+  document.getElementById('modelHint').textContent = cfg.i18nHint ? I18N.get(cfg.i18nHint) : cfg.hint;
 
   // Show/hide local-specific fields
   const localFields = document.getElementById('localFields');

@@ -152,6 +152,15 @@ const I18N = {
     msg_glossary_approved: 'Glossary approved — {n} terms',
     msg_session_restore: 'Previous results available ({n} files, {time})',
     msg_lang_match: '<strong>{file}</strong>: detected language ({source}) matches target language ({target}). Translation may not be needed. Processing anyway.',
+    // Provider-specific labels
+    lbl_api_key_anthropic: 'Anthropic API Key',
+    lbl_api_key_openai: 'OpenAI API Key',
+    lbl_api_key_google: 'Google AI API Key',
+    lbl_api_key_local: 'API Key (optional)',
+    hint_anthropic: 'Default: Claude Haiku 4.5 (fast, cheap). Higher quality: Claude Sonnet 4.6 (~10× more expensive).',
+    hint_openai: 'Default: GPT-4o mini (fast, cheap). Higher quality: GPT-4o (~15× more expensive).',
+    hint_google: 'Default: Gemini Flash (fast, cheap). Higher quality: Gemini Pro (~10× more expensive).',
+    hint_local: 'Local model via OpenAI-compatible API (Ollama, LM Studio, vLLM). Data stays on your machine — no external data transfer.',
   },
 
   pl: {
@@ -302,6 +311,15 @@ const I18N = {
     msg_glossary_approved: 'Glosariusz zatwierdzony — {n} terminów',
     msg_session_restore: 'Dostępne poprzednie wyniki ({n} plików, {time})',
     msg_lang_match: '<strong>{file}</strong>: wykryty język ({source}) pokrywa się z językiem docelowym ({target}). Tłumaczenie może nie być potrzebne. Przetwarzanie mimo to.',
+    // Provider-specific labels
+    lbl_api_key_anthropic: 'Klucz API Anthropic',
+    lbl_api_key_openai: 'Klucz API OpenAI',
+    lbl_api_key_google: 'Klucz API Google AI',
+    lbl_api_key_local: 'Klucz API (opcjonalny)',
+    hint_anthropic: 'Domyślny: Claude Haiku 4.5 (szybki, tani). Wyższa jakość: Claude Sonnet 4.6 (~10× droższy).',
+    hint_openai: 'Domyślny: GPT-4o mini (szybki, tani). Wyższa jakość: GPT-4o (~15× droższy).',
+    hint_google: 'Domyślny: Gemini Flash (szybki, tani). Wyższa jakość: Gemini Pro (~10× droższy).',
+    hint_local: 'Model lokalny przez API kompatybilne z OpenAI (Ollama, LM Studio, vLLM). Dane pozostają na Twoim komputerze — brak transferu na zewnątrz.',
   },
 
   // ─── API ───
