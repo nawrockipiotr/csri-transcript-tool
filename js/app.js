@@ -1194,6 +1194,7 @@ async function processFiles(appendMode) {
         qualityResult: qualityResult,
         langData: langData,
         glossaryTerms: glossaryData._approved || [],
+        anonymResult: anonymResult,
         mode: currentMode,
         isSrt: file.name.split('.').pop().toLowerCase() === 'srt'
       };
@@ -1224,6 +1225,7 @@ async function processFiles(appendMode) {
         html: resultsHtml,
         timestamp: new Date().toISOString(),
         fileCount: files.length,
+        anonymResult: anonymResult,
         mode: currentMode,
         batchReportData: batchReportData
       }));

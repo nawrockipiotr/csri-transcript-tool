@@ -290,10 +290,18 @@ function exportCodingJSON(fileId) {
     return;
   }
   
-  const { fileName, content, translationResult, qualityResult, langData, glossaryTerms, mode, isSrt } = data;
+  const { fileName, content, translationResult, qualityResult, langData, glossaryTerms, anonymResult, mode, isSrt } = data;
+
+  // Use anonymized text if available (prevents PII leak)
+  const effectiveContent = anonymResult ? anonymResult : content;
+
+  // Warn if mode produces sparse export
+  if ('speaker' === mode || 'anonymize' === mode) {
+    if (!confirm('This file was processed in ' + mode + ' mode — the JSON export will contain only raw text segments without translation or QA data. Continue?')) return;
+  }
   
   // Parse segments from original text
-  const segments = parseDialogueTurns(content, isSrt);
+  const segments = parseDialogueTurns(effectiveContent, isSrt);
   
   if (segments.length === 0) {
     alert('No segments found. The transcript may be empty or in an unsupported format.');
@@ -324,7 +332,7 @@ function exportCodingJSON(fileId) {
     const sessionId = fileName.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
     
     // Check anonymization
-    const hasAnon = !!document.getElementById('anon_' + fileId);
+    const hasAnon = !!anonymResult;
     
     // Build JSON
     const exportObj = {
