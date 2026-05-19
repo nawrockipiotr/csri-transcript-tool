@@ -8,13 +8,13 @@ function toggleDarkMode() {
   const isDark = document.documentElement.classList.toggle('dark-mode');
   localStorage.setItem('transcript_tool_dark_mode', isDark ? '1' : '0');
   const btn = document.getElementById('darkToggle');
-  if (btn) btn.innerHTML = isDark ? '<i data-lucide="sun" class="icon-sm"></i> Light' : '<i data-lucide="moon" class="icon-sm"></i> Dark'; lucide.createIcons({nameAttr: 'data-lucide', node: btn});
+  if (btn) btn.innerHTML = isDark ? '<i data-lucide="sun" class="icon-sm"></i> ' + I18N.get('light_label') : '<i data-lucide="moon" class="icon-sm"></i> ' + I18N.get('dark_label'); lucide.createIcons({nameAttr: 'data-lucide', node: btn});
 }
 (function initDarkMode() {
   if (localStorage.getItem('transcript_tool_dark_mode') === '1') {
     document.documentElement.classList.add('dark-mode');
     const btn = document.getElementById('darkToggle');
-    if (btn) btn.innerHTML = '<i data-lucide="sun" class="icon-sm"></i> Light';
+    if (btn) btn.innerHTML = '<i data-lucide="sun" class="icon-sm"></i> ' + I18N.get('light_label');
   }
 })();
 
@@ -44,9 +44,9 @@ function updateETA(doneWork, totalWork) {
   const remaining = (totalWork - doneWork) / rate;
   const etaEl = document.getElementById('etaText');
   if (remaining < 60) {
-    if (etaEl) etaEl.textContent = '~' + Math.ceil(remaining) + 's remaining';
+    if (etaEl) etaEl.textContent = I18N.msg('msg_remaining_s', {n: Math.ceil(remaining)});
   } else {
-    if (etaEl) etaEl.textContent = '~' + Math.ceil(remaining / 60) + 'min remaining';
+    if (etaEl) etaEl.textContent = I18N.msg('msg_remaining_m', {n: Math.ceil(remaining / 60)});
   }
 }
 
@@ -215,7 +215,7 @@ function updateCostEstimate() {
 
   if (currentProvider === 'local') {
     panel.style.display = 'flex';
-    textEl.textContent = 'Local model — no API cost';
+    textEl.textContent = I18N.get('msg_no_cost');
     return;
   }
 
@@ -239,7 +239,7 @@ function updateCostEstimate() {
   const high = (cost * 1.5).toFixed(3);
 
   panel.style.display = 'flex';
-  textEl.textContent = `Estimated cost: $${low} – $${high} USD for ${files.length} file(s) · ${model} · ${callsPerFile} API calls/file`;
+  textEl.textContent = I18N.msg('msg_cost', {low: low, high: high, files: files.length, model: model, calls: callsPerFile});
 }
 
 function estimateCallsPerFile() {
@@ -318,12 +318,12 @@ document.getElementById('glossaryFileInput')?.addEventListener('change', functio
     const text = ev.target.result;
     const terms = parseUploadedGlossary(text);
     if (terms.length === 0) {
-      if (status) { status.textContent = 'No valid terms found. Format: source|target (one per line)'; status.style.color = 'var(--red)'; }
+      if (status) { status.textContent = I18N.get('msg_glossary_no_terms'); status.style.color = 'var(--red)'; }
       uploadedGlossary = null;
       return;
     }
     uploadedGlossary = terms;
-    if (status) { status.textContent = terms.length + ' terms loaded from ' + file.name; status.style.color = 'var(--green)'; }
+    if (status) { status.textContent = I18N.msg('msg_glossary_loaded', {n: terms.length, file: file.name}); status.style.color = 'var(--green)'; }
   };
   reader.readAsText(file);
 });
@@ -548,7 +548,7 @@ function stopProcessing() {
   }
   document.getElementById('stopBtn').classList.remove('visible');
   const doneCount = files.filter(f => f._status === 'done').length;
-  document.getElementById('progressText').textContent = `Stopped. ${doneCount} file(s) completed — results preserved.`;
+  document.getElementById('progressText').textContent = I18N.msg('msg_stopped', {n: doneCount});
   const etaEl = document.getElementById('etaText');
   if (etaEl) etaEl.textContent = '';
   actionBtn.disabled = false;
@@ -708,7 +708,7 @@ function approveGlossary() {
     const bar = document.createElement('div');
     bar.className = 'glossary-collapsed-bar';
     bar.onclick = function() { panel.classList.toggle('glossary-expanded'); };
-    bar.innerHTML = '<span><i data-lucide="book-open" class="icon-sm"></i> Glossary approved — ' + approved.length + ' terms</span><span style="display:flex;align-items:center;gap:0.5rem;"><button class="export-btn" onclick="event.stopPropagation();exportGlossaryCSV()" title="Download glossary as CSV">CSV <i data-lucide="download" class="icon-xs"></i></button><span class="glossary-expand-hint"><i data-lucide="chevron-down" class="icon-xs"></i></span></span>';
+    bar.innerHTML = '<span><i data-lucide="book-open" class="icon-sm"></i> ' + I18N.msg('msg_glossary_approved', {n: approved.length}) + '</span><span style="display:flex;align-items:center;gap:0.5rem;"><button class="export-btn" onclick="event.stopPropagation();exportGlossaryCSV()" title="Download glossary as CSV">CSV <i data-lucide="download" class="icon-xs"></i></button><span class="glossary-expand-hint"><i data-lucide="chevron-down" class="icon-xs"></i></span></span>';
     // Wrap existing table in collapsed content div
     const tableWrapper = document.createElement('div');
     tableWrapper.className = 'glossary-collapsed-content';
@@ -924,7 +924,7 @@ async function processFiles(appendMode) {
       if (['translate', 'both'].includes(currentMode) && langData.primary.toLowerCase() === targetLang.toLowerCase()) {
         const langInfo = document.createElement('div');
         langInfo.className = 'lang-warning';
-        langInfo.innerHTML = `<i data-lucide="alert-triangle" class="icon-xs"></i> <strong>${file.name}</strong>: detected language (${langData.primary}) matches target language (${targetLang}). Translation may not be needed. Processing anyway.`;
+        langInfo.innerHTML = '<i data-lucide="alert-triangle" class="icon-xs"></i> ' + I18N.msg('msg_lang_match', {file: file.name, source: langData.primary, target: targetLang});
         resultsArea.appendChild(langInfo);
       }
 
@@ -967,7 +967,7 @@ async function processFiles(appendMode) {
           if (!glossaryApproved) {
             glossaryData._uploaded = true;
             renderGlossaryTable(uploadedGlossary, 'Uploaded glossary');
-            progressText.textContent = 'Review uploaded glossary and click Approve to continue';
+            progressText.textContent = I18N.get('msg_glossary_review');
             const glossaryEl = document.getElementById('glossaryApproveBtn');
             if (glossaryEl) glossaryEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             await new Promise(resolve => { window.resumeAfterGlossary = resolve; });
@@ -1007,7 +1007,7 @@ async function processFiles(appendMode) {
 
           if (!glossaryApproved && terms.length > 0) {
             renderGlossaryTable(terms, file.name);
-            progressText.textContent = 'Review glossary below and click Approve to continue';
+            progressText.textContent = I18N.get('msg_glossary_review2');
             const glossaryEl = document.getElementById('glossaryApproveBtn');
             if (glossaryEl) glossaryEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             await new Promise(resolve => { window.resumeAfterGlossary = resolve; });
@@ -1211,7 +1211,7 @@ async function processFiles(appendMode) {
   isProcessing = false;
   abortController = null;
   stopBtn.classList.remove('visible');
-  progressText.textContent = 'Done.';
+  progressText.textContent = I18N.get('progress_done');
   actionBtn.disabled = false;
   const etaFinal = document.getElementById('etaText');
   if (etaFinal) etaFinal.textContent = '';
@@ -1351,7 +1351,7 @@ async function exportAllZip() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   } catch (err) {
     console.error('ZIP export failed:', err);
-    alert('Export failed: ' + (err.message || err));
+    alert(I18N.get('msg_export_failed') + (err.message || err));
   }
 }
 
@@ -1486,7 +1486,7 @@ function dismissSession() {
       if (bar) {
         const d = new Date(data.timestamp);
         const timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        bar.querySelector('span').innerHTML = '<i data-lucide="clipboard-list" class="icon-sm"></i> Previous results available (' + data.fileCount + ' files, ' + timeStr + ')'; if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: bar});
+        bar.querySelector('span').innerHTML = '<i data-lucide="clipboard-list" class="icon-sm"></i> ' + I18N.msg('msg_session_restore', {n: data.fileCount, time: timeStr}) + ''; if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide', node: bar});
         bar.style.display = 'flex';
       }
     }

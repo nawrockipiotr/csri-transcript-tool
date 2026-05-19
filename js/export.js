@@ -362,7 +362,7 @@ async function exportDocx(text, filename) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   } catch (err) {
     console.error('DOCX export failed:', err);
-    alert('DOCX export failed: ' + (err.message || err));
+    alert(I18N.get('msg_docx_failed') + (err.message || err));
   }
 }
 
@@ -426,7 +426,7 @@ async function exportQualityDocx(el, filename, legendText) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   } catch (err) {
     console.error('Quality DOCX export failed:', err);
-    alert('DOCX export failed: ' + (err.message || err));
+    alert(I18N.get('msg_docx_failed') + (err.message || err));
   }
 }
 

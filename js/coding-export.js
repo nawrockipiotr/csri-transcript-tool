@@ -330,7 +330,7 @@ function exportCodingJSON(fileId) {
   // Find the file data
   const data = window._fileExportData && window._fileExportData[fileId];
   if (!data) {
-    alert('No data available for coding export. Process the file first.');
+    alert(I18N.get('msg_no_data'));
     return;
   }
   
@@ -341,14 +341,14 @@ function exportCodingJSON(fileId) {
 
   // Warn if mode produces sparse export
   if ('speaker' === mode || 'anonymize' === mode) {
-    if (!confirm('This file was processed in ' + mode + ' mode — the JSON export will contain only raw text segments without translation or QA data. Continue?')) return;
+    if (!confirm(I18N.msg('msg_sparse_mode', {mode: mode}))) return;
   }
   
   // Parse segments from original text
   const segments = parseDialogueTurns(effectiveContent, isSrt);
   
   if (segments.length === 0) {
-    alert('No segments found. The transcript may be empty or in an unsupported format.');
+    alert(I18N.get('msg_no_segments'));
     return;
   }
   
