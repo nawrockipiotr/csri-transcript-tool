@@ -3,18 +3,31 @@
 A browser-based translation and quality assessment tool for multilingual transcripts.  
 Developed at the Centre for Socially Responsible Innovations (CSRI), Faculty of Management, University of Warsaw.
 
+**Live version:** [nawrockipiotr.github.io/csri-transcript-tool](https://nawrockipiotr.github.io/csri-transcript-tool/)
+
 ## What it does
 
-- **Translation**: Translates transcripts into any EU language via AI (Anthropic/OpenAI/Google API)
+- **Translation**: Translates transcripts into any EU language via AI (Anthropic/OpenAI/Google/Local API)
 - **Quality Assessment**: Flags potential ASR errors in transcripts (minor/serious) with color coding
+- **Both**: Translation + Quality Assessment in one pass
+- **Speaker Check**: Validates speaker label consistency and diarization quality
+- **Anonymization**: Detects and redacts PII (names, emails, phone numbers, etc.) with configurable categories
 - **Summary**: Generates a structured overview of transcript content
-- **Export**: SRT (subtitles), TXT, DOCX, PDF, HTML
+- **Auto-Glossary**: Extracts domain terms, lets you review/edit, then enforces them in translation
+- **Back-translation**: Translates back to source language and compares for quality scoring
+- **Consistency Check**: Detects terminology inconsistencies across batch files
+- **Diff view**: Side-by-side and inline highlight comparison of original vs. translation
+- **Timestamp check**: Validates SRT timing (gaps, overlaps, duration)
+- **Inline edit**: Click on QA flags to correct text directly in the browser
+- **Stats**: Word count, speaker turns, duration — deterministic, no AI call needed
+- **Coding JSON export**: Structured JSON for import into qualitative coding tools (segments with metadata)
+- **Export**: TXT, DOCX, PDF, HTML, SRT, XLSX (batch QA report), JSON (coding), ZIP (all files)
 
 ## How to use
 
 1. Open `index.html` in any modern browser — no installation needed
-2. Paste your API key (Anthropic, OpenAI, or Google)
-3. Choose mode: Translation / Quality Assessment / Both
+2. Paste your API key (Anthropic, OpenAI, Google) or configure a local server
+3. Choose mode: Translation / Quality Assessment / Both / Speaker Check / Anonymization
 4. Drag & drop transcript files (TXT, DOCX, SRT, PDF)
 5. Click "Process Files"
 
@@ -22,40 +35,26 @@ Developed at the Centre for Socially Responsible Innovations (CSRI), Faculty of 
 
 ```
 transcript-tool/
-├── index.html          ← main page (open this in browser)
+├── index.html              ← main page (open this in browser)
 ├── css/
-│   └── style.css       ← all styles
+│   └── style.css           ← all styles (incl. dark mode)
 ├── js/
-│   ├── app.js          ← state, file handling, UI logic
-│   ├── api.js          ← AI provider calls (Anthropic, OpenAI, Google)
-│   ├── prompts.js      ← all AI prompts (translate, quality, summary)
-│   ├── export.js       ← export functions (SRT, TXT, DOCX, PDF)
-│   └── render.js       ← result rendering and formatting
-├── transcription-tool.html  ← original monolithic file (for reference)
+│   ├── app.js              ← state, file handling, UI logic, processing pipeline
+│   ├── api.js              ← AI provider calls (Anthropic, OpenAI, Google, Local)
+│   ├── prompts.js          ← all AI prompts (translate, quality, summary, glossary, etc.)
+│   ├── export.js           ← export functions (SRT, TXT, DOCX, PDF, XLSX, ZIP)
+│   ├── coding-export.js    ← structured JSON export for qualitative coding tools
+│   └── render.js           ← result rendering, tabs, inline edit, diff view
 └── README.md
-```
-
-## Continuing development in Claude Code
-
-```bash
-# 1. Navigate to the project folder
-cd transcript-tool
-
-# 2. Start Claude Code
-claude
-
-# 3. Ask Claude Code to work on the project, e.g.:
-#    "Add a review dialog where users can annotate flagged fragments"
-#    "Fix the DOCX export encoding"
-#    "Add a new export format"
 ```
 
 ## Dependencies (loaded from CDN, no install needed)
 
-- JSZip 3.10.1 — reading DOCX files
+- Lucide 0.460.0 — icons
+- JSZip 3.10.1 — reading DOCX files, ZIP export
 - docx 8.5.0 — writing DOCX files
 - pdf.js 3.11.174 — reading PDF files
-- Google Fonts: DM Sans, JetBrains Mono
+- SheetJS (xlsx) 0.20.3 — XLSX export
 
 ## AI models used
 
@@ -64,10 +63,14 @@ claude
 | Anthropic | Claude Haiku 4.5          | Claude Sonnet 4.6        |
 | OpenAI    | GPT-4o mini               | GPT-4o                   |
 | Google    | Gemini 2.0 Flash          | Gemini 2.5 Pro           |
+| Local     | User-configured (Ollama, LM Studio, vLLM) | — |
 
 ## Known issues / TODO
 
-- DOCX export may need testing with long files
 - Summary two-stage extraction could miss nuance in very long transcripts
-- Review/annotation dialog not yet implemented
-- Speaker label reliability warning in summary could be more prominent
+- Coding JSON: translation-to-segment alignment uses proportional fallback when speaker turn counts differ
+- Session persistence saves results but not settings (creativity slider, processing detail)
+
+## Author
+
+Piotr Nawrocki, Faculty of Management, University of Warsaw, Centre for Socially Responsible Innovations (CSRI).

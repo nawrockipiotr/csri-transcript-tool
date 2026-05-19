@@ -128,6 +128,28 @@ function parseSrtTurns(text) {
 }
 
 // ─── Map QA flags to segments ───
+// ─── Detect specific QA flag type from flag text ───
+function detectFlagType(flagText, severity) {
+  const t = flagText.toLowerCase();
+  // Inaudible / missing speech patterns (no \b — breaks on [ and Polish chars)
+  if (/(inaudible|nies[lł]yszaln|nieczytelne|no speech|brak mowy|unintelligible|niezrozumia[lł])/i.test(t)) {
+    return 'inaudible_fragment';
+  }
+  // Overlap patterns (from timestamp QA)
+  if (/(overlap|nak[lł]adanie|nak[lł]ada si[eę])/i.test(t)) {
+    return 'overlap';
+  }
+  // Speaker mismatch patterns
+  if (/(speaker.*mismatch|m[oó]wca.*niezgodn|wrong speaker|z[lł]y m[oó]wca|speaker label)/i.test(t)) {
+    return 'speaker_mismatch';
+  }
+  // Fall back to severity-based mapping
+  if (severity === 'serious') return 'low_confidence';
+  if (severity === 'minor') return 'minor_issue';
+  if (severity === 'corrected') return 'corrected';
+  return 'minor_issue';
+}
+
 function mapQaFlagsToSegments(segments, qualityHtml) {
   if (!qualityHtml) return segments.map(() => ({ qa_flags: [], qa_score: null }));
   
@@ -153,9 +175,10 @@ function mapQaFlagsToSegments(segments, qualityHtml) {
       // Check if flag text appears in or near this segment
       const flagWords = flag.text.toLowerCase().split(/\s+/).slice(0, 3).join(' ');
       if (segLower.includes(flagWords) || flagWords.length < 4) {
-        if (flag.severity === 'serious') segFlags.push('low_confidence');
-        else if (flag.severity === 'minor') segFlags.push('minor_issue');
-        else if (flag.severity === 'corrected') segFlags.push('corrected');
+        // Detect specific flag type from text content before falling back to severity
+        const ft = flag.text.toLowerCase();
+        const flagType = detectFlagType(ft, flag.severity);
+        segFlags.push(flagType);
       }
     }
     // Compute segment-level qa_score based on flag density
@@ -281,6 +304,27 @@ function showSpeakerRoleDialog(speakers, callback) {
   });
 }
 
+// ─── Detect speaker label inconsistencies ───
+function detectLabelInconsistencies(speakers) {
+  const warnings = [];
+  const normalized = speakers.map(s => ({
+    original: s,
+    norm: s.toLowerCase().replace(/[^a-z0-9]/g, "")
+  }));
+  for (let i = 0; i < normalized.length; i++) {
+    for (let j = i + 1; j < normalized.length; j++) {
+      const a = normalized[i], b = normalized[j];
+      // Check if labels are similar (e.g. "P1" vs "Participant 1")
+      const aDigits = a.norm.replace(/[^0-9]/g, "");
+      const bDigits = b.norm.replace(/[^0-9]/g, "");
+      if (aDigits && aDigits === bDigits && a.norm !== b.norm) {
+        warnings.push("\"" + a.original + "\" and \"" + b.original + "\" may refer to the same speaker (same number).");
+      }
+    }
+  }
+  return warnings;
+}
+
 // ─── Main export function ───
 function exportCodingJSON(fileId) {
   // Find the file data
@@ -311,8 +355,26 @@ function exportCodingJSON(fileId) {
   // Get unique speakers
   const speakers = [...new Set(segments.map(s => s.author))];
   
-  // Show role assignment dialog
+  // Warn about potential speaker label inconsistencies (spec validation point 3)
+  const labelWarnings = detectLabelInconsistencies(speakers);
+  if (labelWarnings.length > 0) {
+    const msg = "Possible speaker label inconsistencies detected:\n" + labelWarnings.join("\n") + "\n\nContinue with export?";
+    if (!confirm(msg)) return;
+  }
+
+  // Show role assignment dialog (skip if single speaker — spec requirement)
+  if (speakers.length <= 1) {
+    const roles = {};
+    speakers.forEach(s => roles[s] = detectAuthorRole(s));
+    finishExport(roles);
+    return;
+  }
   showSpeakerRoleDialog(speakers, function(roles) {
+    finishExport(roles);
+  });
+  return;
+
+  function finishExport(roles) {
     // Map QA flags
     const qualityHtml = document.getElementById('qual_' + fileId)?.innerHTML || null;
     const qaData = mapQaFlagsToSegments(segments, qualityHtml);
@@ -387,5 +449,5 @@ function exportCodingJSON(fileId) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  });
+  }
 }
