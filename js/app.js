@@ -94,9 +94,13 @@ function setProvider(provider) {
     b.classList.toggle('active', b.dataset.provider === provider);
   });
   const cfg = providerConfig[provider];
-  document.getElementById('apiKeyLabel').textContent = cfg.i18nLabel ? I18N.get(cfg.i18nLabel) : cfg.label;
+  const apiKeyLabelEl = document.getElementById('apiKeyLabel');
+  apiKeyLabelEl.textContent = cfg.i18nLabel ? I18N.get(cfg.i18nLabel) : cfg.label;
+  if (cfg.i18nLabel) apiKeyLabelEl.setAttribute('data-i18n', cfg.i18nLabel);
   apiKeyInput.placeholder = cfg.placeholder;
-  document.getElementById('modelHint').textContent = cfg.i18nHint ? I18N.get(cfg.i18nHint) : cfg.hint;
+  const modelHintEl = document.getElementById('modelHint');
+  modelHintEl.textContent = cfg.i18nHint ? I18N.get(cfg.i18nHint) : cfg.hint;
+  if (cfg.i18nHint) modelHintEl.setAttribute('data-i18n', cfg.i18nHint);
 
   // Show/hide local-specific fields
   const localFields = document.getElementById('localFields');

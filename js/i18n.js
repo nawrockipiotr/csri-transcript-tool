@@ -165,16 +165,16 @@ const I18N = {
 
   pl: {
     // Hero
-    org_badge: 'Centrum Innowacji Społecznie Odpowiedzialnych (CSRI)',
+    org_badge: 'Centrum Innowacji Odpowiedzialnych Społecznie (CSRI)',
     dark_label: 'Ciemny',
     light_label: 'Jasny',
-    tool_title: 'Narzędzie Analizy Transkrypcji',
-    hero_lead: 'Narzędzie do tłumaczenia, oceny jakości i analizy wielojęzycznych transkrypcji, opracowane w <strong>Centrum Innowacji Społecznie Odpowiedzialnych (CSRI)</strong>, Wydział Zarządzania, Uniwersytet Warszawski.',
+    tool_title: 'Transcript Analysis Tool',
+    hero_lead: 'Narzędzie do tłumaczenia, oceny jakości i analizy wielojęzycznych transkrypcji, opracowane w <strong>Centrum Innowacji Odpowiedzialnych Społecznie (CSRI)</strong>, Wydział Zarządzania, Uniwersytet Warszawski.',
     howto_title: 'Jak korzystać z narzędzia',
     howto_hide: '(kliknij, by ukryć)',
     howto_body: '<strong>1.</strong> Wklej klucz API wybranego dostawcy AI (Anthropic, OpenAI, Google) lub podłącz lokalny serwer modelu.<br><strong>2.</strong> Wybierz tryb: <strong>Tłumaczenie</strong> tłumaczy transkrypcję na język docelowy, <strong>Ocena jakości</strong> sprawdza transkrypcję pod kątem błędów i oznacza je, <strong>Oba</strong> wykonuje oba jednocześnie. Dodatkowe opcje poniżej pozwalają dodać sprawdzanie mówców, anonimizację, ekstrakcję glosariusza i walidację zwrotną.<br><strong>3.</strong> Przeciągnij i upuść pliki (TXT, DOCX, SRT lub PDF) lub kliknij, by wybrać. Możesz przetwarzać wiele plików jednocześnie.<br><strong>4.</strong> Kliknij <strong>Przetwórz pliki</strong> i czekaj na wyniki. Możesz przerwać w dowolnym momencie.<br><strong>5.</strong> Eksportuj wyniki przyciskami pod każdym wynikiem lub użyj <strong>Eksportuj wszystko (ZIP)</strong> do pobrania paczki.',
     howto_footer: 'Kliknij temat poniżej, aby dowiedzieć się, jak działa każda funkcja.',
-    hero_author: 'Narzędzie Analizy Transkrypcji · autor: Piotr Nawrocki',
+    hero_author: 'Transcript Analysis Tool · autor: Piotr Nawrocki',
 
     // Info toggle buttons
     btn_quality_flags: 'Flagi jakości',
@@ -377,6 +377,11 @@ const I18N = {
 
     // Update info panels that have complex HTML
     this._updateInfoPanels();
+
+    // Re-apply provider-specific labels (API key label, model hint)
+    if (typeof currentProvider !== 'undefined' && typeof setProvider === 'function') {
+      setProvider(currentProvider);
+    }
 
     // Update dark mode button text
     const darkBtn = document.getElementById('darkToggle');
