@@ -152,6 +152,11 @@ const I18N = {
     msg_glossary_approved: 'Glossary approved — {n} terms',
     msg_session_restore: 'Previous results available ({n} files, {time})',
     msg_lang_match: '<strong>{file}</strong>: detected language ({source}) matches target language ({target}). Translation may not be needed. Processing anyway.',
+    // File System target
+    fs_pick_folder: 'Save exports to folder',
+    fs_pick_btn: 'Choose folder',
+    fs_clear_title: 'Clear folder',
+    fs_saved_to: 'Saved to folder: {folder}',
     // Provider-specific labels
     lbl_api_key_anthropic: 'Anthropic API Key',
     lbl_api_key_openai: 'OpenAI API Key',
@@ -311,6 +316,11 @@ const I18N = {
     msg_glossary_approved: 'Glosariusz zatwierdzony — {n} terminów',
     msg_session_restore: 'Dostępne poprzednie wyniki ({n} plików, {time})',
     msg_lang_match: '<strong>{file}</strong>: wykryty język ({source}) pokrywa się z językiem docelowym ({target}). Tłumaczenie może nie być potrzebne. Przetwarzanie mimo to.',
+    // File System target
+    fs_pick_folder: 'Zapisuj eksporty do folderu',
+    fs_pick_btn: 'Wybierz folder',
+    fs_clear_title: 'Wyczyść folder',
+    fs_saved_to: 'Zapisano do folderu: {folder}',
     // Provider-specific labels
     lbl_api_key_anthropic: 'Klucz API Anthropic',
     lbl_api_key_openai: 'Klucz API OpenAI',

@@ -253,6 +253,12 @@
     </label>
     <div class="api-key-security" id="apiKeySecurity"><i data-lucide="lock" class="icon-xs"></i> <span data-i18n="security_note">Key stored in this browser only · sent only to the selected provider · never shared with third parties</span></div>
     <div class="api-hint api-data-warning"><i data-lucide="alert-triangle" class="icon-xs"></i> <span data-i18n="data_warning">When using cloud providers, transcript content is transmitted to their servers — ensure this is compatible with your data protection obligations.</span></div>
+    <div class="fs-target-row" id="fsTargetRow">
+      <span class="fs-target-label-text" data-i18n="fs_pick_folder">Save exports to folder</span>
+      <button type="button" class="fs-pick-btn" onclick="FSTarget.pickFolder()" data-i18n="fs_pick_btn">Choose folder</button>
+      <span class="fs-target-folder" id="fsTargetLabel"></span>
+      <button type="button" class="fs-target-clear" id="fsTargetClear" onclick="FSTarget.clearFolder()" style="display:none" data-i18n-attr="title" data-i18n="fs_clear_title">&times;</button>
+    </div>
     <label class="quality-check">
       <input type="checkbox" id="highQuality" style="accent-color: var(--accent);" />
       <span style="font-weight: 600;" data-i18n="lbl_high_quality">Use higher quality model</span>
@@ -447,9 +453,11 @@
 <script src="js/render.js"></script>
 <script src="js/export.js"></script>
 <script src="js/coding-export.js"></script>
-<script src="js/i18n.js"></script>
+<script src="js/fs-target.js"></script>
+  <script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 
-<script>lucide.createIcons(); I18N.init();</script>
+<script>lucide.createIcons(); I18N.init();
+    FSTarget.init();</script>
 </body>
 </html>

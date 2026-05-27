@@ -333,11 +333,15 @@ function exportAnonymized(fileId, mode, format) {
 // ─── Download helpers ───
 function downloadText(content, filename, mimeType) {
   const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  if (typeof FSTarget !== 'undefined') {
+    FSTarget.saveFile(blob, filename);
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
 }
 
 async function exportDocx(text, filename) {
@@ -355,11 +359,15 @@ async function exportDocx(text, filename) {
   });
 
   const blob = await Packer.toBlob(doc);
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  if (typeof FSTarget !== 'undefined') {
+    await FSTarget.saveFile(blob, filename);
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
   } catch (err) {
     console.error('DOCX export failed:', err);
     alert(I18N.get('msg_docx_failed') + (err.message || err));
@@ -419,11 +427,15 @@ async function exportQualityDocx(el, filename, legendText) {
 
   const doc = new Document({ sections: [{ children }] });
   const blob = await Packer.toBlob(doc);
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  if (typeof FSTarget !== 'undefined') {
+    await FSTarget.saveFile(blob, filename);
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
   } catch (err) {
     console.error('Quality DOCX export failed:', err);
     alert(I18N.get('msg_docx_failed') + (err.message || err));

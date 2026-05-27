@@ -326,7 +326,7 @@ function detectLabelInconsistencies(speakers) {
 }
 
 // ─── Main export function ───
-function exportCodingJSON(fileId) {
+async function exportCodingJSON(fileId) {
   // Find the file data
   const data = window._fileExportData && window._fileExportData[fileId];
   if (!data) {
@@ -441,13 +441,17 @@ function exportCodingJSON(fileId) {
     const dateStr = new Date().toISOString().slice(0, 10);
     const outputName = `${sessionId}_coding_export_${dateStr}.json`;
     const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = outputName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (typeof FSTarget !== 'undefined') {
+      FSTarget.saveFile(blob, outputName);
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = outputName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   }
 }

@@ -1348,11 +1348,16 @@ async function exportAllZip() {
   }
 
   const blob = await zip.generateAsync({ type: 'blob' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `transcript_tool_results_${new Date().toISOString().substring(0, 10)}.zip`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  const zipName = `transcript_tool_results_${new Date().toISOString().substring(0, 10)}.zip`;
+  if (typeof FSTarget !== 'undefined') {
+    await FSTarget.saveFile(blob, zipName);
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = zipName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
   } catch (err) {
     console.error('ZIP export failed:', err);
     alert(I18N.get('msg_export_failed') + (err.message || err));
@@ -1551,5 +1556,12 @@ function exportQAReportXlsx() {
   ];
 
   XLSX.utils.book_append_sheet(wb, ws, 'QA Report');
-  XLSX.writeFile(wb, 'QA_report_' + new Date().toISOString().substring(0, 10) + '.xlsx');
+  const xlsxName = 'QA_report_' + new Date().toISOString().substring(0, 10) + '.xlsx';
+  if (typeof FSTarget !== 'undefined' && FSTarget.hasFolder()) {
+    const xlsxBlob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })],
+      { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    FSTarget.saveFile(xlsxBlob, xlsxName);
+  } else {
+    XLSX.writeFile(wb, xlsxName);
+  }
 }
