@@ -24,8 +24,8 @@ function getTargetLangCode() {
 
 // ─── Processing metadata block ───
 function getProcessingMetadata() {
-  const provider = currentProvider || 'unknown';
-  const model = getModel ? getModel() : 'unknown';
+  const provider = window._demoMode ? 'demo' : (currentProvider || 'unknown');
+  const model = window._demoMode ? 'pre-generated (no API call)' : (getModel ? getModel() : 'unknown');
   const version = typeof TOOL_VERSION !== 'undefined' ? TOOL_VERSION : 'unknown';
   const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 
@@ -104,15 +104,22 @@ function exportFile(fileId, type, format) {
   }
 
   // Default: export translation text
+  // Prefer raw data from batchTranslations to avoid DOM diff-view noise
+  const bt = typeof batchTranslations !== 'undefined'
+    ? batchTranslations.find(b => sanitizeId(b.fileName) === fileId)
+    : null;
   const el = container.querySelector('.diff-translation') || container;
 
   // Get text — for TXT/DOCX/PDF, convert flag spans to text markers
   let text;
   if (format === 'srt') {
     // SRT: strip all flags, clean text only
-    text = el.textContent;
+    text = bt ? bt.translation : el.textContent;
+  } else if (bt && bt.translation) {
+    // Use raw translation data — clean, no HTML artifacts
+    text = bt.translation;
   } else {
-    // Convert HTML flag spans to readable text markers
+    // Fallback: extract from DOM
     let html = el.innerHTML;
     html = html.replace(/<span class="flag-yellow"[^>]*>([\s\S]*?)<\/span>/g, '\u00ab$1\u00bb');
     html = html.replace(/<span class="flag-red"[^>]*>([\s\S]*?)<\/span>/g, '\u00ab\u200b$1\u200b\u00bb');

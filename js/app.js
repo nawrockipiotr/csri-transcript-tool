@@ -810,6 +810,7 @@ let batchReportData = [];
 window._fileExportData = {};  // data for coding JSON export
 
 async function processFiles(appendMode) {
+  window._demoMode = false;
   const apiKey = apiKeyInput.value.trim();
   // Local provider: API key is optional
   if (!apiKey && currentProvider !== 'local') { showError('Enter your API key.'); return; }
