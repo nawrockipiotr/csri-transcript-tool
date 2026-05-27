@@ -32,6 +32,10 @@ const I18N = {
     btn_stats: 'Stats',
     btn_inline_edit: 'Inline edit',
     btn_coding_export: 'Coding export',
+    btn_demo: 'Demo mode',
+    info_group_analysis: 'Analysis',
+    info_group_tools: 'Tools',
+    demo_info_text: 'Demo mode lets you explore every tab and feature without an API key. It loads a sample transcript with pre-generated results so you can see exactly what the tool produces before committing your own data.',
 
     // Info panels
     info_quality: 'In Quality Assessment mode, the tool highlights potential transcription errors directly in the text. Flags do not mean the text is wrong — they mark places worth verifying.',
@@ -209,6 +213,10 @@ const I18N = {
     btn_stats: 'Statystyki',
     btn_inline_edit: 'Edycja inline',
     btn_coding_export: 'Eksport kodowania',
+    btn_demo: 'Tryb demo',
+    info_group_analysis: 'Analiza',
+    info_group_tools: 'Narzędzia',
+    demo_info_text: 'Tryb demo pozwala przetestować wszystkie zakładki i funkcje bez klucza API. Ładuje przykładową transkrypcję z gotowymi wynikami, dzięki czemu możesz zobaczyć, co narzędzie generuje, zanim użyjesz własnych danych.',
 
     // Info panels
     info_quality: 'W trybie Ocena jakości narzędzie podświetla potencjalne błędy transkrypcji bezpośrednio w tekście. Flagi nie oznaczają, że tekst jest błędny — wskazują miejsca warte weryfikacji.',

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="version" content="v2.9">
 <title>Transcript Analysis Tool</title>
-<link rel="stylesheet" href="css/style.css?v=2.9.2">
+<link rel="stylesheet" href="css/style.css?v=2.9.3">
 </head>
 <body>
 
@@ -37,8 +37,9 @@
       </div>
     </details>
 
-    <!-- Collapsible feature info buttons -->
+    <!-- Collapsible feature info buttons — grouped -->
     <div class="info-toggles">
+      <span class="info-group-label" data-i18n="info_group_analysis">Analysis</span>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoQualityFlags')" data-i18n="btn_quality_flags">Quality flags</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoTranslation')" data-i18n="btn_translation">Translation</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoSummary')" data-i18n="btn_summary">Summary</button>
@@ -48,11 +49,15 @@
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoGlossary')" data-i18n="btn_glossary">Auto-Glossary</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoBacktrans')" data-i18n="btn_backtrans">Back-translation</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoConsistency')" data-i18n="btn_consistency">Consistency Check</button>
+    </div>
+    <div class="info-toggles">
+      <span class="info-group-label" data-i18n="info_group_tools">Tools</span>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoDiff')" data-i18n="btn_diff">Diff view</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoTimestamp')" data-i18n="btn_timestamp">Timestamp check</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoStats')" data-i18n="btn_stats">Stats</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoInlineEdit')" data-i18n="btn_inline_edit">Inline edit</button>
       <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoCodingExport')" data-i18n="btn_coding_export">Coding export</button>
+      <button class="info-toggle-btn" aria-expanded="false" onclick="toggleInfo('infoDemo')" data-i18n="btn_demo">Demo mode</button>
     </div>
 
     <!-- Collapsible info panels -->
@@ -216,6 +221,13 @@
       <div class="info-box">
         <div class="info-content">
           If you plan to code this transcript (assign thematic labels to passages), the <strong>Coding JSON</strong> button in each file's results exports a ready-to-import file. The transcript is split into speaker turns &mdash; each turn becomes one codable unit with its original text, translation, timestamps, QA flags, and glossary terms attached. You can assign speaker roles (moderator / informant) before export. The output file is designed for the CSRI Coding Tool but follows an open JSON schema.
+        </div>
+      </div>
+    </div>
+    <div class="info-panel" id="infoDemo">
+      <div class="info-box">
+        <div class="info-content" data-i18n="demo_info_text">
+          Demo mode lets you explore every tab and feature without an API key. It loads a sample transcript with pre-generated results so you can see exactly what the tool produces before committing your own data.
         </div>
       </div>
     </div>
@@ -454,15 +466,15 @@
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="js/prompts.js?v=2.9.2"></script>
-<script src="js/api.js?v=2.9.2"></script>
-<script src="js/render.js?v=2.9.2"></script>
-<script src="js/export.js?v=2.9.2"></script>
-<script src="js/coding-export.js?v=2.9.2"></script>
-<script src="js/demo.js?v=2.9.2"></script>
-<script src="js/fs-target.js?v=2.9.2"></script>
-<script src="js/i18n.js?v=2.9.2"></script>
-<script src="js/app.js?v=2.9.2"></script>
+<script src="js/prompts.js?v=2.9.3"></script>
+<script src="js/api.js?v=2.9.3"></script>
+<script src="js/render.js?v=2.9.3"></script>
+<script src="js/export.js?v=2.9.3"></script>
+<script src="js/coding-export.js?v=2.9.3"></script>
+<script src="js/demo.js?v=2.9.3"></script>
+<script src="js/fs-target.js?v=2.9.3"></script>
+<script src="js/i18n.js?v=2.9.3"></script>
+<script src="js/app.js?v=2.9.3"></script>
 
 <script>lucide.createIcons(); I18N.init();
     FSTarget.init();</script>

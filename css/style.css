@@ -912,6 +912,19 @@ h1 {
   margin-bottom: 0.25rem;
 }
 
+.info-group-label {
+  display: block;
+  width: 100%;
+  font-family: 'Titillium Web', Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 0.1rem;
+  opacity: 0.6;
+}
+
 .info-toggle-btn {
   font-family: 'Titillium Web', Arial, sans-serif;
   font-size: 0.9rem;
