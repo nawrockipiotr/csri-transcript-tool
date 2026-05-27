@@ -132,13 +132,13 @@ const DEMO = {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // Inject demo guide banners into each tab panel
-    this._injectGuides(fId);
+    this._injectGuides();
 
     // Scroll to results
     resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
 
-  _injectGuides(fId) {
+  _injectGuides() {
     // Top banner
     const block = document.querySelector('.result-block');
     if (block) {
