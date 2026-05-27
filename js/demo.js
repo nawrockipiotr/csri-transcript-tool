@@ -131,7 +131,43 @@ const DEMO = {
     // Refresh icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
+    // Inject demo guide banners into each tab panel
+    this._injectGuides(fId);
+
     // Scroll to results
     resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+
+  _injectGuides(fId) {
+    // Top banner
+    const block = document.querySelector('.result-block');
+    if (block) {
+      const banner = document.createElement('div');
+      banner.className = 'demo-banner';
+      banner.innerHTML = '<i data-lucide="info" class="icon-sm"></i> ' + I18N.get('demo_guide_banner');
+      block.insertBefore(banner, block.firstChild);
+    }
+
+    // Per-tab guides
+    const guides = {
+      summary: 'demo_guide_summary',
+      translation: 'demo_guide_translation',
+      quality: 'demo_guide_quality',
+      speaker: 'demo_guide_speaker',
+      anon: 'demo_guide_anon',
+      stats: 'demo_guide_stats'
+    };
+
+    for (const [tab, key] of Object.entries(guides)) {
+      const panel = document.querySelector('.result-tab-panel[data-tab-panel="' + tab + '"]');
+      if (panel) {
+        const tip = document.createElement('div');
+        tip.className = 'demo-tab-guide';
+        tip.textContent = I18N.get(key);
+        panel.insertBefore(tip, panel.firstChild);
+      }
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 };

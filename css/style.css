@@ -1966,3 +1966,28 @@ input[type="checkbox"]:focus-visible {
   color: var(--muted);
   margin-left: auto;
 }
+
+
+/* ─── Demo guide banners ─── */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: var(--bg-info, #e8f4fd);
+  border: 1px solid var(--border-info, #b3d9f2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 0.75rem;
+}
+.demo-tab-guide {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-info, #e8f4fd);
+  border-left: 3px solid var(--accent, #2e75b6);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
