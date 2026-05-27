@@ -49,6 +49,7 @@ const DEMO = {
     // Clear previous results
     const resultsArea = document.getElementById('resultsArea');
     resultsArea.innerHTML = '';
+    resultsArea.classList.add('visible');
     batchTranslations = [];
     batchReportData = [];
     window._fileExportData = {};
