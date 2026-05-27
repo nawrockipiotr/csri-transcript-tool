@@ -153,6 +153,11 @@ const I18N = {
     msg_session_restore: 'Previous results available ({n} files, {time})',
     msg_lang_match: '<strong>{file}</strong>: detected language ({source}) matches target language ({target}). Translation may not be needed. Processing anyway.',
     msg_label_inconsistencies: 'Possible speaker label inconsistencies detected:\n{warnings}\n\nContinue with export?',
+    // Demo
+    demo_btn: 'Demo',
+    demo_tooltip: 'Load sample results without API key',
+    demo_pl: 'PL interview',
+    demo_en: 'EN interview',
     // File System target
     fs_pick_folder: 'Save exports to folder',
     fs_pick_btn: 'Choose folder',
@@ -318,6 +323,11 @@ const I18N = {
     msg_session_restore: 'Dostępne poprzednie wyniki ({n} plików, {time})',
     msg_lang_match: '<strong>{file}</strong>: wykryty język ({source}) pokrywa się z językiem docelowym ({target}). Tłumaczenie może nie być potrzebne. Przetwarzanie mimo to.',
     msg_label_inconsistencies: 'Wykryto możliwe niespójności etykiet mówców:\n{warnings}\n\nKontynuować eksport?',
+    // Demo
+    demo_btn: 'Demo',
+    demo_tooltip: 'Załaduj przykładowe wyniki bez klucza API',
+    demo_pl: 'Wywiad PL',
+    demo_en: 'Wywiad EN',
     // File System target
     fs_pick_folder: 'Zapisuj eksporty do folderu',
     fs_pick_btn: 'Wybierz folder',
