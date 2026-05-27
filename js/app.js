@@ -1,6 +1,6 @@
 // ─── Transcript Analysis Tool v2.7 — App Logic ───
 
-const TOOL_VERSION = 'v2.8';
+const TOOL_VERSION = 'v2.9';
 
 
 // ─── v2.5: Dark mode ───

@@ -358,7 +358,7 @@ async function exportCodingJSON(fileId) {
   // Warn about potential speaker label inconsistencies (spec validation point 3)
   const labelWarnings = detectLabelInconsistencies(speakers);
   if (labelWarnings.length > 0) {
-    const msg = "Possible speaker label inconsistencies detected:\n" + labelWarnings.join("\n") + "\n\nContinue with export?";
+    const msg = I18N.msg('msg_label_inconsistencies', {warnings: labelWarnings.join("\n")});
     if (!confirm(msg)) return;
   }
 

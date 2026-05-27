@@ -152,6 +152,7 @@ const I18N = {
     msg_glossary_approved: 'Glossary approved — {n} terms',
     msg_session_restore: 'Previous results available ({n} files, {time})',
     msg_lang_match: '<strong>{file}</strong>: detected language ({source}) matches target language ({target}). Translation may not be needed. Processing anyway.',
+    msg_label_inconsistencies: 'Possible speaker label inconsistencies detected:\n{warnings}\n\nContinue with export?',
     // File System target
     fs_pick_folder: 'Save exports to folder',
     fs_pick_btn: 'Choose folder',
@@ -316,6 +317,7 @@ const I18N = {
     msg_glossary_approved: 'Glosariusz zatwierdzony — {n} terminów',
     msg_session_restore: 'Dostępne poprzednie wyniki ({n} plików, {time})',
     msg_lang_match: '<strong>{file}</strong>: wykryty język ({source}) pokrywa się z językiem docelowym ({target}). Tłumaczenie może nie być potrzebne. Przetwarzanie mimo to.',
+    msg_label_inconsistencies: 'Wykryto możliwe niespójności etykiet mówców:\n{warnings}\n\nKontynuować eksport?',
     // File System target
     fs_pick_folder: 'Zapisuj eksporty do folderu',
     fs_pick_btn: 'Wybierz folder',
